@@ -3,11 +3,12 @@ const cors = require("cors");
 
 const authRoutes = require("./routes/auth.routes");
 const userRoutes = require("./routes/user.routes");
-
+const listingRoutes = require("./routes/listing.routes");
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
 
 app.get("/", (req, res) => {
     res.send("KelaniXchange API Running");
@@ -15,5 +16,6 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/listings", listingRoutes);
 
 module.exports = app;
