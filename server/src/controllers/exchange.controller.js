@@ -1,5 +1,6 @@
 const ExchangeRequest = require("../models/ExchangeRequest");
 const Listing = require("../models/Listing");
+const Notification = require("../models/Notification");
 
 // Send exchange request
 const createExchangeRequest = async (req, res) => {
@@ -78,6 +79,14 @@ const createExchangeRequest = async (req, res) => {
             requester: req.user._id,
             receiver: requestedListing.seller,
             message,
+        });
+
+        await Notification.create({
+            user: requestedListing.seller,
+            type: "exchange_request",
+            title: "New exchange request",
+            message: `${req.user.username} sent an exchange request for your listing.`,
+            relatedId: exchangeRequest._id,
         });
 
         const populatedRequest = await ExchangeRequest.findById(
@@ -172,6 +181,23 @@ const acceptExchangeRequest = async (req, res) => {
         request.status = "accepted";
         await request.save();
 
+        await Notification.create({
+            user: request.requester,
+            type: "exchange_accepted",
+            title: "Exchange request accepted",
+            message: "Your exchange request has been accepted.",
+            relatedId: request._id,
+        });
+
+        // Mark both listings as reserved
+        await Listing.findByIdAndUpdate(request.requestedListing, {
+            status: "reserved",
+        });
+
+        await Listing.findByIdAndUpdate(request.offeredListing, {
+            status: "reserved",
+        });
+
         res.status(200).json({
             message: "Exchange request accepted successfully",
             request,
@@ -209,6 +235,14 @@ const rejectExchangeRequest = async (req, res) => {
 
         request.status = "rejected";
         await request.save();
+
+        await Notification.create({
+            user: request.requester,
+            type: "exchange_rejected",
+            title: "Exchange request rejected",
+            message: "Your exchange request has been rejected.",
+            relatedId: request._id,
+        });
 
         res.status(200).json({
             message: "Exchange request rejected successfully",
