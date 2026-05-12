@@ -197,10 +197,30 @@ const deleteListing = async (req, res) => {
     }
 };
 
+// Get logged-in user's own listings
+const getMyListings = async (req, res) => {
+    try {
+        const listings = await Listing.find({
+            seller: req.user._id,
+        }).sort({ createdAt: -1 });
+
+        res.status(200).json({
+            message: "My listings fetched successfully",
+            listings,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to fetch your listings",
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     createListing,
     getListings,
     getListingById,
     updateListing,
     deleteListing,
+    getMyListings,
 };
