@@ -7,6 +7,7 @@ const listingRoutes = require("./routes/listing.routes");
 const app = express();
 const exchangeRoutes = require("./routes/exchange.routes");
 const reportRoutes = require("./routes/report.routes");
+const adminRoutes = require("./routes/admin.routes");
 
 app.use(cors());
 app.use(express.json());
@@ -20,5 +21,6 @@ app.use("/api/users", userRoutes);
 app.use("/api/listings", listingRoutes);
 app.use("/api/exchanges", exchangeRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/admin", adminRoutes);
 
 module.exports = app;
