@@ -73,14 +73,67 @@ const createListing = async (req, res) => {
     }
 };
 
-// Get all listings
+// Get all listings with search and filters
 const getListings = async (req, res) => {
     try {
-        const listings = await Listing.find({ status: "available" })
-            .populate("seller", "username email")
+        const {
+            search,
+            category,
+            condition,
+            minPrice,
+            maxPrice,
+            exchangeAvailable,
+        } = req.query;
+
+        const filter = {
+            status: "available",
+        };
+
+        // Search by title or description
+        if (search) {
+            filter.$or = [
+                { title: { $regex: search, $options: "i" } },
+                { description: { $regex: search, $options: "i" } },
+            ];
+        }
+
+        // Filter by category
+        if (category) {
+            filter.category = category;
+        }
+
+        // Filter by condition
+        if (condition) {
+            filter.condition = condition;
+        }
+
+        // Filter by price range
+        if (minPrice || maxPrice) {
+            filter.price = {};
+
+            if (minPrice) {
+                filter.price.$gte = Number(minPrice);
+            }
+
+            if (maxPrice) {
+                filter.price.$lte = Number(maxPrice);
+            }
+        }
+
+        // Filter exchange availability
+        if (exchangeAvailable !== undefined) {
+            filter.isExchangeAvailable = exchangeAvailable === "true";
+        }
+
+        const listings = await Listing.find(filter)
+            .populate("seller", "username")
             .sort({ createdAt: -1 });
 
-        res.status(200).json(listings);
+        res.status(200).json({
+            message: "Listings fetched successfully",
+            count: listings.length,
+            listings,
+        });
     } catch (error) {
         res.status(500).json({
             message: "Failed to fetch listings",
