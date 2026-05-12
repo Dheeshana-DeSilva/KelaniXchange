@@ -112,8 +112,63 @@ const getListingById = async (req, res) => {
     }
 };
 
+// Update own listing
+const updateListing = async (req, res) => {
+    try {
+        const listing = await Listing.findById(req.params.id);
+
+        if (!listing) {
+            return res.status(404).json({
+                message: "Listing not found",
+            });
+        }
+
+        // Check whether logged-in user owns this listing
+        if (listing.seller.toString() !== req.user._id.toString()) {
+            return res.status(403).json({
+                message: "You are not authorized to update this listing",
+            });
+        }
+
+        const {
+            title,
+            description,
+            category,
+            price,
+            condition,
+            isExchangeAvailable,
+            location,
+            status,
+        } = req.body;
+
+        if (title !== undefined) listing.title = title;
+        if (description !== undefined) listing.description = description;
+        if (category !== undefined) listing.category = category;
+        if (price !== undefined) listing.price = price;
+        if (condition !== undefined) listing.condition = condition;
+        if (isExchangeAvailable !== undefined) {
+            listing.isExchangeAvailable = isExchangeAvailable;
+        }
+        if (location !== undefined) listing.location = location;
+        if (status !== undefined) listing.status = status;
+
+        const updatedListing = await listing.save();
+
+        res.status(200).json({
+            message: "Listing updated successfully",
+            listing: updatedListing,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to update listing",
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     createListing,
     getListings,
     getListingById,
+    updateListing,
 };
