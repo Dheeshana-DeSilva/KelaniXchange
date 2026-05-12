@@ -166,9 +166,41 @@ const updateListing = async (req, res) => {
     }
 };
 
+// Delete own listing
+const deleteListing = async (req, res) => {
+    try {
+        const listing = await Listing.findById(req.params.id);
+
+        if (!listing) {
+            return res.status(404).json({
+                message: "Listing not found",
+            });
+        }
+
+        // Only the owner can delete the listing
+        if (listing.seller.toString() !== req.user._id.toString()) {
+            return res.status(403).json({
+                message: "You are not authorized to delete this listing",
+            });
+        }
+
+        await listing.deleteOne();
+
+        res.status(200).json({
+            message: "Listing deleted successfully",
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to delete listing",
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     createListing,
     getListings,
     getListingById,
     updateListing,
+    deleteListing,
 };
