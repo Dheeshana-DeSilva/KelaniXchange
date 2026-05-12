@@ -6,6 +6,7 @@ const userRoutes = require("./routes/user.routes");
 const listingRoutes = require("./routes/listing.routes");
 const app = express();
 const exchangeRoutes = require("./routes/exchange.routes");
+const reportRoutes = require("./routes/report.routes");
 
 app.use(cors());
 app.use(express.json());
@@ -18,5 +19,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/listings", listingRoutes);
 app.use("/api/exchanges", exchangeRoutes);
+app.use("/api/reports", reportRoutes);
 
 module.exports = app;
