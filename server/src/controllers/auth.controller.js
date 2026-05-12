@@ -21,17 +21,6 @@ const registerUser = async (req, res) => {
             });
         }
 
-        // Optional: allow only university emails
-        // Change this later to your real university domain
-        // Example: @stu.kln.ac.lk or @kln.ac.lk
-        /*
-        if (!email.endsWith("@stu.kln.ac.lk")) {
-          return res.status(400).json({
-            message: "Please use your university email",
-          });
-        }
-        */
-
         const existingEmail = await User.findOne({ email });
 
         if (existingEmail) {

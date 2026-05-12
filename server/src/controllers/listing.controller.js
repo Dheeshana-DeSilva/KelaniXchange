@@ -1,8 +1,12 @@
+const cloudinary = require("../config/cloudinary");
 const Listing = require("../models/Listing");
 
 // Create listing
 const createListing = async (req, res) => {
     try {
+        console.log("CONTENT TYPE:", req.headers["content-type"]);
+        console.log("BODY:", req.body);
+        console.log("FILES:", req.files);
         const {
             title,
             description,
@@ -11,12 +15,38 @@ const createListing = async (req, res) => {
             condition,
             isExchangeAvailable,
             location,
-        } = req.body;
+        } = req.body || {};
 
         if (!title || !description || !category) {
             return res.status(400).json({
                 message: "Title, description, and category are required",
             });
+        }
+
+        let imageUrls = [];
+
+        if (req.files && req.files.length > 0) {
+            const uploadPromises = req.files.map((file) => {
+                return new Promise((resolve, reject) => {
+                    const uploadStream = cloudinary.uploader.upload_stream(
+                        {
+                            folder: "kelanixchange/listings",
+                            resource_type: "image",
+                        },
+                        (error, result) => {
+                            if (error) {
+                                reject(error);
+                            } else {
+                                resolve(result.secure_url);
+                            }
+                        }
+                    );
+
+                    uploadStream.end(file.buffer);
+                });
+            });
+
+            imageUrls = await Promise.all(uploadPromises);
         }
 
         const listing = await Listing.create({
@@ -27,6 +57,7 @@ const createListing = async (req, res) => {
             condition,
             isExchangeAvailable,
             location,
+            images: imageUrls,
             seller: req.user._id,
         });
 
