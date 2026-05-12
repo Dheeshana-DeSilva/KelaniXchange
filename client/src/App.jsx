@@ -1,15 +1,23 @@
+import AppRoutes from "./routes/AppRoutes";
+import Navbar from "./components/layout/Navbar";
+import { useLocation } from "react-router";
+
 function App() {
+  const location = useLocation();
+  const isHomePage = location.pathname === "/";
+
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-blue-400">
-          KelaniXchange
-        </h1>
-        <p className="mt-3 text-slate-300">
-          Student marketplace platform
-        </p>
-      </div>
-    </div>
+    <>
+      {isHomePage && (
+        <div className="fixed top-0 left-0 z-50 w-full">
+          <Navbar />
+        </div>
+      )}
+
+      {!isHomePage && <Navbar />}
+
+      <AppRoutes />
+    </>
   );
 }
 
