@@ -1,13 +1,14 @@
 const express = require("express");
+const {
+    getUserProfile,
+    updateUserProfile,
+} = require("../controllers/user.controller");
+
 const { protect } = require("../middleware/auth.middleware");
 
 const router = express.Router();
 
-router.get("/profile", protect, (req, res) => {
-    res.status(200).json({
-        message: "Profile fetched successfully",
-        user: req.user,
-    });
-});
+router.get("/profile", protect, getUserProfile);
+router.put("/profile", protect, updateUserProfile);
 
 module.exports = router;
