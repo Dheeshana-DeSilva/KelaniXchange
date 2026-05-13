@@ -1,4 +1,13 @@
 import { Link } from "react-router";
+import {
+    BookOpen,
+    Monitor,
+    BedDouble,
+    Pencil,
+    ShoppingBag,
+    Volleyball,
+    MoreHorizontal,
+} from "lucide-react";
 import bgImage from "../assets/background.png";
 import imgCalc from "../assets/scientific_calculator_1778617648280.png";
 import imgStand from "../assets/laptop_stand_1778617661773.png";
@@ -6,14 +15,50 @@ import imgBook from "../assets/engineering_math_book_1778617677356.png";
 import imgBag from "../assets/black_backpack_1778617692980.png";
 import imgEarbuds from "../assets/wireless_earbuds_1778617708014.png";
 
+
 const categories = [
-    { name: "Books", color: "text-blue-500", bg: "bg-blue-50", icon: <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" /></svg> },
-    { name: "Electronics", color: "text-green-500", bg: "bg-green-50", icon: <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" /></svg> },
-    { name: "Furniture", color: "text-indigo-500", bg: "bg-indigo-50", icon: <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h1.5C8.328 3.75 9 4.422 9 5.25V18a2.25 2.25 0 0 1-2.25 2.25h-3A2.25 2.25 0 0 1 1.5 18V6ZM15 6a2.25 2.25 0 0 1 2.25-2.25h1.5A2.25 2.25 0 0 1 21 6v12a2.25 2.25 0 0 1-2.25 2.25h-3A2.25 2.25 0 0 1 13.5 18V6Z" /></svg> },
-    { name: "Stationery", color: "text-orange-500", bg: "bg-orange-50", icon: <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" /></svg> },
-    { name: "Clothing", color: "text-purple-500", bg: "bg-purple-50", icon: <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" /></svg> },
-    { name: "Sports", color: "text-red-500", bg: "bg-red-50", icon: <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12a9.75 9.75 0 1 1 19.5 0 9.75 9.75 0 0 1-19.5 0ZM12 2.25v19.5m-8.182-5.454 16.364-10.9m-16.364 0 16.364 10.9" /></svg> },
-    { name: "Others", color: "text-gray-500", bg: "bg-gray-100", icon: <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" /></svg> }
+    {
+        name: "Books",
+        value: "books",
+        icon: BookOpen,
+        color: "bg-blue-50 text-blue-500",
+    },
+    {
+        name: "Electronics",
+        value: "electronics",
+        icon: Monitor,
+        color: "bg-green-50 text-green-600",
+    },
+    {
+        name: "Furniture",
+        value: "furniture",
+        icon: BedDouble,
+        color: "bg-indigo-50 text-indigo-500",
+    },
+    {
+        name: "Stationery",
+        value: "stationery",
+        icon: Pencil,
+        color: "bg-orange-50 text-orange-500",
+    },
+    {
+        name: "Clothing",
+        value: "clothing",
+        icon: ShoppingBag,
+        color: "bg-purple-50 text-purple-500",
+    },
+    {
+        name: "Sports",
+        value: "sports",
+        icon: Volleyball,
+        color: "bg-red-50 text-red-500",
+    },
+    {
+        name: "Others",
+        value: "others",
+        icon: MoreHorizontal,
+        color: "bg-slate-100 text-slate-600",
+    },
 ];
 
 const featuredListings = [
@@ -28,7 +73,7 @@ function Home() {
     return (
         <main className="min-h-screen bg-white pb-20">
             {/* Landing Hero Card */}
-            <section 
+            <section
                 className="w-full overflow-hidden bg-[#061f3d] shadow-xl bg-cover bg-center bg-no-repeat"
                 style={{ backgroundImage: `url(${bgImage})` }}
             >
@@ -80,19 +125,39 @@ function Home() {
                 <section className="mb-16">
                     <div className="flex items-center justify-between mb-8">
                         <h2 className="text-2xl font-bold text-[#13253f]">Shop by Category</h2>
-                        <a href="#" className="text-sm font-bold text-[#2fab63] hover:underline">View all</a>
+                        <Link
+                            to="/marketplace"
+                            className="text-sm font-bold text-[#2fab63] hover:underline"
+                        >
+                            View all
+
+                        </Link>
                     </div>
-                    
+
                     <div className="flex justify-between gap-4 overflow-x-auto pb-4">
-                        {categories.map((cat, idx) => (
-                            <div key={idx} className="flex flex-col items-center gap-3 min-w-[100px]">
-                                <div className={`w-[100px] h-[100px] rounded-3xl flex items-center justify-center transition-transform hover:scale-105 cursor-pointer ${cat.bg} ${cat.color}`}>
-                                    {cat.icon}
-                                </div>
-                                <span className="text-sm font-semibold text-slate-700">{cat.name}</span>
-                            </div>
-                        ))}
+                        {categories.map((cat, idx) => {
+                            const Icon = cat.icon;
+
+                            return (
+                                <Link
+                                    key={idx}
+                                    to={`/marketplace?category=${cat.value}`}
+                                    className="flex min-w-[100px] flex-col items-center gap-3"
+                                >
+                                    <div
+                                        className={`flex h-[100px] w-[100px] cursor-pointer items-center justify-center rounded-3xl transition-transform hover:scale-105 ${cat.color}`}
+                                    >
+                                        <Icon size={32} strokeWidth={2} />
+                                    </div>
+
+                                    <span className="text-sm font-semibold text-slate-700">
+                                        {cat.name}
+                                    </span>
+                                </Link>
+                            );
+                        })}
                     </div>
+
                 </section>
 
                 {/* Featured Listings */}
@@ -100,7 +165,12 @@ function Home() {
                     <div className="flex flex-col mb-8">
                         <div className="flex items-center justify-between">
                             <h2 className="text-2xl font-bold text-[#13253f]">Featured Listings</h2>
-                            <a href="#" className="text-sm font-bold text-[#2fab63] hover:underline">View all</a>
+                            <Link
+                                to="/marketplace"
+                                className="text-sm font-bold text-[#2fab63] hover:underline"
+                            >
+                                View all
+                            </Link>
                         </div>
                         <p className="text-slate-500 mt-1 text-sm">Handpicked deals from your campus</p>
                     </div>
