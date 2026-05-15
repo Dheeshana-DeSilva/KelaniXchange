@@ -7,14 +7,17 @@ import {
     ShoppingBag,
     Volleyball,
     MoreHorizontal,
+    Tag,
+    ShieldCheck,
+    Leaf,
+    Users,
+    FilePlus,
+    MessageCircle,
+    Handshake,
+    ArrowRight,
 } from "lucide-react";
-import bgImage from "../assets/background.png";
-import imgCalc from "../assets/scientific_calculator_1778617648280.png";
-import imgStand from "../assets/laptop_stand_1778617661773.png";
-import imgBook from "../assets/engineering_math_book_1778617677356.png";
-import imgBag from "../assets/black_backpack_1778617692980.png";
-import imgEarbuds from "../assets/wireless_earbuds_1778617708014.png";
 
+import bgImage from "../assets/background.png";
 
 const categories = [
     {
@@ -61,26 +64,62 @@ const categories = [
     },
 ];
 
-const featuredListings = [
-    { title: "Scientific Calculator", desc: "Casio fx-991ES", price: "Rs. 2,000", tag: "Good", img: imgCalc },
-    { title: "Laptop Stand", desc: "Adjustable Aluminium", price: "Rs. 1,500", tag: "Like New", img: imgStand },
-    { title: "Engineering Mathematics", desc: "Textbook", price: "Rs. 800", tag: "Good", img: imgBook },
-    { title: "Backpack", desc: "Waterproof - Black", price: "Rs. 1,800", tag: "Like New", img: imgBag },
-    { title: "Wireless Earbuds", desc: "Noise Cancelling", price: "Rs. 2,200", tag: "New", img: imgEarbuds },
+const features = [
+    {
+        title: "Local & Trusted",
+        description: "Buy and sell with real students in your community.",
+        icon: Tag,
+    },
+    {
+        title: "Safe & Secure",
+        description: "Secure conversations and safer transactions.",
+        icon: ShieldCheck,
+    },
+    {
+        title: "Sustainable",
+        description: "Give items a second life and reduce waste.",
+        icon: Leaf,
+    },
+    {
+        title: "Easy to Use",
+        description: "Simple listings, smooth chats, quick deals.",
+        icon: Users,
+    },
+];
+
+const steps = [
+    {
+        number: "1",
+        title: "List Your Item",
+        description: "Post your item in minutes with photos, details, and price.",
+        icon: FilePlus,
+    },
+    {
+        number: "2",
+        title: "Connect & Chat",
+        description: "Buyers message you directly. Ask questions and negotiate easily.",
+        icon: MessageCircle,
+    },
+    {
+        number: "3",
+        title: "Close the Deal",
+        description: "Meet safely and complete the sale or exchange.",
+        icon: Handshake,
+    },
 ];
 
 function Home() {
     return (
-        <main className="min-h-screen bg-white pb-20">
-            {/* Landing Hero Card */}
+        <main className="min-h-screen bg-white">
+            {/* Hero Section */}
             <section
-                className="w-full overflow-hidden bg-[#061f3d] shadow-xl bg-cover bg-center bg-no-repeat"
+                className="w-full overflow-hidden bg-[#061f3d] bg-cover bg-center bg-no-repeat shadow-xl"
                 style={{ backgroundImage: `url(${bgImage})` }}
             >
                 <div className="grid min-h-[560px] lg:grid-cols-2">
                     {/* Left Hero Content */}
-                    <div className="flex flex-col justify-center px-12 pb-16 pt-8 bg-gradient-to-r from-[#061f3d] to-transparent">
-                        <h1 className="text-5xl font-extrabold leading-[1.15] text-white xl:text-6xl">
+                    <div className="flex flex-col justify-center bg-gradient-to-r from-[#061f3d] to-transparent px-8 pb-16 pt-8 sm:px-12">
+                        <h1 className="text-4xl font-extrabold leading-[1.15] text-white sm:text-5xl xl:text-6xl">
                             <span className="text-[#67db74]">Exchange</span> more.
                             <br />
                             <span className="text-[#67db74]">Spend</span> less.
@@ -89,11 +128,11 @@ function Home() {
                         </h1>
 
                         <p className="mt-7 max-w-lg text-base leading-7 text-slate-200">
-                            The trusted marketplace for Kelaniya students to buy, sell, and
-                            exchange with ease.
+                            The trusted marketplace for Kelaniya students to buy, sell,
+                            and exchange with ease.
                         </p>
 
-                        <div className="mt-9 flex items-center gap-5">
+                        <div className="mt-9 flex flex-wrap items-center gap-5">
                             <Link
                                 to="/marketplace"
                                 className="rounded-xl bg-gradient-to-r from-[#48c96f] to-[#25a95b] px-7 py-4 text-sm font-bold text-white shadow-lg shadow-green-900/30 transition hover:scale-[1.02]"
@@ -110,97 +149,210 @@ function Home() {
                         </div>
                     </div>
 
-                    {/* Right Hero Visual */}
-                    <div className="relative hidden items-center justify-center lg:flex">
-                        {/* Empty right side to let the background image show, white box removed as requested */}
-                    </div>
+                    {/* Right Side Background Visual */}
+                    <div className="relative hidden items-center justify-center lg:flex"></div>
                 </div>
 
-                {/* Bottom soft green line like the design */}
                 <div className="h-2 bg-gradient-to-r from-[#061f3d] via-[#18804c] to-[#1aa65d]"></div>
             </section>
 
-            <div className="mx-auto max-w-[1400px] px-8 mt-4">
-                {/* Shop by Category */}
-                <section className="mb-16">
-                    <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-2xl font-bold text-[#13253f]">Shop by Category</h2>
-                        <Link
-                            to="/marketplace"
-                            className="text-sm font-bold text-[#2fab63] hover:underline"
-                        >
-                            View all
+            {/* Features Strip */}
+            <section className="mx-auto max-w-[1450px] px-6 pt-8 sm:px-8">
+                <div className="grid gap-6 rounded-[28px] bg-[#f4faf6] px-6 py-8 shadow-sm sm:px-8 md:grid-cols-2 lg:grid-cols-4">
+                    {features.map((feature, index) => {
+                        const Icon = feature.icon;
 
-                        </Link>
-                    </div>
+                        return (
+                            <div
+                                key={index}
+                                className="flex items-start gap-4 lg:border-r lg:border-[#dceee3] lg:pr-6 last:border-r-0"
+                            >
+                                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#e4f4ea] text-[#15945a]">
+                                    <Icon size={28} strokeWidth={2.2} />
+                                </div>
 
-                    <div className="flex justify-between gap-4 overflow-x-auto pb-4">
-                        {categories.map((cat, idx) => {
-                            const Icon = cat.icon;
+                                <div>
+                                    <h3 className="text-sm font-extrabold text-[#13253f]">
+                                        {feature.title}
+                                    </h3>
+                                    <p className="mt-1 max-w-[220px] text-xs leading-5 text-slate-600">
+                                        {feature.description}
+                                    </p>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </section>
+
+            {/* Explore Categories */}
+            <section className="mx-auto max-w-[1450px] px-6 py-10 sm:px-8">
+                <div className="mb-7 flex items-center justify-between">
+                    <h2 className="text-2xl font-extrabold text-[#13253f]">
+                        Explore Categories
+                    </h2>
+
+                    <Link
+                        to="/marketplace"
+                        className="hidden items-center gap-2 text-sm font-bold text-[#15945a] transition hover:underline sm:flex"
+                    >
+                        View all categories
+                        <ArrowRight size={16} />
+                    </Link>
+                </div>
+
+                <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7">
+                    {categories.map((category, index) => {
+                        const Icon = category.icon;
+
+                        return (
+                            <Link
+                                key={index}
+                                to={`/marketplace?category=${category.value}`}
+                                className="group overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+                            >
+                                <div
+                                    className={`flex h-[145px] items-center justify-center ${category.color}`}
+                                >
+                                    <Icon
+                                        size={54}
+                                        strokeWidth={1.8}
+                                        className="transition duration-300 group-hover:scale-110"
+                                    />
+                                </div>
+
+                                <div className="px-3 py-4 text-center">
+                                    <h3 className="text-sm font-extrabold text-[#13253f]">
+                                        {category.name}
+                                    </h3>
+                                    <p className="mt-1 text-xs text-slate-500">
+                                        Browse items
+                                    </p>
+                                </div>
+                            </Link>
+                        );
+                    })}
+                </div>
+
+                <div className="mt-6 sm:hidden">
+                    <Link
+                        to="/marketplace"
+                        className="inline-flex items-center gap-2 text-sm font-bold text-[#15945a] transition hover:underline"
+                    >
+                        View all categories
+                        <ArrowRight size={16} />
+                    </Link>
+                </div>
+            </section>
+
+            {/* How It Works */}
+            <section
+                id="how-it-works"
+                className="border-t border-slate-100 bg-[#fcfdfc] px-6 py-16 sm:px-8"
+            >
+                <div className="mx-auto max-w-[1200px]">
+                    <h2 className="mb-14 text-center text-2xl font-extrabold text-[#13253f]">
+                        How <span className="text-[#15945a]">KelaniXchange</span>{" "}
+                        Works
+                    </h2>
+
+                    <div className="grid gap-12 md:grid-cols-3">
+                        {steps.map((step, index) => {
+                            const Icon = step.icon;
 
                             return (
-                                <Link
-                                    key={idx}
-                                    to={`/marketplace?category=${cat.value}`}
-                                    className="flex min-w-[100px] flex-col items-center gap-3"
-                                >
-                                    <div
-                                        className={`flex h-[100px] w-[100px] cursor-pointer items-center justify-center rounded-3xl transition-transform hover:scale-105 ${cat.color}`}
-                                    >
-                                        <Icon size={32} strokeWidth={2} />
+                                <div key={index} className="relative">
+                                    <div className="absolute left-1/2 top-[-28px] z-10 flex h-16 w-16 -translate-x-1/2 items-center justify-center rounded-full bg-[#07563c] text-white shadow-lg">
+                                        <Icon size={28} strokeWidth={2} />
                                     </div>
 
-                                    <span className="text-sm font-semibold text-slate-700">
-                                        {cat.name}
-                                    </span>
-                                </Link>
+                                    <div className="rounded-3xl bg-white px-8 pb-8 pt-14 text-center shadow-sm ring-1 ring-slate-100 transition hover:-translate-y-1 hover:shadow-md">
+                                        <div className="mb-3 text-3xl font-black text-[#2fab63]">
+                                            {step.number}
+                                        </div>
+
+                                        <h3 className="text-base font-extrabold text-[#13253f]">
+                                            {step.title}
+                                        </h3>
+
+                                        <p className="mx-auto mt-2 max-w-[260px] text-sm leading-6 text-slate-600">
+                                            {step.description}
+                                        </p>
+                                    </div>
+                                </div>
                             );
                         })}
                     </div>
+                </div>
+            </section>
 
-                </section>
+            {/* Community CTA Section */}
+            <section className="bg-gradient-to-r from-[#06452f] via-[#075c3e] to-[#076545] px-6 py-12 text-white sm:px-8">
+                <div className="mx-auto flex max-w-[1450px] flex-col justify-between gap-10 lg:flex-row lg:items-center">
+                    <div>
+                        <h2 className="text-3xl font-extrabold leading-tight">
+                            Kelaniya is our community.
+                            <br />
+                            Let’s{" "}
+                            <span className="text-[#7bf09a]">
+                                grow it together.
+                            </span>
+                        </h2>
 
-                {/* Featured Listings */}
-                <section>
-                    <div className="flex flex-col mb-8">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-2xl font-bold text-[#13253f]">Featured Listings</h2>
+                        <p className="mt-4 max-w-xl text-sm leading-6 text-emerald-50">
+                            Join KelaniXchange and be part of a smarter, greener,
+                            and stronger student marketplace.
+                        </p>
+
+                        <div className="mt-6 flex flex-wrap items-center gap-4">
+                            <Link
+                                to="/register"
+                                className="rounded-xl bg-white px-6 py-3 text-sm font-extrabold text-[#075c3e] shadow-md transition hover:scale-[1.02]"
+                            >
+                                Create Your Account
+                            </Link>
+
                             <Link
                                 to="/marketplace"
-                                className="text-sm font-bold text-[#2fab63] hover:underline"
+                                className="inline-flex items-center gap-2 text-sm font-bold text-white transition hover:underline"
                             >
-                                View all
+                                Learn More
+                                <ArrowRight size={16} />
                             </Link>
                         </div>
-                        <p className="text-slate-500 mt-1 text-sm">Handpicked deals from your campus</p>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                        {featuredListings.map((item, idx) => (
-                            <div key={idx} className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-                                {/* Image Container */}
-                                <div className="relative h-[220px] bg-[#f4f6f8] p-4 flex items-center justify-center">
-                                    <button className="absolute top-4 right-4 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-400 hover:text-red-500 transition-colors">
-                                        <svg fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                                        </svg>
-                                    </button>
-                                    <img src={item.img} alt={item.title} className="max-w-full max-h-full object-contain mix-blend-multiply" />
-                                </div>
-                                {/* Content */}
-                                <div className="p-5">
-                                    <h3 className="font-bold text-[#13253f] text-[15px] truncate">{item.title}</h3>
-                                    <p className="text-slate-500 text-xs mt-1 truncate">{item.desc}</p>
-                                    <div className="mt-4 flex items-center justify-between">
-                                        <span className="font-bold text-[#2fab63] text-base">{item.price}</span>
-                                        <span className="px-3 py-1 bg-[#eaf6ef] text-[#2fab63] text-[10px] font-bold rounded-full">{item.tag}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+                    <div className="grid grid-cols-1 gap-7 text-center sm:grid-cols-3 sm:gap-10">
+                        <div>
+                            <h3 className="text-3xl font-black text-[#7bf09a]">
+                                2,500+
+                            </h3>
+                            <p className="mt-1 text-sm font-semibold text-emerald-50">
+                                Active Members
+                            </p>
+                        </div>
+
+                        <div>
+                            <h3 className="text-3xl font-black text-[#7bf09a]">
+                                1,200+
+                            </h3>
+                            <p className="mt-1 text-sm font-semibold text-emerald-50">
+                                Items Listed
+                            </p>
+                        </div>
+
+                        <div>
+                            <h3 className="text-3xl font-black text-[#7bf09a]">
+                                98%
+                            </h3>
+                            <p className="mt-1 text-sm font-semibold text-emerald-50">
+                                Positive Feedback
+                            </p>
+                        </div>
                     </div>
-                </section>
-            </div>
+                </div>
+            </section>
+
         </main>
     );
 }

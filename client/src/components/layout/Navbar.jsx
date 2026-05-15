@@ -3,7 +3,7 @@ import logo from "../../assets/X_logo.png";
 
 function Navbar() {
     return (
-        <nav className="flex items-center justify-between px-6 py-4 w-full bg-[#061f3d]/60 backdrop-blur-md shadow-md">
+        <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 w-full bg-[#061f3d]/80 backdrop-blur-md shadow-md border-b border-white/10">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3">
                 <img
