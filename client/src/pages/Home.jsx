@@ -1,4 +1,5 @@
-import { Link } from "react-router";
+import { useEffect } from "react";
+import { Link, useLocation } from "react-router";
 import {
     Tag,
     ShieldCheck,
@@ -114,6 +115,22 @@ const steps = [
 ];
 
 function Home() {
+    const location = useLocation();
+
+    useEffect(() => {
+        if (location.hash) {
+            const id = location.hash.substring(1);
+            const element = document.getElementById(id);
+            if (element) {
+                setTimeout(() => {
+                    element.scrollIntoView({ behavior: "smooth" });
+                }, 100);
+            }
+        } else {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+    }, [location]);
+
     return (
         <main className="min-h-screen bg-slate-50 selection:bg-[#48c96f] selection:text-white pb-10">
             {/* Hero Section */}
