@@ -17,6 +17,13 @@ const listingSchema = new mongoose.Schema(
             type: String,
             required: true,
             enum: [
+                "books-and-stationery",
+                "electronics",
+                "furniture",
+                "fashion-and-accessories",
+                "sports-and-outdoor",
+                "vehicles",
+                "others",
                 "Books",
                 "Calculators",
                 "Electronics",
@@ -24,6 +31,10 @@ const listingSchema = new mongoose.Schema(
                 "Lab Equipment",
                 "Stationery",
                 "Other",
+                "clothing",
+                "sports",
+                "books",
+                "stationery"
             ],
         },
 

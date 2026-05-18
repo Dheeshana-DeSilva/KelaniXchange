@@ -5,8 +5,8 @@ import { Menu, X, ShoppingBag, LogIn, UserPlus, HelpCircle, Info } from "lucide-
 
 const navLinks = [
     { label: "Marketplace",  to: "/marketplace",   icon: ShoppingBag },
-    { label: "How It Works", href: "#how-it-works", icon: HelpCircle  },
-    { label: "About Us",     href: "#about",        icon: Info        },
+    { label: "How It Works", href: "/#how-it-works", icon: HelpCircle  },
+    { label: "About Us",     to: "/about",           icon: Info        },
 ];
 
 function Navbar() {

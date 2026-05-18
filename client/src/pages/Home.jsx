@@ -14,21 +14,21 @@ import {
     Monitor
 } from "lucide-react";
 
-import catBooks from "../assets/category_books.png";
-import catElectronics from "../assets/category_electronics.png";
-import catFurniture from "../assets/category_furniture.png";
-import catStationery from "../assets/category_stationery.png";
-import catClothing from "../assets/category_clothing.png";
-import catSports from "../assets/category_sports.png";
-import catOthers from "../assets/category_others.png";
+import catBooksStationery from "../assets/category_books_stationery.png";
+import catElectronics from "../assets/category_electronics_v2.png";
+import catFurniture from "../assets/category_furniture_v2.png";
+import catFashionAccessories from "../assets/category_fashion_accessories.png";
+import catOthers from "../assets/category_others_v2.png";
+import catVehicles from "../assets/category_vehicles.png";
+import catSportsOutdoor from "../assets/category_sports_outdoor.png";
 
 import bgImage from "../assets/background.png";
 
 const categories = [
     {
-        name: "Books",
-        value: "books",
-        image: catBooks,
+        name: "Books & Stationery",
+        value: "books-and-stationery",
+        image: catBooksStationery,
         bg: "bg-blue-50",
     },
     {
@@ -44,22 +44,22 @@ const categories = [
         bg: "bg-indigo-50",
     },
     {
-        name: "Stationery",
-        value: "stationery",
-        image: catStationery,
-        bg: "bg-orange-50",
-    },
-    {
-        name: "Clothing",
-        value: "clothing",
-        image: catClothing,
+        name: "Fashion & Accessories",
+        value: "fashion-and-accessories",
+        image: catFashionAccessories,
         bg: "bg-purple-50",
     },
     {
-        name: "Sports",
-        value: "sports",
-        image: catSports,
+        name: "Sports & Outdoor",
+        value: "sports-and-outdoor",
+        image: catSportsOutdoor,
         bg: "bg-emerald-50",
+    },
+    {
+        name: "Vehicles",
+        value: "vehicles",
+        image: catVehicles,
+        bg: "bg-yellow-50",
     },
     {
         name: "Others",
@@ -314,22 +314,22 @@ function Home() {
             {/* How It Works */}
             <section
                 id="how-it-works"
-                className="bg-white px-6 py-24 sm:px-12 relative overflow-hidden border-y border-slate-100"
+                className="px-6 py-12 sm:px-12 relative overflow-hidden"
             >
-                <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-emerald-50/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-60"></div>
-                <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-50/50 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 opacity-60"></div>
+                <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-emerald-50/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-60"></div>
+                <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-50/50 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 opacity-60"></div>
 
                 <div className="mx-auto max-w-[1200px] relative z-10">
-                    <div className="text-center mb-20">
-                        <h2 className="text-3xl font-black text-slate-900 tracking-tight sm:text-4xl">
+                    <div className="text-center mb-12">
+                        <h2 className="text-2xl font-black text-slate-900 tracking-tight sm:text-3xl">
                             How <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#15945a] to-[#48c96f]">KelaniXchange</span> Works
                         </h2>
-                        <p className="text-slate-500 mt-4 font-medium max-w-2xl mx-auto">Three simple steps to start turning your unused items into cash or finding great deals from fellow students.</p>
+                        <p className="text-slate-500 mt-3 text-sm font-medium max-w-xl mx-auto">Three simple steps to start turning your unused items into cash or finding great deals from fellow students.</p>
                     </div>
 
-                    <div className="grid gap-12 md:grid-cols-3 relative">
+                    <div className="grid gap-8 md:grid-cols-3 relative">
                         {/* Connecting line for desktop */}
-                        <div className="hidden md:block absolute top-12 left-[15%] right-[15%] h-0.5 bg-gradient-to-r from-emerald-100 via-emerald-200 to-emerald-100 z-0"></div>
+                        <div className="hidden md:block absolute top-8 left-[15%] right-[15%] h-0.5 bg-gradient-to-r from-emerald-100 via-emerald-200 to-emerald-100 z-0"></div>
 
                         {steps.map((step, index) => {
                             const Icon = step.icon;
@@ -337,19 +337,19 @@ function Home() {
                             return (
                                 <div key={index} className="relative z-10 group">
                                     <div className="flex flex-col items-center">
-                                        <div className="relative flex h-24 w-24 items-center justify-center rounded-3xl bg-white shadow-xl shadow-slate-200/50 ring-1 ring-slate-100 mb-8 transition-transform duration-500 group-hover:-translate-y-2">
-                                            <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-white rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                            <Icon size={36} strokeWidth={1.5} className="text-[#15945a] relative z-10" />
-                                            <div className="absolute -top-3 -right-3 flex h-8 w-8 items-center justify-center rounded-full bg-[#15945a] text-white font-bold text-sm shadow-md">
+                                        <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-lg shadow-slate-200/50 ring-1 ring-slate-100 mb-5 transition-transform duration-500 group-hover:-translate-y-1">
+                                            <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-white rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            <Icon size={28} strokeWidth={1.5} className="text-[#15945a] relative z-10" />
+                                            <div className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-[#15945a] text-white font-bold text-xs shadow-sm">
                                                 {step.number}
                                             </div>
                                         </div>
 
-                                        <h3 className="text-xl font-bold text-slate-900 mb-3">
+                                        <h3 className="text-lg font-bold text-slate-900 mb-2">
                                             {step.title}
                                         </h3>
 
-                                        <p className="text-center text-slate-500 leading-relaxed max-w-[280px]">
+                                        <p className="text-center text-sm text-slate-500 leading-relaxed max-w-[240px]">
                                             {step.description}
                                         </p>
                                     </div>
@@ -361,62 +361,62 @@ function Home() {
             </section>
 
             {/* Community CTA Section */}
-            <section className="px-6 py-24 sm:px-12 bg-slate-50">
-                <div className="mx-auto max-w-[1450px] rounded-[3rem] bg-gradient-to-br from-[#0a192f] via-[#0d2a42] to-[#0a192f] overflow-hidden relative shadow-2xl">
+            <section className="px-6 py-12 sm:px-12 bg-slate-50">
+                <div className="mx-auto max-w-[1450px] rounded-[2.5rem] bg-gradient-to-br from-[#0a192f] via-[#0d2a42] to-[#0a192f] overflow-hidden relative shadow-2xl">
                     {/* Decorative shapes */}
-                    <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#15945a]/20 rounded-full blur-[100px] mix-blend-screen pointer-events-none"></div>
-                    <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[100px] mix-blend-screen pointer-events-none"></div>
+                    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#15945a]/20 rounded-full blur-[100px] mix-blend-screen pointer-events-none"></div>
+                    <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-blue-500/10 rounded-full blur-[100px] mix-blend-screen pointer-events-none"></div>
 
-                    <div className="relative z-10 flex flex-col justify-between gap-16 lg:flex-row lg:items-center px-10 py-20 sm:px-20">
+                    <div className="relative z-10 flex flex-col justify-between gap-10 lg:flex-row lg:items-center px-8 py-12 sm:px-16">
                         <div className="max-w-xl">
-                            <h2 className="text-4xl font-black leading-[1.1] text-white sm:text-5xl tracking-tight">
+                            <h2 className="text-3xl font-black leading-[1.1] text-white sm:text-4xl tracking-tight">
                                 Kelaniya is our community.<br />
                                 Let's <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#48c96f] to-[#7bf09a]">grow it together.</span>
                             </h2>
 
-                            <p className="mt-6 text-lg leading-relaxed text-slate-300 font-medium">
+                            <p className="mt-4 text-base leading-relaxed text-slate-300 font-medium">
                                 Join KelaniXchange and be part of a smarter, greener, and stronger student marketplace. Start trading today.
                             </p>
 
-                            <div className="mt-10 flex flex-wrap items-center gap-4">
+                            <div className="mt-8 flex flex-wrap items-center gap-4">
                                 <Link
                                     to="/register"
-                                    className="rounded-full bg-white px-8 py-4 font-bold text-[#0a192f] shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]"
+                                    className="rounded-full bg-white px-6 py-3 text-sm font-bold text-[#0a192f] shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]"
                                 >
                                     Create Account
                                 </Link>
 
                                 <Link
                                     to="/marketplace"
-                                    className="inline-flex items-center gap-2 px-8 py-4 font-bold text-white transition-colors hover:text-[#48c96f]"
+                                    className="inline-flex items-center gap-2 px-6 py-3 text-sm font-bold text-white transition-colors hover:text-[#48c96f]"
                                 >
                                     Learn More
-                                    <ArrowRight size={20} />
+                                    <ArrowRight size={18} />
                                 </Link>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-6 text-center sm:grid-cols-2 lg:grid-cols-2 lg:gap-8 w-full lg:w-auto">
-                            <div className="bg-white/5 rounded-3xl p-8 backdrop-blur-md border border-white/10 transition-transform hover:-translate-y-1 hover:bg-white/10">
-                                <Users className="w-8 h-8 text-[#48c96f] mx-auto mb-4" />
-                                <h3 className="text-4xl font-black text-white">5,000+</h3>
-                                <p className="mt-2 text-sm font-semibold text-slate-400 uppercase tracking-wide">
+                        <div className="grid grid-cols-1 gap-4 text-center sm:grid-cols-2 lg:grid-cols-2 lg:gap-6 w-full lg:w-auto">
+                            <div className="bg-white/5 rounded-2xl p-6 backdrop-blur-md border border-white/10 transition-transform hover:-translate-y-1 hover:bg-white/10">
+                                <Users className="w-6 h-6 text-[#48c96f] mx-auto mb-3" />
+                                <h3 className="text-3xl font-black text-white">5,000+</h3>
+                                <p className="mt-1 text-xs font-semibold text-slate-400 uppercase tracking-wide">
                                     Active Members
                                 </p>
                             </div>
 
-                            <div className="bg-white/5 rounded-3xl p-8 backdrop-blur-md border border-white/10 transition-transform hover:-translate-y-1 hover:bg-white/10">
-                                <Zap className="w-8 h-8 text-[#48c96f] mx-auto mb-4" />
-                                <h3 className="text-4xl font-black text-white">1,200+</h3>
-                                <p className="mt-2 text-sm font-semibold text-slate-400 uppercase tracking-wide">
+                            <div className="bg-white/5 rounded-2xl p-6 backdrop-blur-md border border-white/10 transition-transform hover:-translate-y-1 hover:bg-white/10">
+                                <Zap className="w-6 h-6 text-[#48c96f] mx-auto mb-3" />
+                                <h3 className="text-3xl font-black text-white">1,200+</h3>
+                                <p className="mt-1 text-xs font-semibold text-slate-400 uppercase tracking-wide">
                                     Items Listed
                                 </p>
                             </div>
 
-                            <div className="bg-white/5 rounded-3xl p-8 backdrop-blur-md border border-white/10 transition-transform hover:-translate-y-1 hover:bg-white/10 sm:col-span-2 lg:col-span-2">
-                                <ShieldCheck className="w-8 h-8 text-[#48c96f] mx-auto mb-4" />
-                                <h3 className="text-4xl font-black text-white">98%</h3>
-                                <p className="mt-2 text-sm font-semibold text-slate-400 uppercase tracking-wide">
+                            <div className="bg-white/5 rounded-2xl p-6 backdrop-blur-md border border-white/10 transition-transform hover:-translate-y-1 hover:bg-white/10 sm:col-span-2 lg:col-span-2">
+                                <ShieldCheck className="w-6 h-6 text-[#48c96f] mx-auto mb-3" />
+                                <h3 className="text-3xl font-black text-white">98%</h3>
+                                <p className="mt-1 text-xs font-semibold text-slate-400 uppercase tracking-wide">
                                     Positive Feedback
                                 </p>
                             </div>
