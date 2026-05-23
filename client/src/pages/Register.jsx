@@ -5,7 +5,7 @@ import {
     User, AtSign, Mail, Lock, Eye, EyeOff, ArrowRight,
     CheckCircle2, AlertCircle, Loader2, ShoppingBag,
 } from "lucide-react";
-import { registerAsync, clearError } from "../store/slices/authSlice";
+import { registerAsync, clearError } from "../features/auth/authSlice";
 import logo from "../assets/X_logo.png";
 import campusBg from "../assets/register_illustration.png";
 

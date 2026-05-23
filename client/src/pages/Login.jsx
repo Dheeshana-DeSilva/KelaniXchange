@@ -5,7 +5,7 @@ import {
     Mail, Lock, Eye, EyeOff, ArrowRight,
     AlertCircle, Loader2, ShoppingBag,
 } from "lucide-react";
-import { loginAsync, clearError } from "../store/slices/authSlice";
+import { loginAsync, clearError } from "../features/auth/authSlice";
 import logo from "../assets/X_logo.png";
 import campusBg from "../assets/register_illustration.png";
 
@@ -101,7 +101,12 @@ export default function Login() {
         if (!isFormValid) return;
         const result = await dispatch(loginAsync({ email: form.email, password: form.password }));
         if (loginAsync.fulfilled.match(result)) {
-            navigate("/");
+            const loggedInUser = result.payload?.user;
+            if (loggedInUser?.role === "ADMIN") {
+                navigate("/admin");
+            } else {
+                navigate("/");
+            }
         }
     };
 
