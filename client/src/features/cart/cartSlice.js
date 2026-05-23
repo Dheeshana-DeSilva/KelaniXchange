@@ -4,7 +4,9 @@ import { createSlice } from "@reduxjs/toolkit";
 const loadCart = () => {
     try {
         const raw = localStorage.getItem("kx_cart");
-        return raw ? JSON.parse(raw) : [];
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
     } catch {
         return [];
     }

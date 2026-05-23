@@ -76,14 +76,14 @@ const productsSlice = createSlice({
             })
             .addCase(fetchListings.fulfilled, (state, action) => {
                 state.isLoading = false;
-                // Support both { listings, total, page, pages } and plain array responses
                 const payload = action.payload;
                 if (Array.isArray(payload)) {
                     state.items = payload;
                     state.total = payload.length;
                 } else {
+                    // Server returns { message, count, listings }
                     state.items = payload.listings ?? payload.data ?? [];
-                    state.total = payload.total ?? state.items.length;
+                    state.total = payload.count ?? payload.total ?? state.items.length;
                     state.page = payload.page ?? 1;
                     state.pages = payload.pages ?? 1;
                 }
