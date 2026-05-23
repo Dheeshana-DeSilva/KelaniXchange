@@ -68,8 +68,13 @@ const listingSchema = new mongoose.Schema(
 
         status: {
             type: String,
-            enum: ["available", "sold", "reserved", "removed"],
+            enum: ["available", "sold", "reserved", "removed", "pending", "active", "rejected", "hidden"],
             default: "available",
+        },
+
+        isFeatured: {
+            type: Boolean,
+            default: false,
         },
 
         location: {

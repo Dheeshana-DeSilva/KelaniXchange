@@ -11,6 +11,8 @@ const adminRoutes = require("./routes/admin.routes");
 const notificationRoutes = require("./routes/notification.routes");
 const wishlistRoutes = require("./routes/wishlist.routes");
 const chatRoutes = require("./routes/chat.routes");
+const orderRoutes = require("./routes/orderRoutes");
+const lostFoundRoutes = require("./routes/lostFoundRoutes");
 
 app.use(cors());
 app.use(express.json());
@@ -28,5 +30,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/chats", chatRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/lost-found", lostFoundRoutes);
 
 module.exports = app;

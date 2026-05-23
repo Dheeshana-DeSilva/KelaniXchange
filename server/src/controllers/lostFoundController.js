@@ -1,11 +1,11 @@
-import LostFound from "../models/LostFound.js";
-import cloudinary from "../config/cloudinary.js";
+const LostFound = require("../models/LostFound");
+const cloudinary = require("../config/cloudinary");
 
 /**
  * CREATE LOST / FOUND POST
  * POST /api/lost-found
  */
-export const createLostFoundPost = async (req, res) => {
+const createLostFoundPost = async (req, res) => {
     try {
         const {
             postType,
@@ -79,7 +79,7 @@ export const createLostFoundPost = async (req, res) => {
  * GET ALL POSTS
  * GET /api/lost-found
  */
-export const getLostFoundPosts = async (req, res) => {
+const getLostFoundPosts = async (req, res) => {
     try {
         const { type, category, search, status } = req.query;
 
@@ -122,7 +122,7 @@ export const getLostFoundPosts = async (req, res) => {
  * GET SINGLE POST
  * GET /api/lost-found/:id
  */
-export const getLostFoundPostById = async (req, res) => {
+const getLostFoundPostById = async (req, res) => {
     try {
         const post = await LostFound.findById(req.params.id).populate(
             "postedBy",
@@ -148,7 +148,7 @@ export const getLostFoundPostById = async (req, res) => {
  * GET MY POSTS
  * GET /api/lost-found/my-posts
  */
-export const getMyLostFoundPosts = async (req, res) => {
+const getMyLostFoundPosts = async (req, res) => {
     try {
         const posts = await LostFound.find({
             postedBy: req.user._id,
@@ -167,7 +167,7 @@ export const getMyLostFoundPosts = async (req, res) => {
  * MARK POST AS RESOLVED
  * PATCH /api/lost-found/:id/resolve
  */
-export const markLostFoundPostResolved = async (req, res) => {
+const markLostFoundPostResolved = async (req, res) => {
     try {
         const post = await LostFound.findById(req.params.id);
 
@@ -202,7 +202,7 @@ export const markLostFoundPostResolved = async (req, res) => {
  * DELETE POST
  * DELETE /api/lost-found/:id
  */
-export const deleteLostFoundPost = async (req, res) => {
+const deleteLostFoundPost = async (req, res) => {
     try {
         const post = await LostFound.findById(req.params.id);
 
@@ -229,4 +229,13 @@ export const deleteLostFoundPost = async (req, res) => {
             message: "Server error while deleting post.",
         });
     }
+};
+
+module.exports = {
+    createLostFoundPost,
+    getLostFoundPosts,
+    getLostFoundPostById,
+    getMyLostFoundPosts,
+    markLostFoundPostResolved,
+    deleteLostFoundPost,
 };

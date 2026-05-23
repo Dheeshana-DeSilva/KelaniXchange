@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const lostFoundSchema = new mongoose.Schema(
     {
@@ -71,4 +71,4 @@ const lostFoundSchema = new mongoose.Schema(
 
 const LostFound = mongoose.model("LostFound", lostFoundSchema);
 
-export default LostFound;
+module.exports = LostFound;

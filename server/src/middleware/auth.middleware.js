@@ -28,6 +28,13 @@ const protect = async (req, res, next) => {
             });
         }
 
+        // Block suspended users from accessing any protected route
+        if (user.isSuspended) {
+            return res.status(403).json({
+                message: "Your account has been suspended. Contact support.",
+            });
+        }
+
         req.user = user;
 
         next();

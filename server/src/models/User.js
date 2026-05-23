@@ -45,6 +45,12 @@ const userSchema = new mongoose.Schema(
             default: false,
         },
 
+        accountStatus: {
+            type: String,
+            enum: ["active", "blocked", "deactivated"],
+            default: "active",
+        },
+
         profileImage: {
             type: String,
             default: "",
