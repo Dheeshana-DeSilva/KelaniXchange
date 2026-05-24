@@ -72,10 +72,10 @@ function MarketplaceNavbar() {
                 aria-label="Marketplace navigation"
             >
                 <div className="max-w-[1450px] mx-auto px-4 sm:px-8">
-                    <div className="flex h-[72px] items-center justify-between gap-4">
+                    <div className="relative flex h-[72px] items-center justify-between gap-4">
 
                         {/* ── Left: Logo ── */}
-                        <div className="flex items-center gap-6">
+                        <div className="z-10 flex items-center gap-6">
                             <Link to="/" className="flex items-center gap-3 group shrink-0">
                                 <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#0a192f]/40 to-[#0a192f]/20 border border-white/10 shadow-inner">
                                     <img
@@ -88,7 +88,7 @@ function MarketplaceNavbar() {
                                     Kelani<span className="text-[#48c96f]">Xchange</span>
                                 </span>
                             </Link>
-                            <div className="hidden xl:flex items-center gap-1">
+                            <div className="hidden xl:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-1">
                                 <Link to="/" className={desktopLinkClass("/", true)}>
                                     Home
                                 </Link>
@@ -115,7 +115,7 @@ function MarketplaceNavbar() {
                         </div>
 
                         {/* ── Right: Icons & Profile ── */}
-                        <div className="flex items-center gap-2 sm:gap-4">
+                        <div className="relative z-10 flex items-center gap-2 sm:gap-4">
                             
                             {/* Wishlist Icon */}
                             <Link to="/wishlist" className="relative p-2 text-slate-300 hover:text-white transition-colors hover:bg-white/5 rounded-full">

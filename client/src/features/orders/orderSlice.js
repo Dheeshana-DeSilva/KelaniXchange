@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
     cancelOrder,
+    deleteOrder,
     getMyOrders,
     getMySales,
     updateSaleStatus,
@@ -38,6 +39,18 @@ export const cancelMyOrder = createAsyncThunk(
             return data.order;
         } catch (err) {
             return rejectWithValue(err?.response?.data?.message || "Failed to cancel order.");
+        }
+    }
+);
+
+export const deleteMyCancelledOrder = createAsyncThunk(
+    "orders/deleteMyCancelledOrder",
+    async (orderId, { rejectWithValue }) => {
+        try {
+            const data = await deleteOrder(orderId);
+            return data.orderId || orderId;
+        } catch (err) {
+            return rejectWithValue(err?.response?.data?.message || "Failed to delete order.");
         }
     }
 );
@@ -124,6 +137,18 @@ const ordersSlice = createSlice({
                 );
             })
             .addCase(cancelMyOrder.rejected, (state, action) => {
+                state.actionLoadingId = null;
+                state.actionError = action.payload;
+            })
+            .addCase(deleteMyCancelledOrder.pending, (state, action) => {
+                state.actionLoadingId = action.meta.arg;
+                state.actionError = null;
+            })
+            .addCase(deleteMyCancelledOrder.fulfilled, (state, action) => {
+                state.actionLoadingId = null;
+                state.orders = state.orders.filter((order) => order._id !== action.payload);
+            })
+            .addCase(deleteMyCancelledOrder.rejected, (state, action) => {
                 state.actionLoadingId = null;
                 state.actionError = action.payload;
             })

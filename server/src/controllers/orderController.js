@@ -260,6 +260,37 @@ const cancelUserOrder = async (req, res) => {
     }
 };
 
+// Delete a cancelled order from the buyer's order history
+const deleteUserCancelledOrder = async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.id);
+
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        if (order.user.toString() !== req.user.id) {
+            return res.status(403).json({ message: "You are not authorized to delete this order" });
+        }
+
+        if (order.orderStatus !== "cancelled") {
+            return res.status(400).json({ message: "Only cancelled orders can be deleted" });
+        }
+
+        await order.deleteOne();
+
+        res.status(200).json({
+            message: "Cancelled order deleted successfully",
+            orderId: req.params.id,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to delete order",
+            error: error.message,
+        });
+    }
+};
+
 // Update a sale status by the seller who owns the order
 const updateSellerOrderStatus = async (req, res) => {
     try {
@@ -329,5 +360,6 @@ module.exports = {
     getUserOrders,
     getUserSales,
     cancelUserOrder,
+    deleteUserCancelledOrder,
     updateSellerOrderStatus,
 };

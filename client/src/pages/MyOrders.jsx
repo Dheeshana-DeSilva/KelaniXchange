@@ -3,9 +3,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import {
     AlertCircle, ArrowLeft, Calendar, Loader2, MapPin,
-    PackageCheck, Phone, ReceiptText, XCircle
+    PackageCheck, Phone, ReceiptText, Trash2, XCircle
 } from "lucide-react";
-import { cancelMyOrder, clearOrderErrors, fetchMyOrders } from "../features/orders/orderSlice";
+import { cancelMyOrder, clearOrderErrors, deleteMyCancelledOrder, fetchMyOrders } from "../features/orders/orderSlice";
 import { useAuth } from "../context/AuthContext";
 
 const statusClasses = {
@@ -74,6 +74,11 @@ export default function MyOrders() {
     const handleCancel = async (orderId) => {
         if (!confirm("Cancel this order while the handover is still waiting for seller action?")) return;
         dispatch(cancelMyOrder(orderId));
+    };
+
+    const handleDelete = async (orderId) => {
+        if (!confirm("Delete this cancelled order from your order history?")) return;
+        dispatch(deleteMyCancelledOrder(orderId));
     };
 
     if (loading) {
@@ -170,14 +175,25 @@ export default function MyOrders() {
                                             <p className="text-xs text-slate-500">Qty {order.quantity}</p>
                                             <p className="text-lg font-black text-[#15945a]">Rs. {Number(order.totalAmount).toLocaleString()}</p>
                                         </div>
-                                        <button
-                                            onClick={() => handleCancel(order._id)}
-                                            disabled={order.orderStatus !== "pending" || actionLoadingId === order._id}
-                                            className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-600 hover:bg-rose-100 disabled:opacity-45 disabled:cursor-not-allowed transition-colors"
-                                        >
-                                            {actionLoadingId === order._id ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
-                                            Cancel
-                                        </button>
+                                        {order.orderStatus === "cancelled" ? (
+                                            <button
+                                                onClick={() => handleDelete(order._id)}
+                                                disabled={actionLoadingId === order._id}
+                                                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-45 disabled:cursor-not-allowed transition-colors"
+                                            >
+                                                {actionLoadingId === order._id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                                Delete
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleCancel(order._id)}
+                                                disabled={order.orderStatus !== "pending" || actionLoadingId === order._id}
+                                                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-600 hover:bg-rose-100 disabled:opacity-45 disabled:cursor-not-allowed transition-colors"
+                                            >
+                                                {actionLoadingId === order._id ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
+                                                Cancel
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                                 {order.note && (
