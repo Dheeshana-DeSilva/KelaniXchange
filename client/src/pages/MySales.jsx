@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import {
     AlertCircle, ArrowLeft, Calendar, Loader2, MapPin,
     PackageCheck, Phone, Save, Store
 } from "lucide-react";
-import { getMySales, updateSaleStatus } from "../services/orderService";
+import { clearOrderErrors, fetchMySales, updateMySaleStatus } from "../features/orders/orderSlice";
 import { useAuth } from "../context/AuthContext";
 
 const statusClasses = {
@@ -24,12 +25,16 @@ const paymentClasses = {
 };
 
 export default function MySales() {
+    const dispatch = useDispatch();
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
-    const [sales, setSales] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [actionLoading, setActionLoading] = useState(null);
+    const {
+        sales,
+        salesLoading: loading,
+        salesError: error,
+        actionLoadingId,
+        actionError,
+    } = useSelector(state => state.orders);
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -38,39 +43,24 @@ export default function MySales() {
     }, [isAuthenticated, navigate]);
 
     useEffect(() => {
-        fetchSales();
-    }, []);
-
-    const fetchSales = async () => {
-        try {
-            setLoading(true);
-            const data = await getMySales();
-            setSales(data.sales || []);
-            setError(null);
-        } catch (err) {
-            setError(err.response?.data?.message || "Failed to load your sales.");
-        } finally {
-            setLoading(false);
+        if (isAuthenticated) {
+            dispatch(fetchMySales());
         }
-    };
+    }, [dispatch, isAuthenticated]);
+
+    useEffect(() => {
+        if (actionError) {
+            alert(actionError);
+            dispatch(clearOrderErrors());
+        }
+    }, [actionError, dispatch]);
 
     const handleUpdate = async (sale, nextOrderStatus, nextPaymentStatus) => {
-        setActionLoading(sale._id);
-        try {
-            const data = await updateSaleStatus(sale._id, {
-                orderStatus: nextOrderStatus,
-                paymentStatus: nextPaymentStatus,
-            });
-            setSales(prev => prev.map(item => item._id === sale._id ? {
-                ...item,
-                orderStatus: data.order.orderStatus,
-                paymentStatus: data.order.paymentStatus,
-            } : item));
-        } catch (err) {
-            alert(err.response?.data?.message || "Failed to update sale.");
-        } finally {
-            setActionLoading(null);
-        }
+        dispatch(updateMySaleStatus({
+            orderId: sale._id,
+            orderStatus: nextOrderStatus,
+            paymentStatus: nextPaymentStatus,
+        }));
     };
 
     if (loading) {
@@ -87,7 +77,7 @@ export default function MySales() {
                 <div className="max-w-md w-full bg-white border border-slate-200 rounded-3xl p-8 text-center shadow-xl shadow-slate-100">
                     <AlertCircle className="text-rose-500 mx-auto mb-3" size={36} />
                     <p className="text-sm font-semibold text-slate-600">{error}</p>
-                    <button onClick={fetchSales} className="mt-5 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white">Try Again</button>
+                    <button onClick={() => dispatch(fetchMySales())} className="mt-5 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white">Try Again</button>
                 </div>
             </div>
         );
@@ -161,7 +151,7 @@ export default function MySales() {
                                         <select
                                             value={sale.orderStatus}
                                             onChange={(e) => handleUpdate(sale, e.target.value, sale.paymentStatus)}
-                                            disabled={actionLoading === sale._id || sale.orderStatus === "cancelled"}
+                                            disabled={actionLoadingId === sale._id || sale.orderStatus === "cancelled"}
                                             className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 outline-none focus:border-[#48c96f]/40 disabled:opacity-50"
                                         >
                                             <option value="pending">Pending</option>
@@ -172,7 +162,7 @@ export default function MySales() {
                                         <select
                                             value={sale.paymentStatus}
                                             onChange={(e) => handleUpdate(sale, sale.orderStatus, e.target.value)}
-                                            disabled={actionLoading === sale._id || sale.orderStatus === "cancelled"}
+                                            disabled={actionLoadingId === sale._id || sale.orderStatus === "cancelled"}
                                             className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 outline-none focus:border-[#48c96f]/40 disabled:opacity-50"
                                         >
                                             <option value="pending">Pending</option>
@@ -182,7 +172,7 @@ export default function MySales() {
                                             <option value="refunded">Refunded</option>
                                         </select>
                                         <div className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5 text-xs font-bold text-slate-500">
-                                            {actionLoading === sale._id ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                                            {actionLoadingId === sale._id ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                                             Rs. {Number(sale.totalAmount).toLocaleString()}
                                         </div>
                                     </div>

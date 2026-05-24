@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import {
     AlertCircle, ArrowLeft, Calendar, Loader2, MapPin,
     PackageCheck, Phone, ReceiptText, XCircle
 } from "lucide-react";
-import { cancelOrder, getMyOrders } from "../services/orderService";
+import { cancelMyOrder, clearOrderErrors, fetchMyOrders } from "../features/orders/orderSlice";
 import { useAuth } from "../context/AuthContext";
 
 const statusClasses = {
@@ -24,12 +25,16 @@ const paymentClasses = {
 };
 
 export default function MyOrders() {
+    const dispatch = useDispatch();
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
-    const [orders, setOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [actionLoading, setActionLoading] = useState(null);
+    const {
+        orders,
+        ordersLoading: loading,
+        ordersError: error,
+        actionLoadingId,
+        actionError,
+    } = useSelector(state => state.orders);
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -38,37 +43,21 @@ export default function MyOrders() {
     }, [isAuthenticated, navigate]);
 
     useEffect(() => {
-        fetchOrders();
-    }, []);
-
-    const fetchOrders = async () => {
-        try {
-            setLoading(true);
-            const data = await getMyOrders();
-            setOrders(data.orders || []);
-            setError(null);
-        } catch (err) {
-            setError(err.response?.data?.message || "Failed to load your orders.");
-        } finally {
-            setLoading(false);
+        if (isAuthenticated) {
+            dispatch(fetchMyOrders());
         }
-    };
+    }, [dispatch, isAuthenticated]);
+
+    useEffect(() => {
+        if (actionError) {
+            alert(actionError);
+            dispatch(clearOrderErrors());
+        }
+    }, [actionError, dispatch]);
 
     const handleCancel = async (orderId) => {
         if (!confirm("Cancel this pending order?")) return;
-        setActionLoading(orderId);
-        try {
-            const data = await cancelOrder(orderId);
-            setOrders(prev => prev.map(order => order._id === orderId ? {
-                ...order,
-                orderStatus: data.order.orderStatus,
-                paymentStatus: data.order.paymentStatus,
-            } : order));
-        } catch (err) {
-            alert(err.response?.data?.message || "Failed to cancel order.");
-        } finally {
-            setActionLoading(null);
-        }
+        dispatch(cancelMyOrder(orderId));
     };
 
     if (loading) {
@@ -85,7 +74,7 @@ export default function MyOrders() {
                 <div className="max-w-md w-full bg-white border border-slate-200 rounded-3xl p-8 text-center shadow-xl shadow-slate-100">
                     <AlertCircle className="text-rose-500 mx-auto mb-3" size={36} />
                     <p className="text-sm font-semibold text-slate-600">{error}</p>
-                    <button onClick={fetchOrders} className="mt-5 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white">Try Again</button>
+                    <button onClick={() => dispatch(fetchMyOrders())} className="mt-5 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white">Try Again</button>
                 </div>
             </div>
         );
@@ -161,10 +150,10 @@ export default function MyOrders() {
                                         </div>
                                         <button
                                             onClick={() => handleCancel(order._id)}
-                                            disabled={order.orderStatus !== "pending" || actionLoading === order._id}
+                                            disabled={order.orderStatus !== "pending" || actionLoadingId === order._id}
                                             className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-600 hover:bg-rose-100 disabled:opacity-45 disabled:cursor-not-allowed transition-colors"
                                         >
-                                            {actionLoading === order._id ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
+                                            {actionLoadingId === order._id ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
                                             Cancel
                                         </button>
                                     </div>

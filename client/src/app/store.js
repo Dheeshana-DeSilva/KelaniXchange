@@ -1,6 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "../features/auth/authSlice";
 import cartReducer from "../features/cart/cartSlice";
+import ordersReducer from "../features/orders/orderSlice";
 import productsReducer from "../features/products/productsSlice";
 
 /* ── Cart persistence middleware ─────────────────────────────────────────────
@@ -24,6 +25,7 @@ const store = configureStore({
     reducer: {
         auth: authReducer,
         cart: cartReducer,
+        orders: ordersReducer,
         products: productsReducer,
     },
     middleware: (getDefaultMiddleware) =>
