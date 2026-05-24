@@ -3,6 +3,22 @@ import { useParams, Link } from "react-router";
 import { Loader2, XCircle, ArrowLeft, Save, MapPin, Phone, MessageSquare } from "lucide-react";
 import { getOrderByIdAdmin, updateOrderStatusAdmin } from "../../services/orderService";
 
+const orderStatusLabels = {
+    pending: "Waiting for seller",
+    processing: "Arranging handover",
+    shipped: "On the way",
+    delivered: "Handover completed",
+    cancelled: "Handover cancelled",
+};
+
+const paymentStatusLabels = {
+    pending: "Unpaid / pay on handover",
+    paid: "Paid",
+    failed: "Payment failed",
+    cancelled: "Payment cancelled",
+    refunded: "Refunded",
+};
+
 const OrderDetails = () => {
     const { id } = useParams();
     const [order, setOrder] = useState(null);
@@ -120,17 +136,15 @@ const OrderDetails = () => {
                         
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-xs font-semibold uppercase text-slate-500 mb-2">Order Status</label>
+                                <label className="block text-xs font-semibold uppercase text-slate-500 mb-2">Handover Status</label>
                                 <select 
                                     value={orderStatus} 
                                     onChange={(e) => setOrderStatus(e.target.value)}
                                     className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#48c96f]/40"
                                 >
-                                    <option value="pending">Pending</option>
-                                    <option value="processing">Processing</option>
-                                    <option value="shipped">Shipped</option>
-                                    <option value="delivered">Delivered</option>
-                                    <option value="cancelled">Cancelled</option>
+                                    {Object.entries(orderStatusLabels).map(([value, label]) => (
+                                        <option key={value} value={value}>{label}</option>
+                                    ))}
                                 </select>
                             </div>
 
@@ -141,11 +155,9 @@ const OrderDetails = () => {
                                     onChange={(e) => setPaymentStatus(e.target.value)}
                                     className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#48c96f]/40"
                                 >
-                                    <option value="pending">Pending</option>
-                                    <option value="paid">Paid</option>
-                                    <option value="failed">Failed</option>
-                                    <option value="cancelled">Cancelled</option>
-                                    <option value="refunded">Refunded</option>
+                                    {Object.entries(paymentStatusLabels).map(([value, label]) => (
+                                        <option key={value} value={value}>{label}</option>
+                                    ))}
                                 </select>
                             </div>
 

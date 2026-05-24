@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import { 
-    Menu, X, Search, Bell, Heart, ShoppingCart, 
+    Menu, X, Bell, Heart, ShoppingCart, 
     User, LogIn, LogOut, Package, PlusCircle, ReceiptText, Store
 } from "lucide-react";
 import logo from "../../assets/X_logo.png";
@@ -56,6 +56,15 @@ function MarketplaceNavbar() {
         ? "bg-[#0a192f]/85 backdrop-blur-2xl shadow-[0_4px_30px_rgba(0,0,0,0.3)] border-b border-white/10"
         : "bg-[#0a192f] border-b border-white/10 shadow-md";
 
+    const desktopLinkClass = (to, exact = false) => {
+        const isActive = exact ? location.pathname === to : location.pathname.startsWith(to);
+        return `inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors ${
+            isActive
+                ? "bg-white/10 text-white"
+                : "text-slate-300 hover:bg-white/5 hover:text-white"
+        }`;
+    };
+
     return (
         <>
             <nav
@@ -79,22 +88,35 @@ function MarketplaceNavbar() {
                                     Kelani<span className="text-[#48c96f]">Xchange</span>
                                 </span>
                             </Link>
+                            <div className="hidden xl:flex items-center gap-1">
+                                <Link to="/" className={desktopLinkClass("/", true)}>
+                                    Home
+                                </Link>
+                                <Link to="/marketplace" className={desktopLinkClass("/marketplace", true)}>
+                                    Browse Categories
+                                </Link>
+                                {isAuthenticated && (
+                                    <>
+                                        <Link to="/marketplace/create" className={desktopLinkClass("/marketplace/create", true)}>
+                                            <PlusCircle size={15} /> Sell Item
+                                        </Link>
+                                        <Link to="/marketplace/my-listings" className={desktopLinkClass("/marketplace/my-listings", true)}>
+                                            <Package size={15} /> My Listings
+                                        </Link>
+                                        <Link to="/orders" className={desktopLinkClass("/orders", true)}>
+                                            <ReceiptText size={15} /> My Orders
+                                        </Link>
+                                        <Link to="/sales" className={desktopLinkClass("/sales", true)}>
+                                            <Store size={15} /> My Sales
+                                        </Link>
+                                    </>
+                                )}
+                            </div>
                         </div>
 
                         {/* ── Right: Icons & Profile ── */}
                         <div className="flex items-center gap-2 sm:gap-4">
                             
-                            {/* Create Listing Button (Desktop) */}
-                            {isAuthenticated && (
-                                <Link 
-                                    to="/marketplace/create" 
-                                    className="hidden md:flex items-center gap-2 bg-[#48c96f]/10 text-[#48c96f] hover:bg-[#48c96f]/20 border border-[#48c96f]/20 px-4 py-2 rounded-full text-sm font-semibold transition-colors mr-2"
-                                >
-                                    <PlusCircle size={16} />
-                                    <span>Sell Item</span>
-                                </Link>
-                            )}
-
                             {/* Wishlist Icon */}
                             <Link to="/wishlist" className="relative p-2 text-slate-300 hover:text-white transition-colors hover:bg-white/5 rounded-full">
                                 <Heart size={20} />
@@ -190,7 +212,7 @@ function MarketplaceNavbar() {
                             <button
                                 aria-label="Toggle menu"
                                 onClick={() => setMobileOpen((o) => !o)}
-                                className="lg:hidden flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-colors hover:bg-white/10 ml-1"
+                                className="xl:hidden flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-colors hover:bg-white/10 ml-1"
                             >
                                 {mobileOpen ? <X size={20} /> : <Menu size={20} />}
                             </button>
@@ -205,7 +227,7 @@ function MarketplaceNavbar() {
             </nav>
 
             {/* ── Mobile Drawer ── */}
-            <div className={`fixed inset-0 z-40 lg:hidden transition-all duration-300 ${mobileOpen ? "visible" : "invisible"}`}>
+            <div className={`fixed inset-0 z-40 xl:hidden transition-all duration-300 ${mobileOpen ? "visible" : "invisible"}`}>
                 <div 
                     className={`absolute inset-0 bg-[#0a192f]/80 backdrop-blur-sm transition-opacity duration-300 ${mobileOpen ? "opacity-100" : "opacity-0"}`} 
                     onClick={() => setMobileOpen(false)} 

@@ -24,6 +24,22 @@ const paymentClasses = {
     refunded: "bg-purple-50 text-purple-700 border-purple-200",
 };
 
+const orderStatusLabels = {
+    pending: "Handover: Waiting for you",
+    processing: "Handover: Being arranged",
+    shipped: "Handover: On the way",
+    delivered: "Handover: Completed",
+    cancelled: "Handover: Cancelled",
+};
+
+const paymentStatusLabels = {
+    pending: "Payment: Unpaid / collect on handover",
+    paid: "Payment: Paid",
+    failed: "Payment: Failed",
+    cancelled: "Payment: Cancelled",
+    refunded: "Payment: Refunded",
+};
+
 export default function MySales() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -130,11 +146,17 @@ export default function MySales() {
 
                                     <div className="min-w-0 flex-1">
                                         <div className="flex flex-wrap items-center gap-2 mb-2">
-                                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border ${statusClasses[sale.orderStatus] || statusClasses.pending}`}>
-                                                {sale.orderStatus}
+                                            <span
+                                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border ${statusClasses[sale.orderStatus] || statusClasses.pending}`}
+                                                title="Order handover / delivery status"
+                                            >
+                                                {orderStatusLabels[sale.orderStatus] || `Handover: ${sale.orderStatus}`}
                                             </span>
-                                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border ${paymentClasses[sale.paymentStatus] || paymentClasses.pending}`}>
-                                                {sale.paymentStatus}
+                                            <span
+                                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border ${paymentClasses[sale.paymentStatus] || paymentClasses.pending}`}
+                                                title="Payment status"
+                                            >
+                                                {paymentStatusLabels[sale.paymentStatus] || `Payment: ${sale.paymentStatus}`}
                                             </span>
                                             <span className="text-xs font-semibold text-slate-400">#{sale._id.slice(-6).toUpperCase()}</span>
                                         </div>
@@ -148,29 +170,35 @@ export default function MySales() {
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 xl:w-[430px]">
-                                        <select
-                                            value={sale.orderStatus}
-                                            onChange={(e) => handleUpdate(sale, e.target.value, sale.paymentStatus)}
-                                            disabled={actionLoadingId === sale._id || sale.orderStatus === "cancelled"}
-                                            className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 outline-none focus:border-[#48c96f]/40 disabled:opacity-50"
-                                        >
-                                            <option value="pending">Pending</option>
-                                            <option value="processing">Processing</option>
-                                            <option value="delivered">Delivered</option>
-                                            <option value="cancelled">Cancelled</option>
-                                        </select>
-                                        <select
-                                            value={sale.paymentStatus}
-                                            onChange={(e) => handleUpdate(sale, sale.orderStatus, e.target.value)}
-                                            disabled={actionLoadingId === sale._id || sale.orderStatus === "cancelled"}
-                                            className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 outline-none focus:border-[#48c96f]/40 disabled:opacity-50"
-                                        >
-                                            <option value="pending">Pending</option>
-                                            <option value="paid">Paid</option>
-                                            <option value="failed">Failed</option>
-                                            <option value="cancelled">Cancelled</option>
-                                            <option value="refunded">Refunded</option>
-                                        </select>
+                                        <label className="space-y-1">
+                                            <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Handover Status</span>
+                                            <select
+                                                value={sale.orderStatus}
+                                                onChange={(e) => handleUpdate(sale, e.target.value, sale.paymentStatus)}
+                                                disabled={actionLoadingId === sale._id || sale.orderStatus === "cancelled"}
+                                                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 outline-none focus:border-[#48c96f]/40 disabled:opacity-50"
+                                            >
+                                                <option value="pending">Waiting for seller</option>
+                                                <option value="processing">Arranging handover</option>
+                                                <option value="delivered">Handover completed</option>
+                                                <option value="cancelled">Handover cancelled</option>
+                                            </select>
+                                        </label>
+                                        <label className="space-y-1">
+                                            <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Payment Status</span>
+                                            <select
+                                                value={sale.paymentStatus}
+                                                onChange={(e) => handleUpdate(sale, sale.orderStatus, e.target.value)}
+                                                disabled={actionLoadingId === sale._id || sale.orderStatus === "cancelled"}
+                                                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 outline-none focus:border-[#48c96f]/40 disabled:opacity-50"
+                                            >
+                                                <option value="pending">Unpaid / collect on handover</option>
+                                                <option value="paid">Paid</option>
+                                                <option value="failed">Payment failed</option>
+                                                <option value="cancelled">Payment cancelled</option>
+                                                <option value="refunded">Refunded</option>
+                                            </select>
+                                        </label>
                                         <div className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5 text-xs font-bold text-slate-500">
                                             {actionLoadingId === sale._id ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                                             Rs. {Number(sale.totalAmount).toLocaleString()}

@@ -3,6 +3,22 @@ import { Link } from "react-router";
 import { Loader2, XCircle, Eye, ShoppingCart, Search } from "lucide-react";
 import { getAllOrdersAdmin } from "../../services/orderService";
 
+const orderStatusLabels = {
+    pending: "Handover: Waiting for seller",
+    processing: "Handover: Being arranged",
+    shipped: "Handover: On the way",
+    delivered: "Handover: Completed",
+    cancelled: "Handover: Cancelled",
+};
+
+const paymentStatusLabels = {
+    pending: "Payment: Unpaid / pay on handover",
+    paid: "Payment: Paid",
+    failed: "Payment: Failed",
+    cancelled: "Payment: Cancelled",
+    refunded: "Payment: Refunded",
+};
+
 const ManageOrders = () => {
     const [orders, setOrders] = useState([]);
     const [filtered, setFiltered] = useState([]);
@@ -73,11 +89,11 @@ const ManageOrders = () => {
                 <div className="flex items-center gap-3">
                     <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#48c96f]/40">
                         <option value="all">All</option>
-                        <option value="pending">Pending</option>
-                        <option value="processing">Processing</option>
-                        <option value="shipped">Shipped</option>
-                        <option value="delivered">Delivered</option>
-                        <option value="cancelled">Cancelled</option>
+                        <option value="pending">Handover: Waiting for seller</option>
+                        <option value="processing">Handover: Being arranged</option>
+                        <option value="shipped">Handover: On the way</option>
+                        <option value="delivered">Handover: Completed</option>
+                        <option value="cancelled">Handover: Cancelled</option>
                     </select>
                     <div className="relative max-w-xs w-full">
                         <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -90,7 +106,7 @@ const ManageOrders = () => {
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead><tr className="border-b border-slate-200">
-                            {["Order ID","Buyer","Item","Total","Order Status","Payment Status","Actions"].map((h,i)=><th key={i} className={`px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 ${i===6?"text-right":""}`}>{h}</th>)}
+                            {["Order ID","Buyer","Item","Total","Handover Status","Payment Status","Actions"].map((h,i)=><th key={i} className={`px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 ${i===6?"text-right":""}`}>{h}</th>)}
                         </tr></thead>
                         <tbody className="divide-y divide-slate-100">
                             {filtered.map((o) => (
@@ -101,12 +117,12 @@ const ManageOrders = () => {
                                     <td className="px-6 py-4 text-sm font-semibold text-slate-800">Rs. {o.totalAmount?.toLocaleString() || 0}</td>
                                     <td className="px-6 py-4">
                                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border ${statusBadge(o.orderStatus)}`}>
-                                            {o.orderStatus}
+                                            {orderStatusLabels[o.orderStatus] || `Handover: ${o.orderStatus}`}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border ${paymentBadge(o.paymentStatus)}`}>
-                                            {o.paymentStatus}
+                                            {paymentStatusLabels[o.paymentStatus] || `Payment: ${o.paymentStatus}`}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-right">

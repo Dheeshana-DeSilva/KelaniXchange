@@ -24,6 +24,22 @@ const paymentClasses = {
     refunded: "bg-purple-50 text-purple-700 border-purple-200",
 };
 
+const orderStatusLabels = {
+    pending: "Handover: Waiting for seller",
+    processing: "Handover: Being arranged",
+    shipped: "Handover: On the way",
+    delivered: "Handover: Completed",
+    cancelled: "Handover: Cancelled",
+};
+
+const paymentStatusLabels = {
+    pending: "Payment: Unpaid / pay on handover",
+    paid: "Payment: Paid",
+    failed: "Payment: Failed",
+    cancelled: "Payment: Cancelled",
+    refunded: "Payment: Refunded",
+};
+
 export default function MyOrders() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -56,7 +72,7 @@ export default function MyOrders() {
     }, [actionError, dispatch]);
 
     const handleCancel = async (orderId) => {
-        if (!confirm("Cancel this pending order?")) return;
+        if (!confirm("Cancel this order while the handover is still waiting for seller action?")) return;
         dispatch(cancelMyOrder(orderId));
     };
 
@@ -127,11 +143,17 @@ export default function MyOrders() {
 
                                     <div className="min-w-0 flex-1">
                                         <div className="flex flex-wrap items-center gap-2 mb-2">
-                                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border ${statusClasses[order.orderStatus] || statusClasses.pending}`}>
-                                                {order.orderStatus}
+                                            <span
+                                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border ${statusClasses[order.orderStatus] || statusClasses.pending}`}
+                                                title="Order handover / delivery status"
+                                            >
+                                                {orderStatusLabels[order.orderStatus] || `Handover: ${order.orderStatus}`}
                                             </span>
-                                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border ${paymentClasses[order.paymentStatus] || paymentClasses.pending}`}>
-                                                {order.paymentStatus}
+                                            <span
+                                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border ${paymentClasses[order.paymentStatus] || paymentClasses.pending}`}
+                                                title="Payment status"
+                                            >
+                                                {paymentStatusLabels[order.paymentStatus] || `Payment: ${order.paymentStatus}`}
                                             </span>
                                             <span className="text-xs font-semibold text-slate-400">#{order._id.slice(-6).toUpperCase()}</span>
                                         </div>
