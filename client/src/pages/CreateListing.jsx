@@ -35,6 +35,7 @@ export default function CreateListing() {
         description: "",
         category: "books-and-stationery",
         price: "",
+        quantity: "1",
         condition: "Good",
         location: "University of Kelaniya",
         isExchangeAvailable: false,
@@ -59,6 +60,9 @@ export default function CreateListing() {
         }
         if (touched.price && (Number(form.price) < 0 || isNaN(form.price))) {
             errs.price = "Price must be a positive number";
+        }
+        if (touched.quantity && (Number(form.quantity) < 1 || isNaN(form.quantity))) {
+            errs.quantity = "Quantity must be at least 1";
         }
         if (touched.location && form.location.trim().length < 3) {
             errs.location = "Location must be at least 3 characters long";
@@ -105,12 +109,13 @@ export default function CreateListing() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         // Touch all fields to trigger validations
         setTouched({
             title: true,
             description: true,
             price: true,
+            quantity: true,
             location: true,
         });
 
@@ -119,6 +124,7 @@ export default function CreateListing() {
         if (form.title.trim().length < 3) errs.title = "Title is required";
         if (form.description.trim().length < 10) errs.description = "Description is required";
         if (Number(form.price) < 0) errs.price = "Invalid price";
+        if (Number(form.quantity) < 1) errs.quantity = "Quantity must be at least 1";
         if (form.location.trim().length < 3) errs.location = "Location is required";
 
         if (Object.keys(errs).length > 0) {
@@ -135,6 +141,7 @@ export default function CreateListing() {
             formData.append("description", form.description);
             formData.append("category", form.category);
             formData.append("price", form.price || 0);
+            formData.append("quantity", form.quantity || 1);
             formData.append("condition", form.condition);
             formData.append("location", form.location);
             formData.append("isExchangeAvailable", form.isExchangeAvailable);
@@ -268,7 +275,7 @@ export default function CreateListing() {
                         {/* Price */}
                         <div className="space-y-2">
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Price (Rs.)</label>
-                            <input 
+                            <input
                                 type="number"
                                 name="price"
                                 min={0}
@@ -277,13 +284,35 @@ export default function CreateListing() {
                                 onBlur={handleBlur}
                                 placeholder="Enter price (0 if exchange only)"
                                 className={`w-full rounded-xl border px-4 py-3 text-sm bg-slate-50/50 text-slate-800 outline-none transition-all placeholder:text-slate-400 ${
-                                    touched.price && errors.price 
-                                        ? "border-rose-300 bg-rose-50/30 focus:border-rose-500" 
+                                    touched.price && errors.price
+                                        ? "border-rose-300 bg-rose-50/30 focus:border-rose-500"
                                         : "border-slate-200/80 focus:border-[#48c96f] focus:bg-white"
                                 }`}
                             />
                             {touched.price && errors.price && (
                                 <p className="text-xs text-rose-500 flex items-center gap-1"><AlertCircle size={12} /> {errors.price}</p>
+                            )}
+                        </div>
+
+                        {/* Quantity */}
+                        <div className="space-y-2">
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Quantity Available</label>
+                            <input
+                                type="number"
+                                name="quantity"
+                                min={1}
+                                value={form.quantity}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                placeholder="How many items?"
+                                className={`w-full rounded-xl border px-4 py-3 text-sm bg-slate-50/50 text-slate-800 outline-none transition-all placeholder:text-slate-400 ${
+                                    touched.quantity && errors.quantity
+                                        ? "border-rose-300 bg-rose-50/30 focus:border-rose-500"
+                                        : "border-slate-200/80 focus:border-[#48c96f] focus:bg-white"
+                                }`}
+                            />
+                            {touched.quantity && errors.quantity && (
+                                <p className="text-xs text-rose-500 flex items-center gap-1"><AlertCircle size={12} /> {errors.quantity}</p>
                             )}
                         </div>
 

@@ -17,6 +17,12 @@ const calcTotals = (items) => ({
     totalPrice: items.reduce((sum, i) => sum + i.price * i.quantity, 0),
 });
 
+const clampQuantity = (quantity, availableQuantity) => {
+    const qty = Math.max(1, Number(quantity) || 1);
+    const maxQty = Number(availableQuantity);
+    return Number.isFinite(maxQty) && maxQty > 0 ? Math.min(qty, maxQty) : qty;
+};
+
 const initialItems = loadCart();
 
 const initialState = {
@@ -29,15 +35,20 @@ const cartSlice = createSlice({
     initialState,
     reducers: {
         /**
-         * addToCart — payload: { id, title, price, image, sellerId }
+         * addToCart — payload: { id, title, price, image, sellerId, quantity?, availableQuantity? }
          * If the item already exists, increments quantity.
          */
         addToCart(state, action) {
             const existing = state.items.find((i) => i.id === action.payload.id);
+            const qty = action.payload.quantity || 1;
             if (existing) {
-                existing.quantity += 1;
+                existing.availableQuantity = action.payload.availableQuantity ?? existing.availableQuantity;
+                existing.quantity = clampQuantity(existing.quantity + qty, existing.availableQuantity);
             } else {
-                state.items.push({ ...action.payload, quantity: 1 });
+                state.items.push({
+                    ...action.payload,
+                    quantity: clampQuantity(qty, action.payload.availableQuantity),
+                });
             }
             Object.assign(state, calcTotals(state.items));
         },
@@ -66,6 +77,24 @@ const cartSlice = createSlice({
             Object.assign(state, calcTotals(state.items));
         },
 
+        updateCartItemAvailability(state, action) {
+            const item = state.items.find((i) => i.id === action.payload.id);
+            if (!item) return;
+
+            const availableQuantity = Number(action.payload.availableQuantity);
+            if (!Number.isFinite(availableQuantity)) return;
+            if (
+                item.availableQuantity === availableQuantity &&
+                (availableQuantity === 0 || item.quantity <= availableQuantity)
+            ) return;
+
+            item.availableQuantity = availableQuantity;
+            if (availableQuantity > 0 && item.quantity > availableQuantity) {
+                item.quantity = availableQuantity;
+            }
+            Object.assign(state, calcTotals(state.items));
+        },
+
         /** clearCart — empties the cart (e.g. after checkout). */
         clearCart(state) {
             state.items = [];
@@ -75,5 +104,5 @@ const cartSlice = createSlice({
     },
 });
 
-export const { addToCart, removeFromCart, deleteFromCart, clearCart } = cartSlice.actions;
+export const { addToCart, removeFromCart, deleteFromCart, updateCartItemAvailability, clearCart } = cartSlice.actions;
 export default cartSlice.reducer;

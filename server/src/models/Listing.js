@@ -81,6 +81,12 @@ const listingSchema = new mongoose.Schema(
             type: String,
             default: "University of Kelaniya",
         },
+
+        quantity: {
+            type: Number,
+            default: 1,
+            min: 0,
+        },
     },
     {
         timestamps: true,

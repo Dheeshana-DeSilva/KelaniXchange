@@ -1,6 +1,12 @@
 const cloudinary = require("../config/cloudinary");
 const Listing = require("../models/Listing");
 
+const parseQuantity = (value) => {
+    if (value === undefined || value === null || value === "") return undefined;
+    const quantity = Number(value);
+    return Number.isFinite(quantity) ? quantity : NaN;
+};
+
 // Create listing
 const createListing = async (req, res) => {
     try {
@@ -12,6 +18,7 @@ const createListing = async (req, res) => {
             description,
             category,
             price,
+            quantity,
             condition,
             isExchangeAvailable,
             location,
@@ -20,6 +27,13 @@ const createListing = async (req, res) => {
         if (!title || !description || !category) {
             return res.status(400).json({
                 message: "Title, description, and category are required",
+            });
+        }
+
+        const parsedQuantity = parseQuantity(quantity);
+        if (Number.isNaN(parsedQuantity) || parsedQuantity < 1) {
+            return res.status(400).json({
+                message: "Quantity must be at least 1",
             });
         }
 
@@ -54,6 +68,7 @@ const createListing = async (req, res) => {
             description,
             category,
             price,
+            quantity: parsedQuantity,
             condition,
             isExchangeAvailable,
             location,
@@ -188,16 +203,25 @@ const updateListing = async (req, res) => {
             description,
             category,
             price,
+            quantity,
             condition,
             isExchangeAvailable,
             location,
             status,
         } = req.body;
 
+        const parsedQuantity = parseQuantity(quantity);
+        if (Number.isNaN(parsedQuantity) || parsedQuantity < 1) {
+            return res.status(400).json({
+                message: "Quantity must be at least 1",
+            });
+        }
+
         if (title !== undefined) listing.title = title;
         if (description !== undefined) listing.description = description;
         if (category !== undefined) listing.category = category;
         if (price !== undefined) listing.price = price;
+        if (parsedQuantity !== undefined) listing.quantity = parsedQuantity;
         if (condition !== undefined) listing.condition = condition;
         if (isExchangeAvailable !== undefined) {
             listing.isExchangeAvailable = isExchangeAvailable;

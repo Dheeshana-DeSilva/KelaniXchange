@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router";
-import { 
-    ArrowLeft, Calendar, MapPin, Tag, ShieldCheck, 
-    Mail, User, Star, ArrowUpDown, Loader2, AlertCircle, Heart, X
+import { useDispatch } from "react-redux";
+import {
+    ArrowLeft, Calendar, MapPin, Tag, ShieldCheck,
+    Mail, User, Star, ArrowUpDown, Loader2, AlertCircle, Heart, X, ShoppingCart, Plus, Minus
 } from "lucide-react";
+import { addToCart } from "../features/cart/cartSlice";
 import { getListingById, getMyListings, deleteListing, updateListing } from "../services/listingService";
 import { getWishlist, addToWishlist, removeFromWishlist } from "../services/wishlistService";
 import { createExchangeRequest } from "../services/exchangeService";
@@ -42,7 +44,27 @@ export default function ListingDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
-    
+    const dispatch = useDispatch();
+
+    const [cartQuantity, setCartQuantity] = useState(1);
+
+    const handleAddToCart = () => {
+        if (!listing) return;
+        dispatch(addToCart({
+            id: listing._id,
+            title: listing.title,
+            price: listing.price,
+            image: listing.images?.[0] || CATEGORY_IMAGES[listing.category] || catOthers,
+            sellerId: listing.seller?._id || listing.seller,
+            category: listing.category,
+            condition: listing.condition,
+            availableQuantity: listing.quantity || 1,
+            quantity: cartQuantity
+        }));
+        setCartQuantity(1);
+        alert(`"${listing.title}" (Qty: ${cartQuantity}) has been added to your cart.`);
+    };
+
     const [listing, setListing] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -73,6 +95,7 @@ export default function ListingDetails() {
         description: "",
         category: "",
         price: 0,
+        quantity: 1,
         condition: "",
         location: "",
         status: "",
@@ -256,6 +279,7 @@ export default function ListingDetails() {
             description: listing.description || "",
             category: listing.category || "others",
             price: listing.price || 0,
+            quantity: listing.quantity || 1,
             condition: listing.condition || "Good",
             location: listing.location || "",
             status: listing.status || "available",
@@ -403,6 +427,18 @@ export default function ListingDetails() {
                                     <span className="text-slate-400 font-medium flex items-center gap-1.5"><Calendar size={15} /> Added on</span>
                                     <span className="text-slate-700 font-bold">{new Date(listing.createdAt).toLocaleDateString()}</span>
                                 </div>
+                                {(listing.quantity !== undefined) && (
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-slate-400 font-medium flex items-center gap-1.5"><Tag size={15} /> Available</span>
+                                        <span className={`font-bold px-2.5 py-0.5 rounded-full text-xs border ${
+                                            listing.quantity > 0
+                                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                                : "bg-rose-50 text-rose-700 border-rose-200"
+                                        }`}>
+                                            {listing.quantity} {listing.quantity === 1 ? "item" : "items"}
+                                        </span>
+                                    </div>
+                                )}
                                 <div className="flex items-center justify-between text-sm">
                                     <span className="text-slate-400 font-medium flex items-center gap-1.5"><ShieldCheck size={15} /> Status</span>
                                     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-bold border ${
@@ -448,13 +484,13 @@ export default function ListingDetails() {
                             {/* Contact CTA or Owner Actions */}
                             {isOwner ? (
                                 <div className="grid grid-cols-2 gap-3">
-                                    <button 
+                                    <button
                                         onClick={handleOpenEditModal}
                                         className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 font-bold py-3.5 hover:bg-blue-100 transition-all text-sm cursor-pointer"
                                     >
                                         Edit Details
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={handleDeleteListing}
                                         className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 font-bold py-3.5 hover:bg-rose-100 transition-all text-sm cursor-pointer"
                                     >
@@ -463,8 +499,46 @@ export default function ListingDetails() {
                                 </div>
                             ) : (
                                 <div className="space-y-3">
+                                    {(listing.status === "available" || listing.status === "active") && (listing.quantity || 1) > 0 && (
+                                        <>
+                                            <div>
+                                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Quantity to Buy</label>
+                                                <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setCartQuantity(Math.max(1, cartQuantity - 1))}
+                                                        className="text-slate-400 hover:text-slate-700 transition-colors p-1"
+                                                    >
+                                                        <Minus size={14} />
+                                                    </button>
+                                                    <span className="flex-1 text-center text-sm font-bold text-slate-700">{cartQuantity}</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setCartQuantity(Math.min(listing.quantity || 1, cartQuantity + 1))}
+                                                        className="text-slate-400 hover:text-slate-700 transition-colors p-1"
+                                                    >
+                                                        <Plus size={14} />
+                                                    </button>
+                                                </div>
+                                                <p className="text-xs text-slate-500 mt-1">Max: {listing.quantity || 1} available</p>
+                                            </div>
+                                            <button
+                                                onClick={handleAddToCart}
+                                                className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 shadow-md transition-all text-sm cursor-pointer"
+                                            >
+                                                <ShoppingCart size={16} /> Add to Cart
+                                            </button>
+                                        </>
+                                    )}
+
+                                    {(listing.status === "sold" || (listing.quantity || 1) <= 0) && (
+                                        <div className="w-full rounded-xl bg-rose-50 border border-rose-200 text-rose-700 font-bold py-3.5 text-center text-sm">
+                                            Out of Stock
+                                        </div>
+                                    )}
+
                                     {listing.seller?.email && (
-                                        <a 
+                                        <a
                                             href={`mailto:${listing.seller.email}?subject=Inquiry about ${listing.title} on KelaniXchange`}
                                             className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#48c96f] hover:bg-[#3db65e] text-white font-bold py-3.5 shadow-md shadow-emerald-100 hover:shadow-lg transition-all text-sm"
                                         >
@@ -711,12 +785,24 @@ export default function ListingDetails() {
 
                                     <div>
                                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Price (Rs.)</label>
-                                        <input 
-                                            type="number" 
+                                        <input
+                                            type="number"
                                             required
                                             min={0}
-                                            value={editForm.price} 
+                                            value={editForm.price}
                                             onChange={(e) => setEditForm({ ...editForm, price: Number(e.target.value) })}
+                                            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#48c96f]/40"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Quantity Available</label>
+                                        <input
+                                            type="number"
+                                            required
+                                            min={1}
+                                            value={editForm.quantity}
+                                            onChange={(e) => setEditForm({ ...editForm, quantity: Number(e.target.value) })}
                                             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#48c96f]/40"
                                         />
                                     </div>

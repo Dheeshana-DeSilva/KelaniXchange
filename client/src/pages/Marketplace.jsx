@@ -7,9 +7,10 @@ import {
     AlertCircle, Loader2, ShoppingBag, ArrowRight,
     ArrowUpDown, Filter, LayoutGrid, BookOpen,
     Laptop, Headphones, Home, Pencil, Trophy,
-    MoreHorizontal, GraduationCap, Car
+    MoreHorizontal, GraduationCap, Car, ShoppingCart
 } from "lucide-react";
 import { fetchListings, setFilters, clearFilters } from "../features/products/productsSlice";
+import { addToCart } from "../features/cart/cartSlice";
 
 import catBooksStationery from "../assets/category_books_stationery.png";
 import catElectronics from "../assets/category_electronics_v2.png";
@@ -164,8 +165,25 @@ function SkeletonCard() {
 
 /* ── Listing Card ── */
 function ListingCard({ listing, index }) {
+    const dispatch = useDispatch();
     const condStyle = CONDITION_COLORS[listing.condition] ?? CONDITION_COLORS["Used"];
     const img = listing.images?.[0] || CATEGORY_IMAGES[listing.category] || catOthers;
+
+    const handleAddToCart = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dispatch(addToCart({
+            id: listing._id,
+            title: listing.title,
+            price: listing.price,
+            image: img,
+            sellerId: listing.seller?._id || listing.seller,
+            category: listing.category,
+            condition: listing.condition,
+            availableQuantity: listing.quantity || 1
+        }));
+        alert(`"${listing.title}" has been added to your cart.`);
+    };
 
     // Helper to get formatted category name
     const catName = CATEGORIES.find(c => c.value === listing.category)?.label || listing.category?.replace(/-/g, " ");
@@ -253,20 +271,36 @@ function ListingCard({ listing, index }) {
                         Rs. {Number(listing.price).toLocaleString()}
                     </span>
                     
-                    {listing.isExchangeAvailable && (
+                    <div style={{ display: "flex", gap: 6 }} onClick={e => e.stopPropagation()}>
+                        {listing.isExchangeAvailable && (
+                            <button
+                                onClick={e => { e.preventDefault(); e.stopPropagation(); }}
+                                style={{
+                                    width: 32, height: 32, borderRadius: 8, background: "#fff", border: "1.5px solid #e2e8f0",
+                                    display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b",
+                                    cursor: "pointer", transition: "all 0.2s"
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.borderColor = "#cbd5e1"; e.currentTarget.style.color = "#334155"; }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#64748b"; }}
+                                title="Exchange Available"
+                            >
+                                <ArrowUpDown size={14} />
+                            </button>
+                        )}
                         <button
-                            onClick={e => e.preventDefault()}
+                            onClick={handleAddToCart}
                             style={{
-                                width: 32, height: 32, borderRadius: 8, background: "#fff", border: "1.5px solid #e2e8f0",
-                                display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b",
+                                width: 32, height: 32, borderRadius: 8, background: "#48c96f", border: "none",
+                                display: "flex", alignItems: "center", justifyContent: "center", color: "#fff",
                                 cursor: "pointer", transition: "all 0.2s"
                             }}
-                            onMouseEnter={e => { e.currentTarget.style.borderColor = "#cbd5e1"; e.currentTarget.style.color = "#334155"; }}
-                            onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#64748b"; }}
+                            onMouseEnter={e => { e.currentTarget.style.background = "#15945a"; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = "#48c96f"; }}
+                            title="Add to Cart"
                         >
-                            <ArrowUpDown size={14} />
+                            <ShoppingCart size={14} />
                         </button>
-                    )}
+                    </div>
                 </div>
 
                 {/* Action Button */}

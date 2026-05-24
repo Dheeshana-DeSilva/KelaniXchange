@@ -51,6 +51,7 @@ export default function MyListings() {
         description: "",
         category: "",
         price: 0,
+        quantity: 1,
         condition: "",
         location: "",
         status: "",
@@ -105,6 +106,7 @@ export default function MyListings() {
             description: listing.description || "",
             category: listing.category || "others",
             price: listing.price || 0,
+            quantity: listing.quantity || 1,
             condition: listing.condition || "Good",
             location: listing.location || "",
             status: listing.status || "available",
@@ -358,12 +360,24 @@ export default function MyListings() {
 
                                     <div>
                                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Price (Rs.)</label>
-                                        <input 
-                                            type="number" 
+                                        <input
+                                            type="number"
                                             required
                                             min={0}
-                                            value={editForm.price} 
+                                            value={editForm.price}
                                             onChange={(e) => setEditForm({ ...editForm, price: Number(e.target.value) })}
+                                            className="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-800 focus:border-[#48c96f] focus:bg-white outline-none"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Quantity Available</label>
+                                        <input
+                                            type="number"
+                                            required
+                                            min={1}
+                                            value={editForm.quantity}
+                                            onChange={(e) => setEditForm({ ...editForm, quantity: Number(e.target.value) })}
                                             className="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-800 focus:border-[#48c96f] focus:bg-white outline-none"
                                         />
                                     </div>
