@@ -7,6 +7,7 @@ const {
     getUserOrders,
     getUserSales,
     cancelUserOrder,
+    updateSellerOrderStatus,
 } = require("../controllers/orderController");
 
 const { protect } = require("../middleware/auth.middleware");
@@ -19,6 +20,7 @@ router.post("/", protect, createOrders);
 router.get("/my-orders", protect, getUserOrders);
 router.get("/my-sales", protect, getUserSales);
 router.put("/:id/cancel", protect, cancelUserOrder);
+router.put("/sales/:id/status", protect, updateSellerOrderStatus);
 
 // Admin routes
 router.get("/admin/all", protect, adminOnly, getAllOrdersAdmin);

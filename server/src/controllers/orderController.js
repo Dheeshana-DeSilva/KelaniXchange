@@ -29,7 +29,7 @@ const getOrderByIdAdmin = async (req, res) => {
         const order = await Order.findById(req.params.id)
             .populate("user", "username email fullName")
             .populate("seller", "username email fullName")
-            .populate("listing", "title price category images");
+            .populate("listing", "title price category images condition location");
 
         if (!order) {
             return res.status(404).json({ message: "Order not found" });
@@ -58,6 +58,8 @@ const updateOrderStatusAdmin = async (req, res) => {
             return res.status(404).json({ message: "Order not found" });
         }
 
+        const previousOrderStatus = order.orderStatus;
+
         if (orderStatus) {
             const validOrderStatuses = ["pending", "processing", "shipped", "delivered", "cancelled"];
             if (!validOrderStatuses.includes(orderStatus)) {
@@ -75,6 +77,17 @@ const updateOrderStatusAdmin = async (req, res) => {
         }
 
         await order.save();
+
+        if (previousOrderStatus !== "cancelled" && order.orderStatus === "cancelled") {
+            const listing = await Listing.findById(order.listing);
+            if (listing) {
+                listing.quantity += order.quantity;
+                if (listing.quantity > 0) {
+                    listing.status = "available";
+                }
+                await listing.save();
+            }
+        }
 
         res.status(200).json({
             message: "Order status updated successfully",
@@ -247,6 +260,67 @@ const cancelUserOrder = async (req, res) => {
     }
 };
 
+// Update a sale status by the seller who owns the order
+const updateSellerOrderStatus = async (req, res) => {
+    try {
+        const { orderStatus, paymentStatus } = req.body;
+        const order = await Order.findById(req.params.id);
+
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        if (order.seller.toString() !== req.user.id) {
+            return res.status(403).json({ message: "You are not authorized to update this sale" });
+        }
+
+        const previousOrderStatus = order.orderStatus;
+
+        if (order.orderStatus === "cancelled") {
+            return res.status(400).json({ message: "Cancelled orders cannot be updated" });
+        }
+
+        if (orderStatus) {
+            const validOrderStatuses = ["pending", "processing", "delivered", "cancelled"];
+            if (!validOrderStatuses.includes(orderStatus)) {
+                return res.status(400).json({ message: "Invalid order status" });
+            }
+            order.orderStatus = orderStatus;
+        }
+
+        if (paymentStatus) {
+            const validPaymentStatuses = ["pending", "paid", "failed", "cancelled", "refunded"];
+            if (!validPaymentStatuses.includes(paymentStatus)) {
+                return res.status(400).json({ message: "Invalid payment status" });
+            }
+            order.paymentStatus = paymentStatus;
+        }
+
+        await order.save();
+
+        if (previousOrderStatus !== "cancelled" && order.orderStatus === "cancelled") {
+            const listing = await Listing.findById(order.listing);
+            if (listing) {
+                listing.quantity += order.quantity;
+                if (listing.quantity > 0) {
+                    listing.status = "available";
+                }
+                await listing.save();
+            }
+        }
+
+        res.status(200).json({
+            message: "Sale updated successfully",
+            order,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to update sale",
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     getAllOrdersAdmin,
     getOrderByIdAdmin,
@@ -255,4 +329,5 @@ module.exports = {
     getUserOrders,
     getUserSales,
     cancelUserOrder,
+    updateSellerOrderStatus,
 };

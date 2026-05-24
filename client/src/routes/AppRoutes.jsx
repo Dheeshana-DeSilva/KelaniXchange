@@ -9,6 +9,8 @@ import CreateListing from "../pages/CreateListing";
 import MyListings from "../pages/MyListings";
 import Cart from "../pages/Cart";
 import Checkout from "../pages/Checkout";
+import MyOrders from "../pages/MyOrders";
+import MySales from "../pages/MySales";
 
 /* ── Admin ── */
 import AdminRoute from "./AdminRoute";
@@ -35,6 +37,8 @@ function AppRoutes() {
             <Route path="/listings/:id" element={<ListingDetails />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/orders" element={<MyOrders />} />
+            <Route path="/sales" element={<MySales />} />
             <Route path="/about" element={<About />} />
 
             {/* Admin — protected & nested under AdminLayout */}

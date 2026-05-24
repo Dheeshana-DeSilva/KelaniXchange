@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import { 
     Menu, X, Search, Bell, Heart, ShoppingCart, 
-    User, LogIn, LogOut, Package, PlusCircle 
+    User, LogIn, LogOut, Package, PlusCircle, ReceiptText, Store
 } from "lucide-react";
 import logo from "../../assets/X_logo.png";
 import { useAuth } from "../../context/AuthContext";
@@ -158,6 +158,12 @@ function MarketplaceNavbar() {
                                             <Link to="/marketplace/my-listings" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
                                                 <Package size={16} className="text-[#48c96f]" /> My Listings
                                             </Link>
+                                            <Link to="/orders" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
+                                                <ReceiptText size={16} className="text-[#48c96f]" /> My Orders
+                                            </Link>
+                                            <Link to="/sales" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
+                                                <Store size={16} className="text-[#48c96f]" /> My Sales
+                                            </Link>
                                             
                                             <div className="my-2 border-t border-white/10" />
                                             
@@ -223,6 +229,12 @@ function MarketplaceNavbar() {
                                 </Link>
                                 <Link to="/marketplace/my-listings" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/8">
                                     <Package size={18} className="text-slate-400" /> My Listings
+                                </Link>
+                                <Link to="/orders" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/8">
+                                    <ReceiptText size={18} className="text-slate-400" /> My Orders
+                                </Link>
+                                <Link to="/sales" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/8">
+                                    <Store size={18} className="text-slate-400" /> My Sales
                                 </Link>
                                 <Link to="/profile" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/8">
                                     <User size={18} className="text-slate-400" /> My Profile

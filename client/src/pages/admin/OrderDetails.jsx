@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router";
-import { Loader2, XCircle, ArrowLeft, Save } from "lucide-react";
+import { Loader2, XCircle, ArrowLeft, Save, MapPin, Phone, MessageSquare } from "lucide-react";
 import { getOrderByIdAdmin, updateOrderStatusAdmin } from "../../services/orderService";
 
 const OrderDetails = () => {
@@ -75,6 +75,24 @@ const OrderDetails = () => {
                                 <p className="text-slate-500 text-sm">{order.listing?.category || "Unknown Category"}</p>
                                 <p className="text-[#48c96f] font-bold mt-1">Rs. {order.totalAmount?.toLocaleString()}</p>
                             </div>
+                        </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                        <h2 className="text-lg font-bold text-slate-800 mb-4">Handover Details</h2>
+                        <div className="space-y-3 text-sm">
+                            <p className="flex items-start gap-2 text-slate-700">
+                                <MapPin size={16} className="text-[#48c96f] mt-0.5 shrink-0" />
+                                <span><span className="text-slate-500">Meetup:</span> {order.meetupLocation || order.listing?.location || "Campus meetup"}</span>
+                            </p>
+                            <p className="flex items-start gap-2 text-slate-700">
+                                <Phone size={16} className="text-[#48c96f] mt-0.5 shrink-0" />
+                                <span><span className="text-slate-500">Phone:</span> {order.phone || "N/A"}</span>
+                            </p>
+                            <p className="flex items-start gap-2 text-slate-700">
+                                <MessageSquare size={16} className="text-[#48c96f] mt-0.5 shrink-0" />
+                                <span><span className="text-slate-500">Note:</span> {order.note || "N/A"}</span>
+                            </p>
                         </div>
                     </div>
 

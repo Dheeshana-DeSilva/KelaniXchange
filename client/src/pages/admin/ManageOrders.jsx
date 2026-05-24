@@ -39,15 +39,25 @@ const ManageOrders = () => {
     };
 
     const statusBadge = (s) => {
-        const map = { pending: "amber", processing: "blue", shipped: "indigo", delivered: "emerald", cancelled: "rose" };
-        const c = map[s] || "slate";
-        return `bg-${c}-50 text-${c}-700 border-${c}-200`;
+        const map = {
+            pending: "bg-amber-50 text-amber-700 border-amber-200",
+            processing: "bg-blue-50 text-blue-700 border-blue-200",
+            shipped: "bg-indigo-50 text-indigo-700 border-indigo-200",
+            delivered: "bg-emerald-50 text-emerald-700 border-emerald-200",
+            cancelled: "bg-rose-50 text-rose-700 border-rose-200",
+        };
+        return map[s] || "bg-slate-100 text-slate-600 border-slate-200";
     };
 
     const paymentBadge = (s) => {
-        const map = { pending: "amber", paid: "emerald", failed: "rose", cancelled: "slate", refunded: "purple" };
-        const c = map[s] || "slate";
-        return `bg-${c}-50 text-${c}-700 border-${c}-200`;
+        const map = {
+            pending: "bg-amber-50 text-amber-700 border-amber-200",
+            paid: "bg-emerald-50 text-emerald-700 border-emerald-200",
+            failed: "bg-rose-50 text-rose-700 border-rose-200",
+            cancelled: "bg-slate-100 text-slate-600 border-slate-200",
+            refunded: "bg-purple-50 text-purple-700 border-purple-200",
+        };
+        return map[s] || "bg-slate-100 text-slate-600 border-slate-200";
     };
 
     if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="animate-spin text-[#48c96f]" size={32} /></div>;

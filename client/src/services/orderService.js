@@ -20,6 +20,11 @@ export const cancelOrder = async (orderId) => {
     return res.data;
 };
 
+export const updateSaleStatus = async (orderId, statusData) => {
+    const res = await api.put(`/orders/sales/${orderId}/status`, statusData);
+    return res.data;
+};
+
 // Admin order APIs
 export const getAllOrdersAdmin = async () => {
     const res = await api.get("/orders/admin/all");
