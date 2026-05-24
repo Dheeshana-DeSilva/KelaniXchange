@@ -8,6 +8,7 @@ import ListingDetails from "../pages/ListingDetails";
 import CreateListing from "../pages/CreateListing";
 import MyListings from "../pages/MyListings";
 import Cart from "../pages/Cart";
+import Checkout from "../pages/Checkout";
 
 /* ── Admin ── */
 import AdminRoute from "./AdminRoute";
@@ -33,6 +34,7 @@ function AppRoutes() {
             <Route path="/marketplace/:id" element={<ListingDetails />} />
             <Route path="/listings/:id" element={<ListingDetails />} />
             <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout" element={<Checkout />} />
             <Route path="/about" element={<About />} />
 
             {/* Admin — protected & nested under AdminLayout */}

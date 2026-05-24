@@ -91,7 +91,7 @@ const updateOrderStatusAdmin = async (req, res) => {
 // Create new orders from cart checkout
 const createOrders = async (req, res) => {
     try {
-        const { items, paymentMethod } = req.body;
+        const { items, paymentMethod, meetupLocation, phone, note } = req.body;
 
         if (!items || !Array.isArray(items) || items.length === 0) {
             return res.status(400).json({ message: "No items provided for checkout" });
@@ -127,6 +127,9 @@ const createOrders = async (req, res) => {
                 quantity: requestedQuantity,
                 totalAmount: listing.price * requestedQuantity,
                 paymentMethod: paymentMethod || "Cash",
+                meetupLocation: meetupLocation || "University of Kelaniya - Main Campus",
+                phone,
+                note,
                 paymentStatus: "pending",
                 orderStatus: "pending",
             });

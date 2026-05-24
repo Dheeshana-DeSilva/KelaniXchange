@@ -31,6 +31,19 @@ const orderSchema = new mongoose.Schema(
             enum: ["pending", "paid", "failed", "cancelled", "refunded"],
             default: "pending",
         },
+        meetupLocation: {
+            type: String,
+            trim: true,
+            default: "University of Kelaniya - Main Campus",
+        },
+        phone: {
+            type: String,
+            trim: true,
+        },
+        note: {
+            type: String,
+            trim: true,
+        },
         transactionId: {
             type: String,
         },
