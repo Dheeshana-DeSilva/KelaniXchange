@@ -5,6 +5,8 @@ import Register from "../pages/Register";
 import Marketplace from "../pages/Marketplace";
 import About from "../pages/About";
 import ListingDetails from "../pages/ListingDetails";
+import CreateListing from "../pages/CreateListing";
+import MyListings from "../pages/MyListings";
 
 /* ── Admin ── */
 import AdminRoute from "./AdminRoute";
@@ -25,6 +27,8 @@ function AppRoutes() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/marketplace" element={<Marketplace />} />
+            <Route path="/marketplace/my-listings" element={<MyListings />} />
+            <Route path="/marketplace/create" element={<CreateListing />} />
             <Route path="/marketplace/:id" element={<ListingDetails />} />
             <Route path="/listings/:id" element={<ListingDetails />} />
             <Route path="/about" element={<About />} />

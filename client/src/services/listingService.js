@@ -17,14 +17,17 @@ export const createListing = async (formData) => {
     return response.data;
 };
 
-export const updateListing = async (id, formData) => {
-    const response = await api.put(`/listings/${id}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-    });
+export const updateListing = async (id, data) => {
+    const response = await api.put(`/listings/${id}`, data);
     return response.data;
 };
 
 export const deleteListing = async (id) => {
     const response = await api.delete(`/listings/${id}`);
+    return response.data;
+};
+
+export const getMyListings = async () => {
+    const response = await api.get("/listings/my-listings");
     return response.data;
 };

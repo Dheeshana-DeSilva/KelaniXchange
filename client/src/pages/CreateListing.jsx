@@ -180,44 +180,44 @@ export default function CreateListing() {
     }
 
     return (
-        <div className="min-h-screen bg-[#060f1e] text-[#f1f5f9] flex flex-col items-center justify-center p-4 sm:p-8 font-sans relative overflow-hidden pt-24 pb-16">
+        <div className="min-h-screen bg-[#f8fafc] text-slate-800 flex flex-col items-center p-4 pt-28 sm:p-8 sm:pt-32 font-sans relative overflow-hidden pb-16">
             
             {/* Ambient background glows */}
             <div className="fixed inset-0 pointer-events-none z-0">
-                <div className="absolute top-[-10%] left-[-5%] width-[500px] height-[500px] rounded-full bg-radial-gradient(circle, rgba(72,201,111,0.08) 0%, transparent 75%)" />
-                <div className="absolute bottom-[-10%] right-[-5%] width-[500px] height-[500px] rounded-full bg-radial-gradient(circle, rgba(45,164,196,0.06) 0%, transparent 75%)" />
+                <div className="absolute top-[-10%] left-[-5%] width-[500px] height-[500px] rounded-full bg-radial-gradient(circle, rgba(72,201,111,0.04) 0%, transparent 75%)" />
+                <div className="absolute bottom-[-10%] right-[-5%] width-[500px] height-[500px] rounded-full bg-radial-gradient(circle, rgba(45,164,196,0.03) 0%, transparent 75%)" />
             </div>
 
-            <div className="w-full max-w-3xl bg-[#0a1426]/90 border border-white/10 rounded-3xl shadow-2xl p-6 sm:p-10 relative z-10 space-y-8 animate-in fade-in slide-in-from-top-4 duration-300">
+            <div className="w-full max-w-3xl bg-white border border-slate-200/80 rounded-3xl shadow-xl shadow-slate-100 p-6 sm:p-10 relative z-10 space-y-8 animate-in fade-in slide-in-from-top-4 duration-300">
                 
                 {/* Back Link */}
                 <div>
                     <Link 
                         to="/marketplace" 
-                        className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-white transition-colors"
+                        className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors"
                     >
                         <ArrowLeft size={14} /> Back to Marketplace
                     </Link>
                 </div>
 
                 {/* Title info */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-6">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2">
+                        <h1 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight flex items-center gap-2">
                             Sell / Exchange Item <Sparkles size={20} className="text-[#48c96f]" />
                         </h1>
-                        <p className="text-sm text-slate-400 mt-1.5 font-medium">Post details of your items to list them on UoK student marketplace.</p>
+                        <p className="text-sm text-slate-500 mt-1.5 font-medium">Post details of your items to list them on UoK student marketplace.</p>
                     </div>
-                    <span className="self-start sm:self-center px-3 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase bg-[#48c96f]/10 text-[#48c96f] border border-[#48c96f]/20">
+                    <span className="self-start sm:self-center px-3 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase bg-[#48c96f]/10 text-[#15945a] border border-[#48c96f]/20">
                         Listing Creator
                     </span>
                 </div>
 
                 {/* API Error */}
                 {apiError && (
-                    <div className="flex items-center gap-3 p-4 bg-rose-500/10 border border-rose-500/25 rounded-2xl">
-                        <AlertCircle size={18} className="text-rose-400 shrink-0" />
-                        <p className="text-rose-300 text-sm font-medium">{apiError}</p>
+                    <div className="flex items-center gap-3 p-4 bg-rose-50 border border-rose-200 rounded-2xl">
+                        <AlertCircle size={18} className="text-rose-600 shrink-0" />
+                        <p className="text-rose-700 text-sm font-medium">{apiError}</p>
                     </div>
                 )}
 
@@ -227,7 +227,7 @@ export default function CreateListing() {
                         
                         {/* Title */}
                         <div className="md:col-span-2 space-y-2">
-                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Listing Title</label>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Listing Title</label>
                             <input 
                                 type="text"
                                 name="title"
@@ -236,26 +236,26 @@ export default function CreateListing() {
                                 onBlur={handleBlur}
                                 required
                                 placeholder="What are you selling? (e.g. Mechanical Engineering Textbook)"
-                                className={`w-full rounded-xl border px-4 py-3 text-sm bg-white/5 outline-none transition-all placeholder:text-slate-500 ${
+                                className={`w-full rounded-xl border px-4 py-3 text-sm bg-slate-50/50 text-slate-800 outline-none transition-all placeholder:text-slate-400 ${
                                     touched.title && errors.title 
-                                        ? "border-rose-500/40 bg-rose-500/5 focus:border-rose-500" 
-                                        : "border-white/10 focus:border-[#48c96f]/50 focus:bg-white/10"
+                                        ? "border-rose-300 bg-rose-50/30 focus:border-rose-500" 
+                                        : "border-slate-200/80 focus:border-[#48c96f] focus:bg-white"
                                 }`}
                             />
                             {touched.title && errors.title && (
-                                <p className="text-xs text-rose-400 flex items-center gap-1"><AlertCircle size={12} /> {errors.title}</p>
+                                <p className="text-xs text-rose-500 flex items-center gap-1"><AlertCircle size={12} /> {errors.title}</p>
                             )}
                         </div>
 
                         {/* Category */}
                         <div className="space-y-2">
-                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Category</label>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Category</label>
                             <div className="relative">
                                 <select 
                                     name="category"
                                     value={form.category}
                                     onChange={handleChange}
-                                    className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm bg-[#0a1426] outline-none focus:border-[#48c96f]/50 transition-all appearance-none cursor-pointer"
+                                    className="w-full rounded-xl border border-slate-200/80 px-4 py-3 text-sm bg-slate-50/50 text-slate-800 outline-none focus:border-[#48c96f] focus:bg-white transition-all appearance-none cursor-pointer"
                                 >
                                     {CATEGORIES.map((c) => (
                                         <option key={c.value} value={c.value}>{c.label}</option>
@@ -267,7 +267,7 @@ export default function CreateListing() {
 
                         {/* Price */}
                         <div className="space-y-2">
-                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Price (Rs.)</label>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Price (Rs.)</label>
                             <input 
                                 type="number"
                                 name="price"
@@ -276,25 +276,25 @@ export default function CreateListing() {
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 placeholder="Enter price (0 if exchange only)"
-                                className={`w-full rounded-xl border px-4 py-3 text-sm bg-white/5 outline-none transition-all placeholder:text-slate-500 ${
+                                className={`w-full rounded-xl border px-4 py-3 text-sm bg-slate-50/50 text-slate-800 outline-none transition-all placeholder:text-slate-400 ${
                                     touched.price && errors.price 
-                                        ? "border-rose-500/40 bg-rose-500/5 focus:border-rose-500" 
-                                        : "border-white/10 focus:border-[#48c96f]/50 focus:bg-white/10"
+                                        ? "border-rose-300 bg-rose-50/30 focus:border-rose-500" 
+                                        : "border-slate-200/80 focus:border-[#48c96f] focus:bg-white"
                                 }`}
                             />
                             {touched.price && errors.price && (
-                                <p className="text-xs text-rose-400 flex items-center gap-1"><AlertCircle size={12} /> {errors.price}</p>
+                                <p className="text-xs text-rose-500 flex items-center gap-1"><AlertCircle size={12} /> {errors.price}</p>
                             )}
                         </div>
 
                         {/* Condition */}
                         <div className="space-y-2">
-                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Condition</label>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Condition</label>
                             <select 
                                 name="condition"
                                 value={form.condition}
                                 onChange={handleChange}
-                                className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm bg-[#0a1426] outline-none focus:border-[#48c96f]/50 transition-all cursor-pointer"
+                                className="w-full rounded-xl border border-slate-200/80 px-4 py-3 text-sm bg-slate-50/50 text-slate-800 outline-none focus:border-[#48c96f] focus:bg-white transition-all cursor-pointer"
                             >
                                 {CONDITIONS.map((c) => (
                                     <option key={c} value={c}>{c}</option>
@@ -304,7 +304,7 @@ export default function CreateListing() {
 
                         {/* Location */}
                         <div className="space-y-2">
-                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Location</label>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Location</label>
                             <div className="relative">
                                 <input 
                                     type="text"
@@ -314,22 +314,22 @@ export default function CreateListing() {
                                     onBlur={handleBlur}
                                     required
                                     placeholder="Meetup location (e.g. Science Library)"
-                                    className={`w-full rounded-xl border pl-4 pr-10 py-3 text-sm bg-white/5 outline-none transition-all placeholder:text-slate-500 ${
+                                    className={`w-full rounded-xl border pl-4 pr-10 py-3 text-sm bg-slate-50/50 text-slate-800 outline-none transition-all placeholder:text-slate-400 ${
                                         touched.location && errors.location 
-                                            ? "border-rose-500/40 bg-rose-500/5 focus:border-rose-500" 
-                                            : "border-white/10 focus:border-[#48c96f]/50 focus:bg-white/10"
+                                            ? "border-rose-300 bg-rose-50/30 focus:border-rose-500" 
+                                            : "border-slate-200/80 focus:border-[#48c96f] focus:bg-white"
                                     }`}
                                 />
                                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><MapPin size={14} /></span>
                             </div>
                             {touched.location && errors.location && (
-                                <p className="text-xs text-rose-400 flex items-center gap-1"><AlertCircle size={12} /> {errors.location}</p>
+                                <p className="text-xs text-rose-500 flex items-center gap-1"><AlertCircle size={12} /> {errors.location}</p>
                             )}
                         </div>
 
                         {/* Description */}
                         <div className="md:col-span-2 space-y-2">
-                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Detailed Description</label>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Detailed Description</label>
                             <textarea 
                                 name="description"
                                 rows={4}
@@ -338,25 +338,25 @@ export default function CreateListing() {
                                 onBlur={handleBlur}
                                 required
                                 placeholder="Describe the item's condition, defects, details, or trade requirements..."
-                                className={`w-full rounded-xl border px-4 py-3 text-sm bg-white/5 outline-none transition-all placeholder:text-slate-500 resize-none ${
+                                className={`w-full rounded-xl border px-4 py-3 text-sm bg-slate-50/50 text-slate-800 outline-none transition-all placeholder:text-slate-400 resize-none ${
                                     touched.description && errors.description 
-                                        ? "border-rose-500/40 bg-rose-500/5 focus:border-rose-500" 
-                                        : "border-white/10 focus:border-[#48c96f]/50 focus:bg-white/10"
+                                        ? "border-rose-300 bg-rose-50/30 focus:border-rose-500" 
+                                        : "border-slate-200/80 focus:border-[#48c96f] focus:bg-white"
                                 }`}
                             />
                             {touched.description && errors.description && (
-                                <p className="text-xs text-rose-400 flex items-center gap-1"><AlertCircle size={12} /> {errors.description}</p>
+                                <p className="text-xs text-rose-500 flex items-center gap-1"><AlertCircle size={12} /> {errors.description}</p>
                             )}
                         </div>
 
                         {/* Image Upload Area */}
                         <div className="md:col-span-2 space-y-2">
-                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
                                 Upload Photos ({images.length}/5)
                             </label>
                             
                             {/* Drag drop zone */}
-                            <label className="relative flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-white/10 hover:border-[#48c96f]/30 rounded-2xl cursor-pointer bg-white/5 hover:bg-white/8 transition-colors select-none">
+                            <label className="relative flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-slate-200 hover:border-[#48c96f]/40 rounded-2xl cursor-pointer bg-slate-50 hover:bg-slate-100/50 transition-colors select-none">
                                 <input 
                                     type="file" 
                                     multiple 
@@ -366,8 +366,8 @@ export default function CreateListing() {
                                 />
                                 <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
                                     <Upload className="h-8 w-8 text-slate-400 mb-2.5" />
-                                    <p className="text-sm font-semibold text-slate-200">Click to upload images</p>
-                                    <p className="text-xs text-slate-500 mt-1">PNG, JPG, or WEBP up to 5MB (Max 5 images)</p>
+                                    <p className="text-sm font-semibold text-slate-600">Click to upload images</p>
+                                    <p className="text-xs text-slate-400 mt-1">PNG, JPG, or WEBP up to 5MB (Max 5 images)</p>
                                 </div>
                             </label>
 
@@ -375,12 +375,12 @@ export default function CreateListing() {
                             {previews.length > 0 && (
                                 <div className="grid grid-cols-5 gap-3 mt-4">
                                     {previews.map((preview, index) => (
-                                        <div key={index} className="relative aspect-square rounded-xl border border-white/15 overflow-hidden group bg-slate-900">
+                                        <div key={index} className="relative aspect-square rounded-xl border border-slate-200 overflow-hidden group bg-slate-50">
                                             <img src={preview} alt="" className="w-full h-full object-cover" />
                                             <button
                                                 type="button"
                                                 onClick={() => removeImage(index)}
-                                                className="absolute top-1 right-1 h-5 w-5 rounded-full bg-slate-900/80 hover:bg-rose-600/90 text-white flex items-center justify-center transition-colors border border-white/10"
+                                                className="absolute top-1 right-1 h-5 w-5 rounded-full bg-slate-900/80 hover:bg-rose-600 text-white flex items-center justify-center transition-colors border border-white/10 cursor-pointer"
                                             >
                                                 <X size={10} />
                                             </button>
@@ -391,7 +391,7 @@ export default function CreateListing() {
                         </div>
 
                         {/* Exchange Toggle */}
-                        <div className="md:col-span-2 flex items-center gap-4 bg-white/5 border border-white/10 p-4 rounded-2xl">
+                        <div className="md:col-span-2 flex items-center gap-4 bg-slate-50 border border-slate-200/80 p-4 rounded-2xl">
                             <label className="relative inline-flex items-center cursor-pointer shrink-0">
                                 <input 
                                     type="checkbox" 
@@ -400,11 +400,11 @@ export default function CreateListing() {
                                     onChange={handleChange}
                                     className="sr-only peer"
                                 />
-                                <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-400 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#48c96f]" />
+                                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-350 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#48c96f]" />
                             </label>
                             <div>
-                                <span className="text-sm font-bold text-white block">Make Exchange Available</span>
-                                <span className="text-xs text-slate-400 block mt-0.5">Let other UoK students offer items in exchange instead of paying cash.</span>
+                                <span className="text-sm font-bold text-slate-800 block">Make Exchange Available</span>
+                                <span className="text-xs text-slate-500 block mt-0.5">Let other UoK students offer items in exchange instead of paying cash.</span>
                             </div>
                         </div>
 

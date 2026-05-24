@@ -293,7 +293,7 @@ export default function ListingDetails() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50/50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-slate-50/50 pt-28 pb-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-6xl mx-auto space-y-8">
                 
                 {/* Back button */}
