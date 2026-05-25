@@ -23,8 +23,8 @@ const orderSchema = new mongoose.Schema(
         },
         paymentMethod: {
             type: String,
-            enum: ["PayPal", "PayHere", "Card", "Cash"],
-            default: "PayPal",
+            enum: ["PayPal", "PayHere", "Card", "Cash", "BankTransfer"],
+            default: "Cash",
         },
         paymentStatus: {
             type: String,
@@ -46,6 +46,21 @@ const orderSchema = new mongoose.Schema(
         },
         transactionId: {
             type: String,
+        },
+        paymentGroupId: {
+            type: String,
+            index: true,
+        },
+        gatewayResponse: {
+            type: Object,
+        },
+        paymentReference: {
+            type: String,
+            trim: true,
+        },
+        paymentProofUrl: {
+            type: String,
+            trim: true,
         },
         paidAt: {
             type: Date,

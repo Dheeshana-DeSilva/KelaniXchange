@@ -55,6 +55,28 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
+        payoutDetails: {
+            bankAccountName: {
+                type: String,
+                trim: true,
+                default: "",
+            },
+            bankName: {
+                type: String,
+                trim: true,
+                default: "",
+            },
+            bankBranch: {
+                type: String,
+                trim: true,
+                default: "",
+            },
+            bankAccountNumber: {
+                type: String,
+                trim: true,
+                default: "",
+            },
+        },
 
         wishlist: [
             {

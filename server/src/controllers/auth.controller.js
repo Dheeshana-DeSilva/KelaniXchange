@@ -57,6 +57,7 @@ const registerUser = async (req, res) => {
                 username: user.username,
                 email: user.email,
                 role: user.role,
+                profileImage: user.profileImage || "",
             },
         });
     } catch (error) {
@@ -111,6 +112,7 @@ const loginUser = async (req, res) => {
                 username: user.username,
                 email: user.email,
                 role: user.role,
+                profileImage: user.profileImage || "",
             },
         });
     } catch (error) {

@@ -65,6 +65,13 @@ const authSlice = createSlice({
         clearError(state) {
             state.error = null;
         },
+        updateAuthUser(state, action) {
+            state.user = {
+                ...(state.user || {}),
+                ...action.payload,
+            };
+            localStorage.setItem("kx_user", JSON.stringify(state.user));
+        },
     },
     extraReducers: (builder) => {
         /* ── Login ── */
@@ -109,5 +116,5 @@ const authSlice = createSlice({
     },
 });
 
-export const { logout, clearError } = authSlice.actions;
+export const { logout, clearError, updateAuthUser } = authSlice.actions;
 export default authSlice.reducer;

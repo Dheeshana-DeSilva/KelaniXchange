@@ -33,11 +33,23 @@ const orderStatusLabels = {
 };
 
 const paymentStatusLabels = {
-    pending: "Payment: Unpaid / collect on handover",
+    pending: "Payment: Pending verification",
     paid: "Payment: Paid",
     failed: "Payment: Failed",
     cancelled: "Payment: Cancelled",
     refunded: "Payment: Refunded",
+};
+
+const paymentMethodLabels = {
+    Cash: "Cash on Handover",
+    BankTransfer: "Bank Transfer",
+};
+
+const getPaymentStatusLabel = (sale) => {
+    if (sale.paymentStatus === "pending" && sale.paymentMethod === "Cash") {
+        return "Payment: Collect on handover";
+    }
+    return paymentStatusLabels[sale.paymentStatus] || `Payment: ${sale.paymentStatus}`;
 };
 
 export default function MySales() {
@@ -156,7 +168,7 @@ export default function MySales() {
                                                 className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border ${paymentClasses[sale.paymentStatus] || paymentClasses.pending}`}
                                                 title="Payment status"
                                             >
-                                                {paymentStatusLabels[sale.paymentStatus] || `Payment: ${sale.paymentStatus}`}
+                                                {getPaymentStatusLabel(sale)}
                                             </span>
                                             <span className="text-xs font-semibold text-slate-400">#{sale._id.slice(-6).toUpperCase()}</span>
                                         </div>
@@ -192,7 +204,7 @@ export default function MySales() {
                                                 disabled={actionLoadingId === sale._id || sale.orderStatus === "cancelled"}
                                                 className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 outline-none focus:border-[#48c96f]/40 disabled:opacity-50"
                                             >
-                                                <option value="pending">Unpaid / collect on handover</option>
+                                                <option value="pending">Pending verification</option>
                                                 <option value="paid">Paid</option>
                                                 <option value="failed">Payment failed</option>
                                                 <option value="cancelled">Payment cancelled</option>
@@ -208,6 +220,21 @@ export default function MySales() {
                                 {sale.note && (
                                     <div className="mt-4 rounded-2xl bg-slate-50 border border-slate-100 p-3 text-xs text-slate-500">
                                         <span className="font-bold text-slate-600">Buyer note:</span> {sale.note}
+                                    </div>
+                                )}
+                                {(sale.paymentMethod || sale.paymentReference || sale.paymentProofUrl) && (
+                                    <div className="mt-4 rounded-2xl bg-emerald-50/50 border border-emerald-100 p-3 text-xs text-slate-600 space-y-1.5">
+                                        {sale.paymentMethod && (
+                                            <p><span className="font-bold text-slate-700">Payment method:</span> {paymentMethodLabels[sale.paymentMethod] || sale.paymentMethod}</p>
+                                        )}
+                                        {sale.paymentReference && (
+                                            <p><span className="font-bold text-slate-700">Reference:</span> {sale.paymentReference}</p>
+                                        )}
+                                        {sale.paymentProofUrl && (
+                                            <a href={sale.paymentProofUrl} target="_blank" rel="noreferrer" className="inline-flex font-bold text-[#15945a] hover:underline">
+                                                View receipt screenshot
+                                            </a>
+                                        )}
                                     </div>
                                 )}
                             </div>

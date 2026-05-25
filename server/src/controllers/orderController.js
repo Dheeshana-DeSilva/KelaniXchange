@@ -1,5 +1,41 @@
 const Order = require("../models/Order");
 const Listing = require("../models/Listing");
+const cloudinary = require("../config/cloudinary");
+
+const restoreListingQuantity = async (order) => {
+    const listing = await Listing.findById(order.listing);
+    if (!listing) return;
+
+    listing.quantity += order.quantity;
+    if (listing.quantity > 0) {
+        listing.status = "available";
+    }
+    await listing.save();
+};
+
+const uploadPaymentProof = async (file) => {
+    if (!file) return "";
+
+    const uploadResult = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+            {
+                folder: "kelanixchange/payment-proofs",
+                resource_type: "image",
+            },
+            (error, result) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result);
+                }
+            }
+        );
+
+        uploadStream.end(file.buffer);
+    });
+
+    return uploadResult.secure_url;
+};
 
 // Get all orders for admin
 const getAllOrdersAdmin = async (req, res) => {
@@ -74,19 +110,15 @@ const updateOrderStatusAdmin = async (req, res) => {
                 return res.status(400).json({ message: "Invalid payment status" });
             }
             order.paymentStatus = paymentStatus;
+            if (paymentStatus === "paid" && !order.paidAt) {
+                order.paidAt = new Date();
+            }
         }
 
         await order.save();
 
         if (previousOrderStatus !== "cancelled" && order.orderStatus === "cancelled") {
-            const listing = await Listing.findById(order.listing);
-            if (listing) {
-                listing.quantity += order.quantity;
-                if (listing.quantity > 0) {
-                    listing.status = "available";
-                }
-                await listing.save();
-            }
+            await restoreListingQuantity(order);
         }
 
         res.status(200).json({
@@ -104,13 +136,28 @@ const updateOrderStatusAdmin = async (req, res) => {
 // Create new orders from cart checkout
 const createOrders = async (req, res) => {
     try {
-        const { items, paymentMethod, meetupLocation, phone, note } = req.body;
+        const { paymentMethod, meetupLocation, phone, note, paymentReference } = req.body;
+        const items = typeof req.body.items === "string" ? JSON.parse(req.body.items) : req.body.items;
+        const selectedPaymentMethod = paymentMethod || "Cash";
+        const validCheckoutPaymentMethods = ["Cash", "BankTransfer"];
+
+        if (!validCheckoutPaymentMethods.includes(selectedPaymentMethod)) {
+            return res.status(400).json({ message: "Invalid payment method" });
+        }
 
         if (!items || !Array.isArray(items) || items.length === 0) {
             return res.status(400).json({ message: "No items provided for checkout" });
         }
 
+        if (selectedPaymentMethod === "BankTransfer" && !paymentReference && !req.file) {
+            return res.status(400).json({ message: "Add a payment reference or upload a receipt screenshot" });
+        }
+
+        const paymentProofUrl = await uploadPaymentProof(req.file);
         const createdOrders = [];
+        const paymentGroupId = selectedPaymentMethod !== "Cash"
+            ? `KX-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`
+            : undefined;
 
         for (const item of items) {
             const listing = await Listing.findById(item.listingId);
@@ -139,10 +186,13 @@ const createOrders = async (req, res) => {
                 seller: listing.seller,
                 quantity: requestedQuantity,
                 totalAmount: listing.price * requestedQuantity,
-                paymentMethod: paymentMethod || "Cash",
+                paymentMethod: selectedPaymentMethod,
+                paymentGroupId,
                 meetupLocation: meetupLocation || "University of Kelaniya - Main Campus",
                 phone,
                 note,
+                paymentReference,
+                paymentProofUrl,
                 paymentStatus: "pending",
                 orderStatus: "pending",
             });
@@ -163,10 +213,14 @@ const createOrders = async (req, res) => {
             createdOrders.push(order);
         }
 
-        res.status(201).json({
+        const responsePayload = {
             message: "Orders placed successfully",
             count: createdOrders.length,
             orders: createdOrders,
+        };
+
+        res.status(201).json({
+            ...responsePayload,
         });
     } catch (error) {
         res.status(500).json({
@@ -239,14 +293,7 @@ const cancelUserOrder = async (req, res) => {
         await order.save();
 
         // Release the listing quantity back
-        const listing = await Listing.findById(order.listing);
-        if (listing) {
-            listing.quantity += order.quantity;
-            if (listing.quantity > 0) {
-                listing.status = "available";
-            }
-            await listing.save();
-        }
+        await restoreListingQuantity(order);
 
         res.status(200).json({
             message: "Order cancelled successfully",
@@ -325,19 +372,15 @@ const updateSellerOrderStatus = async (req, res) => {
                 return res.status(400).json({ message: "Invalid payment status" });
             }
             order.paymentStatus = paymentStatus;
+            if (paymentStatus === "paid" && !order.paidAt) {
+                order.paidAt = new Date();
+            }
         }
 
         await order.save();
 
         if (previousOrderStatus !== "cancelled" && order.orderStatus === "cancelled") {
-            const listing = await Listing.findById(order.listing);
-            if (listing) {
-                listing.quantity += order.quantity;
-                if (listing.quantity > 0) {
-                    listing.status = "available";
-                }
-                await listing.save();
-            }
+            await restoreListingQuantity(order);
         }
 
         res.status(200).json({

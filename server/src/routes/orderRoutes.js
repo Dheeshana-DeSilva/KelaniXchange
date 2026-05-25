@@ -13,11 +13,12 @@ const {
 
 const { protect } = require("../middleware/auth.middleware");
 const { adminOnly } = require("../middleware/adminMiddleware");
+const upload = require("../middleware/upload.middleware");
 
 const router = express.Router();
 
 // User routes
-router.post("/", protect, createOrders);
+router.post("/", protect, upload.single("paymentProof"), createOrders);
 router.get("/my-orders", protect, getUserOrders);
 router.get("/my-sales", protect, getUserSales);
 router.put("/:id/cancel", protect, cancelUserOrder);

@@ -8,7 +8,13 @@ import {
 import { clearCart, updateCartItemAvailability } from "../features/cart/cartSlice";
 import { getListingById } from "../services/listingService";
 import { checkoutCart } from "../services/orderService";
+import { getSellerPaymentProfile } from "../services/userService";
 import { useAuth } from "../context/AuthContext";
+
+const paymentCopy = {
+    Cash: "No online payment is processed for cash orders. Confirm payment directly during campus handover.",
+    BankTransfer: "Payment is pending until seller/admin verifies receipt.",
+};
 
 export default function Checkout() {
     const dispatch = useDispatch();
@@ -20,9 +26,17 @@ export default function Checkout() {
     const [meetupLocation, setMeetupLocation] = useState("University of Kelaniya - Main Campus");
     const [phone, setPhone] = useState("");
     const [note, setNote] = useState("");
+    const [paymentReference, setPaymentReference] = useState("");
+    const [paymentProof, setPaymentProof] = useState(null);
+    const [sellerPaymentProfile, setSellerPaymentProfile] = useState(null);
     const [loading, setLoading] = useState(false);
     const [apiError, setApiError] = useState(null);
     const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+    const [successTitle, setSuccessTitle] = useState("Order Placed");
+    const [successMessage, setSuccessMessage] = useState("Your request has been sent to the seller. Redirecting to marketplace...");
+    const sellerIds = [...new Set(items.map(item => item.sellerId).filter(Boolean))];
+    const hasMultipleSellers = sellerIds.length > 1;
+    const selectedSellerPayout = sellerPaymentProfile?.payoutDetails || {};
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -58,6 +72,35 @@ export default function Checkout() {
         };
     }, [dispatch, items]);
 
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadSellerPaymentProfile = async () => {
+            if (sellerIds.length !== 1) {
+                setSellerPaymentProfile(null);
+                return;
+            }
+
+            try {
+                const data = await getSellerPaymentProfile(sellerIds[0]);
+                if (isMounted) {
+                    setSellerPaymentProfile(data.seller);
+                }
+            } catch (err) {
+                console.error("Failed to load seller payment profile:", err);
+                if (isMounted) {
+                    setSellerPaymentProfile(null);
+                }
+            }
+        };
+
+        loadSellerPaymentProfile();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [sellerIds.join("|")]);
+
     const handleCheckout = async (e) => {
         e.preventDefault();
         if (items.length === 0) return;
@@ -66,24 +109,57 @@ export default function Checkout() {
         setApiError(null);
 
         try {
+            if (paymentMethod === "BankTransfer" && hasMultipleSellers) {
+                setApiError("Bank Transfer is available only when your cart has items from one seller. Checkout one seller at a time.");
+                setLoading(false);
+                return;
+            }
+
+            if (paymentMethod === "BankTransfer" && !paymentReference.trim() && !paymentProof) {
+                setApiError("Add a transaction reference or upload a receipt screenshot.");
+                setLoading(false);
+                return;
+            }
+
             const checkoutItems = items.map(item => ({
                 listingId: item.id,
                 sellerId: item.sellerId,
                 quantity: item.quantity,
             }));
 
-            await checkoutCart({
-                items: checkoutItems,
-                paymentMethod,
-                meetupLocation,
-                phone,
-                note,
-            });
+            let checkoutPayload;
+            if (paymentProof) {
+                checkoutPayload = new FormData();
+                checkoutPayload.append("items", JSON.stringify(checkoutItems));
+                checkoutPayload.append("paymentMethod", paymentMethod);
+                checkoutPayload.append("meetupLocation", meetupLocation);
+                checkoutPayload.append("phone", phone);
+                checkoutPayload.append("note", note);
+                checkoutPayload.append("paymentReference", paymentReference);
+                checkoutPayload.append("paymentProof", paymentProof);
+            } else {
+                checkoutPayload = {
+                    items: checkoutItems,
+                    paymentMethod,
+                    meetupLocation,
+                    phone,
+                    note,
+                    paymentReference,
+                };
+            }
+
+            await checkoutCart(checkoutPayload);
 
             dispatch(clearCart());
+            setSuccessTitle("Order Placed");
+            setSuccessMessage(
+                paymentMethod === "Cash"
+                    ? "Your request has been sent to the seller. Redirecting to marketplace..."
+                    : "Payment is pending until seller/admin verifies receipt. Redirecting to your orders..."
+            );
             setCheckoutSuccess(true);
             setTimeout(() => {
-                navigate("/marketplace");
+                navigate(paymentMethod === "Cash" ? "/marketplace" : "/orders");
             }, 2400);
         } catch (err) {
             console.error("Checkout failed:", err);
@@ -101,8 +177,8 @@ export default function Checkout() {
                         <CheckCircle2 size={40} className="text-[#15945a]" strokeWidth={1.5} />
                     </div>
                     <div className="space-y-2">
-                        <h2 className="text-slate-800 text-2xl font-black tracking-tight">Order Placed</h2>
-                        <p className="text-slate-500 text-sm font-medium">Your request has been sent to the seller. Redirecting to marketplace...</p>
+                        <h2 className="text-slate-800 text-2xl font-black tracking-tight">{successTitle}</h2>
+                        <p className="text-slate-500 text-sm font-medium">{successMessage}</p>
                     </div>
                 </div>
             </div>
@@ -206,12 +282,52 @@ export default function Checkout() {
                                         className="w-full rounded-xl border border-slate-200/80 bg-white text-slate-800 focus:border-[#48c96f] outline-none px-4 py-2.5 text-sm appearance-none cursor-pointer"
                                     >
                                         <option value="Cash">Cash on Handover</option>
-                                        <option value="Card">Visa/Mastercard</option>
-                                        <option value="PayPal">PayPal</option>
+                                        <option value="BankTransfer">Bank Transfer</option>
                                     </select>
                                     <CreditCard size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                                 </div>
                             </div>
+
+                            {paymentMethod === "BankTransfer" && (
+                                <>
+                                    <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                                        <p className="text-xs font-black uppercase tracking-wider text-slate-500">Bank Transfer Details</p>
+                                        <div className="mt-2 grid gap-1 text-xs text-slate-600">
+                                            {hasMultipleSellers ? (
+                                                <span>Checkout one seller at a time to see bank transfer details.</span>
+                                            ) : (
+                                                <>
+                                                    <span>Seller: {sellerPaymentProfile?.sellerName || "Seller"}</span>
+                                                    <span>Account Name: {selectedSellerPayout.bankAccountName || "Not provided"}</span>
+                                                    <span>Bank / Branch: {[selectedSellerPayout.bankName, selectedSellerPayout.bankBranch].filter(Boolean).join(" / ") || "Not provided"}</span>
+                                                    <span>Account Number: {selectedSellerPayout.bankAccountNumber || "Not provided"}</span>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Transaction Reference</label>
+                                        <input
+                                            type="text"
+                                            value={paymentReference}
+                                            onChange={(e) => setPaymentReference(e.target.value)}
+                                            placeholder="Reference ID, sender name, or payment note"
+                                            className="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 text-slate-800 focus:bg-white focus:border-[#48c96f] outline-none px-4 py-2.5 text-sm"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Receipt Screenshot</label>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => setPaymentProof(e.target.files?.[0] || null)}
+                                            className="w-full rounded-xl border border-slate-200/80 bg-white text-slate-700 file:mr-4 file:border-0 file:bg-slate-100 file:px-4 file:py-2.5 file:text-xs file:font-bold file:text-slate-600 text-xs"
+                                        />
+                                    </div>
+                                </>
+                            )}
 
                             <div className="md:col-span-2 space-y-1.5">
                                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Note for Seller</label>
@@ -227,7 +343,9 @@ export default function Checkout() {
 
                         <div className="flex items-start gap-2.5 bg-emerald-50/50 border border-emerald-500/20 p-3.5 rounded-2xl">
                             <ShieldCheck size={16} className="text-[#15945a] shrink-0 mt-0.5" />
-                            <span className="text-[11px] text-slate-500 block">No online payment is processed now. Confirm payment directly during campus handover.</span>
+                            <span className="text-[11px] text-slate-500 block">
+                                {paymentCopy[paymentMethod]}
+                            </span>
                         </div>
 
                         <button

@@ -158,8 +158,12 @@ function MarketplaceNavbar() {
                                         onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
                                         className="flex items-center gap-2 p-1 pl-2 pr-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-colors"
                                     >
-                                        <div className="h-7 w-7 rounded-full bg-gradient-to-br from-[#48c96f] to-[#15945a] flex items-center justify-center text-white font-bold text-xs">
-                                            {user?.username?.charAt(0).toUpperCase() || 'U'}
+                                        <div className="h-7 w-7 rounded-full bg-gradient-to-br from-[#48c96f] to-[#15945a] flex items-center justify-center text-white font-bold text-xs overflow-hidden">
+                                            {user?.profileImage ? (
+                                                <img src={user.profileImage} alt={user?.username || "Profile"} className="h-full w-full object-cover" />
+                                            ) : (
+                                                user?.username?.charAt(0).toUpperCase() || 'U'
+                                            )}
                                         </div>
                                         <span className="text-sm font-semibold text-slate-200 hidden sm:block max-w-[100px] truncate">
                                             {user?.username}

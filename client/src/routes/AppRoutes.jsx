@@ -11,6 +11,7 @@ import Cart from "../pages/Cart";
 import Checkout from "../pages/Checkout";
 import MyOrders from "../pages/MyOrders";
 import MySales from "../pages/MySales";
+import Profile from "../pages/Profile";
 
 /* ── Admin ── */
 import AdminRoute from "./AdminRoute";
@@ -39,6 +40,7 @@ function AppRoutes() {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/orders" element={<MyOrders />} />
             <Route path="/sales" element={<MySales />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/about" element={<About />} />
 
             {/* Admin — protected & nested under AdminLayout */}

@@ -12,11 +12,16 @@ const orderStatusLabels = {
 };
 
 const paymentStatusLabels = {
-    pending: "Unpaid / pay on handover",
+    pending: "Pending verification",
     paid: "Paid",
     failed: "Payment failed",
     cancelled: "Payment cancelled",
     refunded: "Refunded",
+};
+
+const paymentMethodLabels = {
+    Cash: "Cash on Handover",
+    BankTransfer: "Bank Transfer",
 };
 
 const OrderDetails = () => {
@@ -176,9 +181,15 @@ const OrderDetails = () => {
 
                     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                         <h2 className="text-lg font-bold text-slate-800 mb-4">Payment Details</h2>
-                        <p className="text-slate-700 text-sm mb-2"><span className="text-slate-500">Method:</span> {order.paymentMethod}</p>
+                        <p className="text-slate-700 text-sm mb-2"><span className="text-slate-500">Method:</span> {paymentMethodLabels[order.paymentMethod] || order.paymentMethod}</p>
+                        <p className="text-slate-700 text-sm mb-2"><span className="text-slate-500">Reference:</span> {order.paymentReference || "N/A"}</p>
                         <p className="text-slate-700 text-sm mb-2"><span className="text-slate-500">Transaction ID:</span> {order.transactionId || "N/A"}</p>
                         <p className="text-slate-700 text-sm"><span className="text-slate-500">Paid At:</span> {order.paidAt ? new Date(order.paidAt).toLocaleString() : "N/A"}</p>
+                        {order.paymentProofUrl && (
+                            <a href={order.paymentProofUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex text-sm font-bold text-[#15945a] hover:underline">
+                                View receipt screenshot
+                            </a>
+                        )}
                     </div>
                 </div>
             </div>

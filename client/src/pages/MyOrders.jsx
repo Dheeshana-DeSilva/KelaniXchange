@@ -33,11 +33,23 @@ const orderStatusLabels = {
 };
 
 const paymentStatusLabels = {
-    pending: "Payment: Unpaid / pay on handover",
+    pending: "Payment: Pending verification",
     paid: "Payment: Paid",
     failed: "Payment: Failed",
     cancelled: "Payment: Cancelled",
     refunded: "Payment: Refunded",
+};
+
+const paymentMethodLabels = {
+    Cash: "Cash on Handover",
+    BankTransfer: "Bank Transfer",
+};
+
+const getPaymentStatusLabel = (order) => {
+    if (order.paymentStatus === "pending" && order.paymentMethod === "Cash") {
+        return "Payment: Pay on handover";
+    }
+    return paymentStatusLabels[order.paymentStatus] || `Payment: ${order.paymentStatus}`;
 };
 
 export default function MyOrders() {
@@ -158,7 +170,7 @@ export default function MyOrders() {
                                                 className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border ${paymentClasses[order.paymentStatus] || paymentClasses.pending}`}
                                                 title="Payment status"
                                             >
-                                                {paymentStatusLabels[order.paymentStatus] || `Payment: ${order.paymentStatus}`}
+                                                {getPaymentStatusLabel(order)}
                                             </span>
                                             <span className="text-xs font-semibold text-slate-400">#{order._id.slice(-6).toUpperCase()}</span>
                                         </div>
@@ -196,9 +208,24 @@ export default function MyOrders() {
                                         )}
                                     </div>
                                 </div>
-                                {order.note && (
+                                        {order.note && (
                                     <div className="mt-4 rounded-2xl bg-slate-50 border border-slate-100 p-3 text-xs text-slate-500">
                                         <span className="font-bold text-slate-600">Note:</span> {order.note}
+                                    </div>
+                                )}
+                                {(order.paymentMethod || order.paymentReference || order.paymentProofUrl) && (
+                                    <div className="mt-4 rounded-2xl bg-slate-50 border border-slate-100 p-3 text-xs text-slate-500 space-y-1.5">
+                                        {order.paymentMethod && (
+                                            <p><span className="font-bold text-slate-600">Payment method:</span> {paymentMethodLabels[order.paymentMethod] || order.paymentMethod}</p>
+                                        )}
+                                        {order.paymentReference && (
+                                            <p><span className="font-bold text-slate-600">Reference:</span> {order.paymentReference}</p>
+                                        )}
+                                        {order.paymentProofUrl && (
+                                            <a href={order.paymentProofUrl} target="_blank" rel="noreferrer" className="inline-flex font-bold text-[#15945a] hover:underline">
+                                                View receipt screenshot
+                                            </a>
+                                        )}
                                     </div>
                                 )}
                             </div>
