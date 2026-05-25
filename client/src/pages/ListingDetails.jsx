@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from "react-router";
 import { useDispatch } from "react-redux";
 import {
     ArrowLeft, Calendar, MapPin, Tag, ShieldCheck,
-    Mail, User, Star, ArrowUpDown, Loader2, AlertCircle, Heart, X, ShoppingCart, Plus, Minus
+    Mail, User, Star, ArrowUpDown, Loader2, AlertCircle, Heart, X, ShoppingCart, Plus, Minus, ShoppingBag
 } from "lucide-react";
 import { addToCart } from "../features/cart/cartSlice";
 import { getListingById, getMyListings, deleteListing, updateListing } from "../services/listingService";
@@ -48,21 +48,30 @@ export default function ListingDetails() {
 
     const [cartQuantity, setCartQuantity] = useState(1);
 
+    const getCartItem = () => ({
+        id: listing._id,
+        title: listing.title,
+        price: listing.price,
+        image: listing.images?.[0] || CATEGORY_IMAGES[listing.category] || catOthers,
+        sellerId: listing.seller?._id || listing.seller,
+        category: listing.category,
+        condition: listing.condition,
+        availableQuantity: listing.quantity || 1,
+        quantity: cartQuantity
+    });
+
     const handleAddToCart = () => {
         if (!listing) return;
-        dispatch(addToCart({
-            id: listing._id,
-            title: listing.title,
-            price: listing.price,
-            image: listing.images?.[0] || CATEGORY_IMAGES[listing.category] || catOthers,
-            sellerId: listing.seller?._id || listing.seller,
-            category: listing.category,
-            condition: listing.condition,
-            availableQuantity: listing.quantity || 1,
-            quantity: cartQuantity
-        }));
+        dispatch(addToCart(getCartItem()));
         setCartQuantity(1);
         alert(`"${listing.title}" (Qty: ${cartQuantity}) has been added to your cart.`);
+    };
+
+    const handleBuyNow = () => {
+        if (!listing) return;
+        const buyNowItem = getCartItem();
+        sessionStorage.setItem("kx_buy_now", JSON.stringify(buyNowItem));
+        navigate("/checkout?mode=buy-now", { state: { buyNowItem } });
     };
 
     const [listing, setListing] = useState(null);
@@ -527,6 +536,12 @@ export default function ListingDetails() {
                                                 className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 shadow-md transition-all text-sm cursor-pointer"
                                             >
                                                 <ShoppingCart size={16} /> Add to Cart
+                                            </button>
+                                            <button
+                                                onClick={handleBuyNow}
+                                                className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#48c96f] hover:bg-[#3db65e] text-white font-bold py-3.5 shadow-md shadow-emerald-100 hover:shadow-lg transition-all text-sm cursor-pointer"
+                                            >
+                                                <ShoppingBag size={16} /> Buy Now
                                             </button>
                                         </>
                                     )}

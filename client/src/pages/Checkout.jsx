@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import {
     AlertCircle, ArrowLeft, CheckCircle2, CreditCard,
-    Loader2, MapPin, Phone, ShieldCheck, ShoppingBag
+    Loader2, MapPin, Phone, ShieldCheck, ShoppingBag, Trash2
 } from "lucide-react";
-import { clearCart, updateCartItemAvailability } from "../features/cart/cartSlice";
+import { clearCart, deleteFromCart, updateCartItemAvailability } from "../features/cart/cartSlice";
 import { getListingById } from "../services/listingService";
 import { checkoutCart } from "../services/orderService";
 import { getSellerPaymentProfile } from "../services/userService";
@@ -19,8 +19,22 @@ const paymentCopy = {
 export default function Checkout() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const location = useLocation();
     const { isAuthenticated } = useAuth();
-    const { items, totalItems, totalPrice } = useSelector(state => state.cart);
+    const { items: cartItems } = useSelector(state => state.cart);
+
+    const [buyNowItems, setBuyNowItems] = useState(() => {
+        const stateItem = location.state?.buyNowItem;
+        if (stateItem) return [stateItem];
+        if (new URLSearchParams(location.search).get("mode") !== "buy-now") return null;
+
+        try {
+            const storedItem = sessionStorage.getItem("kx_buy_now");
+            return storedItem ? [JSON.parse(storedItem)] : [];
+        } catch {
+            return [];
+        }
+    });
 
     const [paymentMethod, setPaymentMethod] = useState("Cash");
     const [meetupLocation, setMeetupLocation] = useState("University of Kelaniya - Main Campus");
@@ -34,6 +48,10 @@ export default function Checkout() {
     const [checkoutSuccess, setCheckoutSuccess] = useState(false);
     const [successTitle, setSuccessTitle] = useState("Order Placed");
     const [successMessage, setSuccessMessage] = useState("Your request has been sent to the seller. Redirecting to marketplace...");
+    const isBuyNowCheckout = Array.isArray(buyNowItems);
+    const items = isBuyNowCheckout ? buyNowItems : cartItems;
+    const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+    const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const sellerIds = [...new Set(items.map(item => item.sellerId).filter(Boolean))];
     const hasMultipleSellers = sellerIds.length > 1;
     const selectedSellerPayout = sellerPaymentProfile?.payoutDetails || {};
@@ -53,10 +71,29 @@ export default function Checkout() {
                     const listing = await getListingById(item.id);
                     if (!isMounted) return;
 
-                    dispatch(updateCartItemAvailability({
-                        id: item.id,
-                        availableQuantity: listing.quantity,
-                    }));
+                    if (isBuyNowCheckout) {
+                        setBuyNowItems((prev) => {
+                            if (!prev) return prev;
+                            const nextItems = prev.map((buyNowItem) => {
+                                if (buyNowItem.id !== item.id) return buyNowItem;
+                                const availableQuantity = Number(listing.quantity);
+                                return {
+                                    ...buyNowItem,
+                                    availableQuantity,
+                                    quantity: availableQuantity > 0
+                                        ? Math.min(buyNowItem.quantity, availableQuantity)
+                                        : buyNowItem.quantity,
+                                };
+                            });
+                            sessionStorage.setItem("kx_buy_now", JSON.stringify(nextItems[0]));
+                            return nextItems;
+                        });
+                    } else {
+                        dispatch(updateCartItemAvailability({
+                            id: item.id,
+                            availableQuantity: listing.quantity,
+                        }));
+                    }
                 } catch (err) {
                     console.error("Failed to refresh checkout item availability:", err);
                 }
@@ -70,7 +107,7 @@ export default function Checkout() {
         return () => {
             isMounted = false;
         };
-    }, [dispatch, items]);
+    }, [dispatch, isBuyNowCheckout, items.map(item => `${item.id}:${item.quantity}`).join("|")]);
 
     useEffect(() => {
         let isMounted = true;
@@ -101,6 +138,23 @@ export default function Checkout() {
         };
     }, [sellerIds.join("|")]);
 
+    const handleRemoveCheckoutItem = (itemId) => {
+        if (isBuyNowCheckout) {
+            setBuyNowItems((prev) => {
+                const nextItems = (prev || []).filter((item) => item.id !== itemId);
+                if (nextItems.length > 0) {
+                    sessionStorage.setItem("kx_buy_now", JSON.stringify(nextItems[0]));
+                } else {
+                    sessionStorage.removeItem("kx_buy_now");
+                }
+                return nextItems;
+            });
+            return;
+        }
+
+        dispatch(deleteFromCart(itemId));
+    };
+
     const handleCheckout = async (e) => {
         e.preventDefault();
         if (items.length === 0) return;
@@ -121,7 +175,7 @@ export default function Checkout() {
                 return;
             }
 
-            const checkoutItems = items.map(item => ({
+            const orderItems = items.map(item => ({
                 listingId: item.id,
                 sellerId: item.sellerId,
                 quantity: item.quantity,
@@ -130,7 +184,7 @@ export default function Checkout() {
             let checkoutPayload;
             if (paymentProof) {
                 checkoutPayload = new FormData();
-                checkoutPayload.append("items", JSON.stringify(checkoutItems));
+                checkoutPayload.append("items", JSON.stringify(orderItems));
                 checkoutPayload.append("paymentMethod", paymentMethod);
                 checkoutPayload.append("meetupLocation", meetupLocation);
                 checkoutPayload.append("phone", phone);
@@ -139,7 +193,7 @@ export default function Checkout() {
                 checkoutPayload.append("paymentProof", paymentProof);
             } else {
                 checkoutPayload = {
-                    items: checkoutItems,
+                    items: orderItems,
                     paymentMethod,
                     meetupLocation,
                     phone,
@@ -150,7 +204,12 @@ export default function Checkout() {
 
             await checkoutCart(checkoutPayload);
 
-            dispatch(clearCart());
+            if (isBuyNowCheckout) {
+                sessionStorage.removeItem("kx_buy_now");
+                setBuyNowItems([]);
+            } else {
+                dispatch(clearCart());
+            }
             setSuccessTitle("Order Placed");
             setSuccessMessage(
                 paymentMethod === "Cash"
@@ -193,14 +252,16 @@ export default function Checkout() {
                     <div className="space-y-1">
                         <h1 className="text-xl font-black text-slate-800">Nothing to Checkout</h1>
                         <p className="text-xs text-slate-500 max-w-[300px] mx-auto leading-relaxed">
-                            Add items to your cart before placing an order.
+                            {isBuyNowCheckout
+                                ? "The selected Buy Now item was removed. Choose another item from the marketplace."
+                                : "Add items to your cart before placing an order."}
                         </p>
                     </div>
                     <Link
-                        to="/marketplace"
+                        to={isBuyNowCheckout ? "/marketplace" : "/cart"}
                         className="inline-block px-5 py-2.5 rounded-xl bg-[#48c96f] text-white hover:bg-[#3db65e] text-xs font-bold transition-all shadow-lg shadow-emerald-500/10"
                     >
-                        Browse Marketplace
+                        {isBuyNowCheckout ? "Browse Marketplace" : "Back to Cart"}
                     </Link>
                 </div>
             </div>
@@ -212,10 +273,10 @@ export default function Checkout() {
             <div className="w-full max-w-[1120px] space-y-8">
                 <div>
                     <Link
-                        to="/cart"
+                        to={isBuyNowCheckout ? "/marketplace" : "/cart"}
                         className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors"
                     >
-                        <ArrowLeft size={14} /> Back to Cart
+                        <ArrowLeft size={14} /> {isBuyNowCheckout ? "Back to Marketplace" : "Back to Cart"}
                     </Link>
                 </div>
 
@@ -379,7 +440,17 @@ export default function Checkout() {
                                         <p className="text-sm font-bold text-slate-800 truncate">{item.title}</p>
                                         <p className="text-xs text-slate-500 mt-0.5">Qty {item.quantity} x Rs. {Number(item.price).toLocaleString()}</p>
                                     </div>
-                                    <p className="text-sm font-black text-[#15945a] whitespace-nowrap">Rs. {Number(item.price * item.quantity).toLocaleString()}</p>
+                                    <div className="flex flex-col items-end gap-2">
+                                        <p className="text-sm font-black text-[#15945a] whitespace-nowrap">Rs. {Number(item.price * item.quantity).toLocaleString()}</p>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveCheckoutItem(item.id)}
+                                            className="inline-flex items-center gap-1 rounded-lg border border-rose-100 bg-rose-50 px-2 py-1 text-[11px] font-bold text-rose-600 hover:bg-rose-100 transition-colors"
+                                            title="Remove from checkout"
+                                        >
+                                            <Trash2 size={12} /> Remove
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                         </div>

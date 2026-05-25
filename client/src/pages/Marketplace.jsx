@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useSearchParams } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import {
     Search, SlidersHorizontal, X, ChevronDown,
     Heart, MessageCircle, RefreshCw, Tag,
@@ -166,31 +166,62 @@ function SkeletonCard() {
 /* ── Listing Card ── */
 function ListingCard({ listing, index }) {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const condStyle = CONDITION_COLORS[listing.condition] ?? CONDITION_COLORS["Used"];
     const img = listing.images?.[0] || CATEGORY_IMAGES[listing.category] || catOthers;
+    const cartItem = {
+        id: listing._id,
+        title: listing.title,
+        price: listing.price,
+        image: img,
+        sellerId: listing.seller?._id || listing.seller,
+        category: listing.category,
+        condition: listing.condition,
+        availableQuantity: listing.quantity || 1
+    };
+    const isUnavailable = listing.status === "sold" || listing.status === "reserved" || Number(listing.quantity) <= 0;
+
+    const goToDetails = (e) => {
+        e?.preventDefault();
+        e?.stopPropagation();
+        navigate(`/marketplace/${listing._id}`);
+    };
 
     const handleAddToCart = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        dispatch(addToCart({
-            id: listing._id,
-            title: listing.title,
-            price: listing.price,
-            image: img,
-            sellerId: listing.seller?._id || listing.seller,
-            category: listing.category,
-            condition: listing.condition,
-            availableQuantity: listing.quantity || 1
-        }));
+        if (isUnavailable) return;
+        dispatch(addToCart(cartItem));
         alert(`"${listing.title}" has been added to your cart.`);
+    };
+
+    const handleBuyNow = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (isUnavailable) return;
+        const buyNowItem = { ...cartItem, quantity: 1 };
+        sessionStorage.setItem("kx_buy_now", JSON.stringify(buyNowItem));
+        navigate("/checkout?mode=buy-now", { state: { buyNowItem } });
+    };
+
+    const handleWishlistClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        navigate("/wishlist");
     };
 
     // Helper to get formatted category name
     const catName = CATEGORIES.find(c => c.value === listing.category)?.label || listing.category?.replace(/-/g, " ");
 
     return (
-        <Link
-            to={`/marketplace/${listing._id}`}
+        <article
+            role="button"
+            tabIndex={0}
+            onClick={goToDetails}
+            onKeyDown={(e) => {
+                if (e.target !== e.currentTarget) return;
+                if (e.key === "Enter" || e.key === " ") goToDetails(e);
+            }}
             className="listing-card"
             style={{ animationDelay: `${index * 40}ms`, textDecoration: "none", color: "inherit" }}
         >
@@ -221,7 +252,8 @@ function ListingCard({ listing, index }) {
 
                 {/* Heart Button */}
                 <button
-                    onClick={(e) => e.preventDefault()}
+                    type="button"
+                    onClick={handleWishlistClick}
                     style={{
                         position: "absolute", top: 16, right: 16,
                         width: 32, height: 32, borderRadius: "50%",
@@ -231,6 +263,7 @@ function ListingCard({ listing, index }) {
                     }}
                     onMouseEnter={e => { e.currentTarget.style.color = "#f43f5e"; e.currentTarget.style.borderColor = "#f43f5e"; }}
                     onMouseLeave={e => { e.currentTarget.style.color = "#94a3b8"; e.currentTarget.style.borderColor = "#e2e8f0"; }}
+                    title="Wishlist"
                 >
                     <Heart size={14} />
                 </button>
@@ -274,7 +307,8 @@ function ListingCard({ listing, index }) {
                     <div style={{ display: "flex", gap: 6 }} onClick={e => e.stopPropagation()}>
                         {listing.isExchangeAvailable && (
                             <button
-                                onClick={e => { e.preventDefault(); e.stopPropagation(); }}
+                                type="button"
+                                onClick={goToDetails}
                                 style={{
                                     width: 32, height: 32, borderRadius: 8, background: "#fff", border: "1.5px solid #e2e8f0",
                                     display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b",
@@ -282,21 +316,23 @@ function ListingCard({ listing, index }) {
                                 }}
                                 onMouseEnter={e => { e.currentTarget.style.borderColor = "#cbd5e1"; e.currentTarget.style.color = "#334155"; }}
                                 onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#64748b"; }}
-                                title="Exchange Available"
+                                title="Request Exchange"
                             >
                                 <ArrowUpDown size={14} />
                             </button>
                         )}
                         <button
+                            type="button"
                             onClick={handleAddToCart}
+                            disabled={isUnavailable}
                             style={{
-                                width: 32, height: 32, borderRadius: 8, background: "#48c96f", border: "none",
+                                width: 32, height: 32, borderRadius: 8, background: isUnavailable ? "#cbd5e1" : "#48c96f", border: "none",
                                 display: "flex", alignItems: "center", justifyContent: "center", color: "#fff",
-                                cursor: "pointer", transition: "all 0.2s"
+                                cursor: isUnavailable ? "not-allowed" : "pointer", transition: "all 0.2s"
                             }}
-                            onMouseEnter={e => { e.currentTarget.style.background = "#15945a"; }}
-                            onMouseLeave={e => { e.currentTarget.style.background = "#48c96f"; }}
-                            title="Add to Cart"
+                            onMouseEnter={e => { if (!isUnavailable) e.currentTarget.style.background = "#15945a"; }}
+                            onMouseLeave={e => { if (!isUnavailable) e.currentTarget.style.background = "#48c96f"; }}
+                            title={isUnavailable ? "Unavailable" : "Add to Cart"}
                         >
                             <ShoppingCart size={14} />
                         </button>
@@ -305,21 +341,70 @@ function ListingCard({ listing, index }) {
 
                 {/* Action Button */}
                 {listing.isExchangeAvailable ? (
-                    <div style={{ display: "flex", gap: 8 }}>
-                        <button className="btn-exchange" style={{ flex: 1 }} onClick={e => e.preventDefault()}>
-                            <RefreshCw size={14} /> Exchange
-                        </button>
-                        <button className="btn-view-details" style={{ flex: 1 }} onClick={e => e.preventDefault()}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                        <button type="button" className="btn-view-details" onClick={goToDetails}>
                             View Details
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleBuyNow}
+                            disabled={isUnavailable}
+                            style={{
+                                padding: 10,
+                                borderRadius: 10,
+                                fontSize: 13,
+                                fontWeight: 800,
+                                background: isUnavailable ? "#cbd5e1" : "#48c96f",
+                                color: "#fff",
+                                border: "none",
+                                cursor: isUnavailable ? "not-allowed" : "pointer",
+                                transition: "all 0.2s",
+                                fontFamily: "inherit",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: 6,
+                            }}
+                        >
+                            <ShoppingBag size={14} /> Buy Now
+                        </button>
+                        <button type="button" className="btn-exchange" style={{ gridColumn: "1 / -1" }} onClick={goToDetails}>
+                            <RefreshCw size={14} /> Exchange
                         </button>
                     </div>
                 ) : (
-                    <button className="btn-view-details" onClick={e => e.preventDefault()}>
-                        View Details
-                    </button>
+                    <div style={{ display: "flex", gap: 8 }}>
+                        <button type="button" className="btn-view-details" style={{ flex: 1 }} onClick={goToDetails}>
+                            View Details
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleBuyNow}
+                            disabled={isUnavailable}
+                            style={{
+                                flex: 1,
+                                padding: 10,
+                                borderRadius: 10,
+                                fontSize: 13,
+                                fontWeight: 800,
+                                background: isUnavailable ? "#cbd5e1" : "#48c96f",
+                                color: "#fff",
+                                border: "none",
+                                cursor: isUnavailable ? "not-allowed" : "pointer",
+                                transition: "all 0.2s",
+                                fontFamily: "inherit",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: 6,
+                            }}
+                        >
+                            <ShoppingBag size={14} /> Buy Now
+                        </button>
+                    </div>
                 )}
             </div>
-        </Link>
+        </article>
     );
 }
 
