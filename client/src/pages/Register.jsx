@@ -130,7 +130,7 @@ export default function Register() {
         }));
         if (registerAsync.fulfilled.match(result)) {
             setSuccess(true);
-            setTimeout(() => navigate("/"), 1800);
+            setTimeout(() => navigate("/marketplace"), 1800);
         }
     };
 
@@ -141,7 +141,7 @@ export default function Register() {
                     <CheckCircle2 size={38} color="#48c96f" strokeWidth={1.5} />
                 </div>
                 <h2 style={{ color: "#fff", fontSize: "26px", fontWeight: 900, margin: "0 0 8px" }}>Welcome aboard! 🎉</h2>
-                <p style={{ color: "#64748b", margin: 0, fontWeight: 500 }}>Your account is ready. Redirecting…</p>
+                <p style={{ color: "#64748b", margin: 0, fontWeight: 500 }}>Your account is ready. Redirecting to marketplace...</p>
             </div>
         </div>
     );

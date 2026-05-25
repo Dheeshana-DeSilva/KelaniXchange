@@ -50,9 +50,10 @@ const createExchangeRequest = async (req, res) => {
         }
 
         // Both listings should be available
+        const exchangeableStatuses = ["available", "active"];
         if (
-            requestedListing.status !== "available" ||
-            offeredListing.status !== "available"
+            !exchangeableStatuses.includes(requestedListing.status) ||
+            !exchangeableStatuses.includes(offeredListing.status)
         ) {
             return res.status(400).json({
                 message: "Both listings must be available for exchange",

@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import { 
     Menu, X, Bell, Heart, ShoppingCart, 
-    User, LogIn, LogOut, Package, PlusCircle, ReceiptText, Store
+    User, LogIn, LogOut, Package, PlusCircle, ReceiptText, Store, ArrowRightLeft
 } from "lucide-react";
 import logo from "../../assets/X_logo.png";
 import { useAuth } from "../../context/AuthContext";
@@ -165,6 +165,19 @@ function MarketplaceNavbar() {
                                 )}
                             </Link>
 
+                            {/* Exchanges Icon */}
+                            {isAuthenticated && (
+                                <Link
+                                    to="/exchanges"
+                                    className={`relative p-2 transition-colors hover:bg-white/5 rounded-full ${
+                                        location.pathname.startsWith("/exchanges") ? "text-white bg-white/10" : "text-slate-300 hover:text-white"
+                                    }`}
+                                    title="My Exchanges"
+                                >
+                                    <ArrowRightLeft size={20} />
+                                </Link>
+                            )}
+
                             {/* Notifications Icon */}
                             {isAuthenticated && (
                                 <button className="relative p-2 text-slate-300 hover:text-white transition-colors hover:bg-white/5 rounded-full">
@@ -218,7 +231,6 @@ function MarketplaceNavbar() {
                                             <Link to="/sales" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
                                                 <Store size={16} className="text-[#48c96f]" /> My Sales
                                             </Link>
-                                            
                                             <div className="my-2 border-t border-white/10" />
                                             
                                             <button 

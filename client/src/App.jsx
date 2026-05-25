@@ -12,6 +12,7 @@ const MARKETPLACE_FLOW_PREFIXES = [
   "/checkout",
   "/orders",
   "/sales",
+  "/exchanges",
   "/wishlist",
   "/profile",
 ];

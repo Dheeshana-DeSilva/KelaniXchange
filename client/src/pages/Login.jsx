@@ -105,7 +105,7 @@ export default function Login() {
             if (loggedInUser?.role === "ADMIN") {
                 navigate("/admin");
             } else {
-                navigate("/");
+                navigate("/marketplace");
             }
         }
     };

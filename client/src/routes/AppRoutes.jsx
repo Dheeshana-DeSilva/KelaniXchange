@@ -13,6 +13,7 @@ import MyOrders from "../pages/MyOrders";
 import MySales from "../pages/MySales";
 import Profile from "../pages/Profile";
 import Wishlist from "../pages/Wishlist";
+import MyExchanges from "../pages/MyExchanges";
 
 /* ── Admin ── */
 import AdminRoute from "./AdminRoute";
@@ -41,6 +42,7 @@ function AppRoutes() {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/orders" element={<MyOrders />} />
             <Route path="/sales" element={<MySales />} />
+            <Route path="/exchanges" element={<MyExchanges />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/wishlist" element={<Wishlist />} />
             <Route path="/about" element={<About />} />

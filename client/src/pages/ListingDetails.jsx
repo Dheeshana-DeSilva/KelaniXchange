@@ -219,7 +219,7 @@ export default function ListingDetails() {
         try {
             const data = await getMyListings();
             const availableListings = (data.listings || []).filter(l => 
-                l.status === "available" || l.status === "active"
+                (l.status === "available" || l.status === "active") && l._id !== id
             );
             setMyListings(availableListings);
             if (availableListings.length > 0) {
