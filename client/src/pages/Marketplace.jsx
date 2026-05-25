@@ -10,7 +10,9 @@ import {
     MoreHorizontal, GraduationCap, Car, ShoppingCart
 } from "lucide-react";
 import { fetchListings, setFilters, clearFilters } from "../features/products/productsSlice";
-import { addToCart } from "../features/cart/cartSlice";
+import { addToCart, deleteFromCart } from "../features/cart/cartSlice";
+import { addToWishlist, getWishlist, removeFromWishlist } from "../services/wishlistService";
+import { useAuth } from "../context/AuthContext";
 
 import catBooksStationery from "../assets/category_books_stationery.png";
 import catElectronics from "../assets/category_electronics_v2.png";
@@ -136,9 +138,6 @@ const pageStyles = `
 .cat-vehicles { background: #fce7f3; color: #db2777; }
 .cat-others { background: #f1f5f9; color: #475569; }
 
-/* View Button */
-.btn-view-details { width: 100%; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 700; background: #fff; color: #64748b; border: 1.5px solid #e2e8f0; cursor: pointer; transition: all 0.2s; font-family: inherit; }
-.btn-view-details:hover { border-color: #cbd5e1; color: #334155; background: #f8fafc; }
 .btn-exchange { width: 100%; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 700; background: rgba(72,201,111,0.08); color: #15945a; border: 1.5px solid rgba(72,201,111,0.3); cursor: pointer; transition: all 0.2s; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; }
 .btn-exchange:hover { background: rgba(72,201,111,0.15); border-color: #48c96f; }
 
@@ -164,7 +163,7 @@ function SkeletonCard() {
 }
 
 /* ── Listing Card ── */
-function ListingCard({ listing, index }) {
+function ListingCard({ listing, index, isWishlisted, isInCart, onWishlistToggle }) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const condStyle = CONDITION_COLORS[listing.condition] ?? CONDITION_COLORS["Used"];
@@ -187,12 +186,17 @@ function ListingCard({ listing, index }) {
         navigate(`/marketplace/${listing._id}`);
     };
 
-    const handleAddToCart = (e) => {
+    const handleCartToggle = (e) => {
         e.preventDefault();
         e.stopPropagation();
         if (isUnavailable) return;
+
+        if (isInCart) {
+            dispatch(deleteFromCart(listing._id));
+            return;
+        }
+
         dispatch(addToCart(cartItem));
-        alert(`"${listing.title}" has been added to your cart.`);
     };
 
     const handleBuyNow = (e) => {
@@ -207,7 +211,7 @@ function ListingCard({ listing, index }) {
     const handleWishlistClick = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        navigate("/wishlist");
+        onWishlistToggle(listing._id);
     };
 
     // Helper to get formatted category name
@@ -259,13 +263,13 @@ function ListingCard({ listing, index }) {
                         width: 32, height: 32, borderRadius: "50%",
                         background: "#fff", border: "1px solid #e2e8f0",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        cursor: "pointer", color: "#94a3b8", transition: "all 0.2s"
+                        cursor: "pointer", color: isWishlisted ? "#f43f5e" : "#94a3b8", transition: "all 0.2s"
                     }}
                     onMouseEnter={e => { e.currentTarget.style.color = "#f43f5e"; e.currentTarget.style.borderColor = "#f43f5e"; }}
-                    onMouseLeave={e => { e.currentTarget.style.color = "#94a3b8"; e.currentTarget.style.borderColor = "#e2e8f0"; }}
-                    title="Wishlist"
+                    onMouseLeave={e => { e.currentTarget.style.color = isWishlisted ? "#f43f5e" : "#94a3b8"; e.currentTarget.style.borderColor = "#e2e8f0"; }}
+                    title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
                 >
-                    <Heart size={14} />
+                    <Heart size={14} className={isWishlisted ? "fill-rose-500" : ""} />
                 </button>
             </div>
 
@@ -305,46 +309,27 @@ function ListingCard({ listing, index }) {
                     </span>
                     
                     <div style={{ display: "flex", gap: 6 }} onClick={e => e.stopPropagation()}>
-                        {listing.isExchangeAvailable && (
-                            <button
-                                type="button"
-                                onClick={goToDetails}
-                                style={{
-                                    width: 32, height: 32, borderRadius: 8, background: "#fff", border: "1.5px solid #e2e8f0",
-                                    display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b",
-                                    cursor: "pointer", transition: "all 0.2s"
-                                }}
-                                onMouseEnter={e => { e.currentTarget.style.borderColor = "#cbd5e1"; e.currentTarget.style.color = "#334155"; }}
-                                onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#64748b"; }}
-                                title="Request Exchange"
-                            >
-                                <ArrowUpDown size={14} />
-                            </button>
-                        )}
                         <button
                             type="button"
-                            onClick={handleAddToCart}
+                            onClick={handleCartToggle}
                             disabled={isUnavailable}
                             style={{
-                                width: 32, height: 32, borderRadius: 8, background: isUnavailable ? "#cbd5e1" : "#48c96f", border: "none",
+                                width: 32, height: 32, borderRadius: 8, background: isUnavailable ? "#cbd5e1" : isInCart ? "#0f172a" : "#48c96f", border: "none",
                                 display: "flex", alignItems: "center", justifyContent: "center", color: "#fff",
                                 cursor: isUnavailable ? "not-allowed" : "pointer", transition: "all 0.2s"
                             }}
-                            onMouseEnter={e => { if (!isUnavailable) e.currentTarget.style.background = "#15945a"; }}
-                            onMouseLeave={e => { if (!isUnavailable) e.currentTarget.style.background = "#48c96f"; }}
-                            title={isUnavailable ? "Unavailable" : "Add to Cart"}
+                            onMouseEnter={e => { if (!isUnavailable) e.currentTarget.style.background = isInCart ? "#334155" : "#15945a"; }}
+                            onMouseLeave={e => { if (!isUnavailable) e.currentTarget.style.background = isInCart ? "#0f172a" : "#48c96f"; }}
+                            title={isUnavailable ? "Unavailable" : isInCart ? "Remove from Cart" : "Add to Cart"}
                         >
                             <ShoppingCart size={14} />
                         </button>
                     </div>
                 </div>
 
-                {/* Action Button */}
+                {/* Action Buttons */}
                 {listing.isExchangeAvailable ? (
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                        <button type="button" className="btn-view-details" onClick={goToDetails}>
-                            View Details
-                        </button>
                         <button
                             type="button"
                             onClick={handleBuyNow}
@@ -368,40 +353,35 @@ function ListingCard({ listing, index }) {
                         >
                             <ShoppingBag size={14} /> Buy Now
                         </button>
-                        <button type="button" className="btn-exchange" style={{ gridColumn: "1 / -1" }} onClick={goToDetails}>
+                        <button type="button" className="btn-exchange" onClick={goToDetails}>
                             <RefreshCw size={14} /> Exchange
                         </button>
                     </div>
                 ) : (
-                    <div style={{ display: "flex", gap: 8 }}>
-                        <button type="button" className="btn-view-details" style={{ flex: 1 }} onClick={goToDetails}>
-                            View Details
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleBuyNow}
-                            disabled={isUnavailable}
-                            style={{
-                                flex: 1,
-                                padding: 10,
-                                borderRadius: 10,
-                                fontSize: 13,
-                                fontWeight: 800,
-                                background: isUnavailable ? "#cbd5e1" : "#48c96f",
-                                color: "#fff",
-                                border: "none",
-                                cursor: isUnavailable ? "not-allowed" : "pointer",
-                                transition: "all 0.2s",
-                                fontFamily: "inherit",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                gap: 6,
-                            }}
-                        >
-                            <ShoppingBag size={14} /> Buy Now
-                        </button>
-                    </div>
+                    <button
+                        type="button"
+                        onClick={handleBuyNow}
+                        disabled={isUnavailable}
+                        style={{
+                            width: "100%",
+                            padding: 10,
+                            borderRadius: 10,
+                            fontSize: 13,
+                            fontWeight: 800,
+                            background: isUnavailable ? "#cbd5e1" : "#48c96f",
+                            color: "#fff",
+                            border: "none",
+                            cursor: isUnavailable ? "not-allowed" : "pointer",
+                            transition: "all 0.2s",
+                            fontFamily: "inherit",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: 6,
+                        }}
+                    >
+                        <ShoppingBag size={14} /> Buy Now
+                    </button>
                 )}
             </div>
         </article>
@@ -498,6 +478,9 @@ function FilterContent({ localFilters, setLocalFilters, onApply, onReset }) {
 /* ── Main Marketplace Page ── */
 export default function Marketplace() {
     const dispatch = useDispatch();
+    const { isAuthenticated } = useAuth();
+    const navigate = useNavigate();
+    const cartItems = useSelector(s => s.cart?.items || []);
     const productsState = useSelector(s => s.products) || {};
     const { 
         items: listings = [], 
@@ -517,6 +500,7 @@ export default function Marketplace() {
         exchangeAvailable: false,
     });
     const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+    const [wishlistIds, setWishlistIds] = useState([]);
 
     const buildParams = useCallback((overrides = {}) => {
         const f = { ...localFilters, search: searchInput, sort: sortBy, ...overrides };
@@ -552,6 +536,31 @@ export default function Marketplace() {
         dispatchFetch();
     }, [dispatchFetch]);
 
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadWishlist = async () => {
+            if (!isAuthenticated) {
+                setWishlistIds([]);
+                return;
+            }
+
+            try {
+                const data = await getWishlist();
+                if (!isMounted) return;
+                setWishlistIds((data.wishlist || []).map((item) => item?._id || item).filter(Boolean));
+            } catch (err) {
+                console.error("Failed to load wishlist:", err);
+            }
+        };
+
+        loadWishlist();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [isAuthenticated]);
+
     /* Search with debounce */
     useEffect(() => {
         const t = setTimeout(() => dispatchFetch(), 450);
@@ -583,6 +592,32 @@ export default function Marketplace() {
         dispatch(fetchListings({}));
         setSearchParams({});
         setMobileFilterOpen(false);
+    };
+
+    const handleWishlistToggle = async (listingId) => {
+        if (!isAuthenticated) {
+            navigate("/login");
+            return;
+        }
+
+        const alreadySaved = wishlistIds.includes(listingId);
+        setWishlistIds((prev) =>
+            alreadySaved ? prev.filter((id) => id !== listingId) : [...prev, listingId]
+        );
+
+        try {
+            if (alreadySaved) {
+                await removeFromWishlist(listingId);
+            } else {
+                await addToWishlist(listingId);
+            }
+            window.dispatchEvent(new Event("kx:wishlist-updated"));
+        } catch (err) {
+            setWishlistIds((prev) =>
+                alreadySaved ? [...prev, listingId] : prev.filter((id) => id !== listingId)
+            );
+            alert(err.response?.data?.message || "Failed to update wishlist.");
+        }
     };
 
     /* Sort listings client-side for price sorts (server may not support) */
@@ -806,7 +841,14 @@ export default function Marketplace() {
                                     </p>
                                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 20 }}>
                                         {sortedListings.map((listing, i) => (
-                                            <ListingCard key={listing._id} listing={listing} index={i} />
+                                            <ListingCard
+                                                key={listing._id}
+                                                listing={listing}
+                                                index={i}
+                                                isWishlisted={wishlistIds.includes(listing._id)}
+                                                isInCart={cartItems.some((item) => item.id === listing._id)}
+                                                onWishlistToggle={handleWishlistToggle}
+                                            />
                                         ))}
                                     </div>
 

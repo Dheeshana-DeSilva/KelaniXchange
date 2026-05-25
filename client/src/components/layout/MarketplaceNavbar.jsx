@@ -8,6 +8,7 @@ import {
 import logo from "../../assets/X_logo.png";
 import { useAuth } from "../../context/AuthContext";
 import { logout } from "../../features/auth/authSlice";
+import { getWishlist } from "../../services/wishlistService";
 
 function MarketplaceNavbar() {
     const [scrolled, setScrolled] = useState(false);
@@ -20,8 +21,7 @@ function MarketplaceNavbar() {
     // Selectors
     const { user, isAuthenticated } = useAuth();
     const cartItemsCount = useSelector(state => state.cart?.totalItems || 0);
-    // Mock counts for wishlist and notifications for now
-    const wishlistCount = 0; 
+    const [wishlistCount, setWishlistCount] = useState(0);
     const notificationCount = 2;
 
     useEffect(() => {
@@ -35,6 +35,34 @@ function MarketplaceNavbar() {
         setMobileOpen(false);
         setProfileDropdownOpen(false);
     }, [location.pathname]);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadWishlistCount = async () => {
+            if (!isAuthenticated) {
+                setWishlistCount(0);
+                return;
+            }
+
+            try {
+                const data = await getWishlist();
+                if (isMounted) {
+                    setWishlistCount(data.count ?? data.wishlist?.length ?? 0);
+                }
+            } catch (err) {
+                console.error("Failed to load wishlist count:", err);
+            }
+        };
+
+        loadWishlistCount();
+        window.addEventListener("kx:wishlist-updated", loadWishlistCount);
+
+        return () => {
+            isMounted = false;
+            window.removeEventListener("kx:wishlist-updated", loadWishlistCount);
+        };
+    }, [isAuthenticated, location.pathname]);
 
     // Close profile dropdown when clicking outside
     useEffect(() => {

@@ -293,6 +293,51 @@ export default function Checkout() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    <div className="lg:col-span-5 bg-white border border-slate-200/80 rounded-3xl p-6 shadow-md shadow-slate-100 space-y-5">
+                        <h2 className="text-lg font-black text-slate-800 border-b border-slate-100 pb-3">Review Items</h2>
+
+                        <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1">
+                            {items.map((item) => (
+                                <div key={item.id} className="flex gap-3 border border-slate-100 rounded-2xl p-3 bg-slate-50/40">
+                                    <div className="h-14 w-14 bg-white rounded-xl flex items-center justify-center p-1.5 shrink-0 border border-slate-100 overflow-hidden">
+                                        <img src={item.image} alt={item.title} className="max-h-full max-w-full object-contain rounded-lg" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-bold text-slate-800 truncate">{item.title}</p>
+                                        <p className="text-xs text-slate-500 mt-0.5">Qty {item.quantity} x Rs. {Number(item.price).toLocaleString()}</p>
+                                    </div>
+                                    <div className="flex flex-col items-end gap-2">
+                                        <p className="text-sm font-black text-[#15945a] whitespace-nowrap">Rs. {Number(item.price * item.quantity).toLocaleString()}</p>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveCheckoutItem(item.id)}
+                                            className="inline-flex items-center gap-1 rounded-lg border border-rose-100 bg-rose-50 px-2 py-1 text-[11px] font-bold text-rose-600 hover:bg-rose-100 transition-colors"
+                                            title="Remove from checkout"
+                                        >
+                                            <Trash2 size={12} /> Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="space-y-2 pt-2 border-t border-slate-100">
+                            <div className="flex justify-between text-sm text-slate-500">
+                                <span>Items Subtotal</span>
+                                <span className="font-semibold text-slate-750">Rs. {Number(totalPrice).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between text-sm text-slate-500">
+                                <span>Campus Meetup Fee</span>
+                                <span className="font-semibold text-[#15945a] uppercase text-xs tracking-wider">Free</span>
+                            </div>
+                            <div className="my-3 border-t border-slate-100" />
+                            <div className="flex justify-between text-slate-800 font-black text-lg">
+                                <span>Total</span>
+                                <span className="text-[#15945a]">Rs. {Number(totalPrice).toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <form onSubmit={handleCheckout} className="lg:col-span-7 bg-white border border-slate-200/80 rounded-3xl p-6 shadow-md shadow-slate-100 space-y-5">
                         <h2 className="text-lg font-black text-slate-800 border-b border-slate-100 pb-3">Handover Details</h2>
 
@@ -426,51 +471,6 @@ export default function Checkout() {
                             )}
                         </button>
                     </form>
-
-                    <div className="lg:col-span-5 bg-white border border-slate-200/80 rounded-3xl p-6 shadow-md shadow-slate-100 space-y-5">
-                        <h2 className="text-lg font-black text-slate-800 border-b border-slate-100 pb-3">Review Items</h2>
-
-                        <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1">
-                            {items.map((item) => (
-                                <div key={item.id} className="flex gap-3 border border-slate-100 rounded-2xl p-3 bg-slate-50/40">
-                                    <div className="h-14 w-14 bg-white rounded-xl flex items-center justify-center p-1.5 shrink-0 border border-slate-100 overflow-hidden">
-                                        <img src={item.image} alt={item.title} className="max-h-full max-w-full object-contain rounded-lg" />
-                                    </div>
-                                    <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-bold text-slate-800 truncate">{item.title}</p>
-                                        <p className="text-xs text-slate-500 mt-0.5">Qty {item.quantity} x Rs. {Number(item.price).toLocaleString()}</p>
-                                    </div>
-                                    <div className="flex flex-col items-end gap-2">
-                                        <p className="text-sm font-black text-[#15945a] whitespace-nowrap">Rs. {Number(item.price * item.quantity).toLocaleString()}</p>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveCheckoutItem(item.id)}
-                                            className="inline-flex items-center gap-1 rounded-lg border border-rose-100 bg-rose-50 px-2 py-1 text-[11px] font-bold text-rose-600 hover:bg-rose-100 transition-colors"
-                                            title="Remove from checkout"
-                                        >
-                                            <Trash2 size={12} /> Remove
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="space-y-2 pt-2 border-t border-slate-100">
-                            <div className="flex justify-between text-sm text-slate-500">
-                                <span>Items Subtotal</span>
-                                <span className="font-semibold text-slate-750">Rs. {Number(totalPrice).toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between text-sm text-slate-500">
-                                <span>Campus Meetup Fee</span>
-                                <span className="font-semibold text-[#15945a] uppercase text-xs tracking-wider">Free</span>
-                            </div>
-                            <div className="my-3 border-t border-slate-100" />
-                            <div className="flex justify-between text-slate-800 font-black text-lg">
-                                <span>Total</span>
-                                <span className="text-[#15945a]">Rs. {Number(totalPrice).toLocaleString()}</span>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

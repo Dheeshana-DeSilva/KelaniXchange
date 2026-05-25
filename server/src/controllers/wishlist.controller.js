@@ -52,10 +52,12 @@ const getMyWishlist = async (req, res) => {
             },
         });
 
+        const wishlist = user.wishlist.filter(Boolean);
+
         res.status(200).json({
             message: "Wishlist fetched successfully",
-            count: user.wishlist.length,
-            wishlist: user.wishlist,
+            count: wishlist.length,
+            wishlist,
         });
     } catch (error) {
         res.status(500).json({

@@ -202,6 +202,7 @@ export default function ListingDetails() {
                 await addToWishlist(id);
                 setIsWishlisted(true);
             }
+            window.dispatchEvent(new Event("kx:wishlist-updated"));
         } catch (err) {
             alert(err.response?.data?.message || "Failed to update wishlist.");
         } finally {
