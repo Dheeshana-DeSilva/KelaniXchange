@@ -14,3 +14,13 @@ export const getSellerPaymentProfile = async (sellerId) => {
     const res = await api.get(`/users/${sellerId}/payment-profile`);
     return res.data;
 };
+
+export const searchUsers = async (search) => {
+    const res = await api.get("/users/search", { params: { search } });
+    return res.data;
+};
+
+export const getPublicUserProfile = async (userId) => {
+    const res = await api.get(`/users/${userId}/public`);
+    return res.data;
+};

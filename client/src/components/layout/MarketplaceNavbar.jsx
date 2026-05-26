@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import { 
-    Menu, X, Bell, Heart, ShoppingCart, 
+    Heart, ShoppingCart, ChevronDown,
     User, LogIn, LogOut, Package, PlusCircle, ReceiptText, Store, ArrowRightLeft
 } from "lucide-react";
 import logo from "../../assets/X_logo.png";
@@ -12,7 +12,6 @@ import { getWishlist } from "../../services/wishlistService";
 
 function MarketplaceNavbar() {
     const [scrolled, setScrolled] = useState(false);
-    const [mobileOpen, setMobileOpen] = useState(false);
     const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
     
     const location = useLocation();
@@ -22,7 +21,6 @@ function MarketplaceNavbar() {
     const { user, isAuthenticated } = useAuth();
     const cartItemsCount = useSelector(state => state.cart?.totalItems || 0);
     const [wishlistCount, setWishlistCount] = useState(0);
-    const notificationCount = 2;
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -32,7 +30,6 @@ function MarketplaceNavbar() {
 
     // Close menus on route change
     useEffect(() => {
-        setMobileOpen(false);
         setProfileDropdownOpen(false);
     }, [location.pathname]);
 
@@ -86,7 +83,16 @@ function MarketplaceNavbar() {
 
     const desktopLinkClass = (to, exact = false) => {
         const isActive = exact ? location.pathname === to : location.pathname.startsWith(to);
-        return `inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors ${
+        return `inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-semibold transition-colors ${
+            isActive
+                ? "bg-white/10 text-white"
+                : "text-slate-300 hover:bg-white/5 hover:text-white"
+        }`;
+    };
+
+    const iconLinkClass = (to) => {
+        const isActive = location.pathname.startsWith(to);
+        return `relative inline-flex h-10 w-10 items-center justify-center rounded-xl transition-colors ${
             isActive
                 ? "bg-white/10 text-white"
                 : "text-slate-300 hover:bg-white/5 hover:text-white"
@@ -103,8 +109,8 @@ function MarketplaceNavbar() {
                     <div className="relative flex h-[72px] items-center justify-between gap-4">
 
                         {/* ── Left: Logo ── */}
-                        <div className="z-10 flex items-center gap-6">
-                            <Link to="/" className="flex items-center gap-3 group shrink-0">
+                        <div className="z-10 flex items-center gap-8">
+                            <Link to="/marketplace" className="flex items-center gap-3 group shrink-0">
                                 <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#0a192f]/40 to-[#0a192f]/20 border border-white/10 shadow-inner">
                                     <img
                                         src={logo}
@@ -116,88 +122,52 @@ function MarketplaceNavbar() {
                                     Kelani<span className="text-[#48c96f]">Xchange</span>
                                 </span>
                             </Link>
-                            <div className="hidden xl:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-1">
-                                <Link to="/" className={desktopLinkClass("/", true)}>
-                                    Home
-                                </Link>
+                            <div className="hidden lg:flex items-center gap-1.5">
                                 <Link to="/marketplace" className={desktopLinkClass("/marketplace", true)}>
-                                    Browse Categories
+                                    Browse
                                 </Link>
                                 {isAuthenticated && (
-                                    <>
-                                        <Link to="/marketplace/create" className={desktopLinkClass("/marketplace/create", true)}>
-                                            <PlusCircle size={15} /> Sell Item
-                                        </Link>
-                                        <Link to="/marketplace/my-listings" className={desktopLinkClass("/marketplace/my-listings", true)}>
-                                            <Package size={15} /> My Listings
-                                        </Link>
-                                        <Link to="/orders" className={desktopLinkClass("/orders", true)}>
-                                            <ReceiptText size={15} /> My Orders
-                                        </Link>
-                                        <Link to="/sales" className={desktopLinkClass("/sales", true)}>
-                                            <Store size={15} /> My Sales
-                                        </Link>
-                                    </>
+                                    <Link
+                                        to="/marketplace/create"
+                                        className="inline-flex items-center gap-2 rounded-xl bg-[#48c96f] px-4 py-2 text-sm font-black text-[#0a192f] shadow-sm transition-colors hover:bg-[#62d986]"
+                                    >
+                                        <PlusCircle size={16} /> Sell
+                                    </Link>
                                 )}
                             </div>
                         </div>
 
                         {/* ── Right: Icons & Profile ── */}
-                        <div className="relative z-10 flex items-center gap-2 sm:gap-4">
+                        <div className="relative z-10 flex items-center gap-1.5 sm:gap-2">
                             
                             {/* Wishlist Icon */}
-                            <Link to="/wishlist" className="relative p-2 text-slate-300 hover:text-white transition-colors hover:bg-white/5 rounded-full">
+                            <Link to="/wishlist" className={iconLinkClass("/wishlist")} title="Wishlist">
                                 <Heart size={20} />
                                 {wishlistCount > 0 && (
-                                    <span className="absolute top-1 right-1 h-4 min-w-[16px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center border border-[#0a192f]">
+                                    <span className="absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full border border-[#0a192f] bg-rose-500 px-1 text-[10px] font-bold text-white">
                                         {wishlistCount}
                                     </span>
                                 )}
                             </Link>
 
                             {/* Cart Icon */}
-                            <Link to="/cart" className="relative p-2 text-slate-300 hover:text-white transition-colors hover:bg-white/5 rounded-full">
+                            <Link to="/cart" className={iconLinkClass("/cart")} title="Cart">
                                 <ShoppingCart size={20} />
                                 {cartItemsCount > 0 && (
-                                    <span className="absolute top-1 right-1 h-4 min-w-[16px] px-1 rounded-full bg-[#48c96f] text-white text-[10px] font-bold flex items-center justify-center border border-[#0a192f]">
+                                    <span className="absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full border border-[#0a192f] bg-[#48c96f] px-1 text-[10px] font-bold text-white">
                                         {cartItemsCount > 99 ? '99+' : cartItemsCount}
                                     </span>
                                 )}
                             </Link>
 
-                            {/* Exchanges Icon */}
-                            {isAuthenticated && (
-                                <Link
-                                    to="/exchanges"
-                                    className={`relative p-2 transition-colors hover:bg-white/5 rounded-full ${
-                                        location.pathname.startsWith("/exchanges") ? "text-white bg-white/10" : "text-slate-300 hover:text-white"
-                                    }`}
-                                    title="My Exchanges"
-                                >
-                                    <ArrowRightLeft size={20} />
-                                </Link>
-                            )}
-
-                            {/* Notifications Icon */}
-                            {isAuthenticated && (
-                                <button className="relative p-2 text-slate-300 hover:text-white transition-colors hover:bg-white/5 rounded-full">
-                                    <Bell size={20} />
-                                    {notificationCount > 0 && (
-                                        <span className="absolute top-1 right-1 h-4 min-w-[16px] px-1 rounded-full bg-blue-500 text-white text-[10px] font-bold flex items-center justify-center border border-[#0a192f]">
-                                            {notificationCount}
-                                        </span>
-                                    )}
-                                </button>
-                            )}
-
                             {/* Auth / Profile */}
-                            <div className="h-6 w-px bg-white/15 mx-1 hidden sm:block" />
+                            <div className="mx-1 hidden h-6 w-px bg-white/15 sm:block" />
 
                             {isAuthenticated ? (
                                 <div className="relative profile-menu-container">
                                     <button 
                                         onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                                        className="flex items-center gap-2 p-1 pl-2 pr-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-colors"
+                                        className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 p-1 pl-2 pr-2 transition-colors hover:bg-white/10"
                                     >
                                         <div className="h-7 w-7 rounded-full bg-gradient-to-br from-[#48c96f] to-[#15945a] flex items-center justify-center text-white font-bold text-xs overflow-hidden">
                                             {user?.profileImage ? (
@@ -209,21 +179,31 @@ function MarketplaceNavbar() {
                                         <span className="text-sm font-semibold text-slate-200 hidden sm:block max-w-[100px] truncate">
                                             {user?.username}
                                         </span>
+                                        <ChevronDown size={14} className="hidden text-slate-400 sm:block" />
                                     </button>
 
                                     {/* Dropdown Menu */}
                                     {profileDropdownOpen && (
-                                        <div className="absolute right-0 mt-3 w-48 bg-[#0a192f] border border-white/10 rounded-2xl shadow-xl overflow-hidden py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                                        <div className="absolute right-0 mt-3 w-56 bg-[#0a192f] border border-white/10 rounded-2xl shadow-xl overflow-hidden py-2 animate-in fade-in slide-in-from-top-2 duration-200">
                                             <div className="px-4 py-2 border-b border-white/10 mb-2">
                                                 <p className="text-sm font-bold text-white truncate">{user?.username}</p>
                                                 <p className="text-xs text-slate-400 truncate">{user?.email}</p>
                                             </div>
                                             
+                                            <Link to="/marketplace" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
+                                                <ShoppingCart size={16} className="text-[#48c96f]" /> Browse Marketplace
+                                            </Link>
+                                            <Link to="/marketplace/create" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
+                                                <PlusCircle size={16} className="text-[#48c96f]" /> Sell an Item
+                                            </Link>
                                             <Link to="/profile" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
                                                 <User size={16} className="text-[#48c96f]" /> My Profile
                                             </Link>
                                             <Link to="/marketplace/my-listings" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
                                                 <Package size={16} className="text-[#48c96f]" /> My Listings
+                                            </Link>
+                                            <Link to="/exchanges" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
+                                                <ArrowRightLeft size={16} className="text-[#48c96f]" /> My Exchanges
                                             </Link>
                                             <Link to="/orders" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
                                                 <ReceiptText size={16} className="text-[#48c96f]" /> My Orders
@@ -243,23 +223,23 @@ function MarketplaceNavbar() {
                                     )}
                                 </div>
                             ) : (
-                                <Link
-                                    to="/login"
-                                    className="hidden sm:flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-slate-300 transition-all duration-200 hover:border-white/40 hover:text-white hover:bg-white/8 backdrop-blur-sm"
-                                >
-                                    <LogIn size={15} />
-                                    Log In
-                                </Link>
+                                <div className="hidden sm:flex items-center gap-2">
+                                    <Link
+                                        to="/login"
+                                        className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold text-slate-300 transition-all duration-200 hover:border-white/40 hover:bg-white/8 hover:text-white"
+                                    >
+                                        <LogIn size={15} />
+                                        Log In
+                                    </Link>
+                                    <Link
+                                        to="/register"
+                                        className="inline-flex items-center rounded-xl bg-[#48c96f] px-4 py-2 text-sm font-black text-[#0a192f] transition-colors hover:bg-[#62d986]"
+                                    >
+                                        Create Account
+                                    </Link>
+                                </div>
                             )}
 
-                            {/* Mobile Menu Button */}
-                            <button
-                                aria-label="Toggle menu"
-                                onClick={() => setMobileOpen((o) => !o)}
-                                className="xl:hidden flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-colors hover:bg-white/10 ml-1"
-                            >
-                                {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -270,58 +250,6 @@ function MarketplaceNavbar() {
                 )}
             </nav>
 
-            {/* ── Mobile Drawer ── */}
-            <div className={`fixed inset-0 z-40 xl:hidden transition-all duration-300 ${mobileOpen ? "visible" : "invisible"}`}>
-                <div 
-                    className={`absolute inset-0 bg-[#0a192f]/80 backdrop-blur-sm transition-opacity duration-300 ${mobileOpen ? "opacity-100" : "opacity-0"}`} 
-                    onClick={() => setMobileOpen(false)} 
-                />
-                
-                <div className={`absolute top-[72px] left-0 right-0 bg-[#0a192f]/95 backdrop-blur-2xl border-b border-white/10 shadow-2xl transition-transform duration-300 ${mobileOpen ? "translate-y-0" : "-translate-y-4 opacity-0"}`}>
-                    <div className="p-6 flex flex-col gap-2">
-                        <Link to="/" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/8">
-                            Home
-                        </Link>
-                        <Link to="/marketplace" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/8">
-                            Browse Categories
-                        </Link>
-                        
-                        <div className="my-2 border-t border-white/10" />
-
-                        {isAuthenticated ? (
-                            <>
-                                <Link to="/marketplace/create" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-[#48c96f] hover:bg-white/8">
-                                    <PlusCircle size={18} /> Sell an Item
-                                </Link>
-                                <Link to="/marketplace/my-listings" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/8">
-                                    <Package size={18} className="text-slate-400" /> My Listings
-                                </Link>
-                                <Link to="/orders" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/8">
-                                    <ReceiptText size={18} className="text-slate-400" /> My Orders
-                                </Link>
-                                <Link to="/sales" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/8">
-                                    <Store size={18} className="text-slate-400" /> My Sales
-                                </Link>
-                                <Link to="/profile" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/8">
-                                    <User size={18} className="text-slate-400" /> My Profile
-                                </Link>
-                                <button onClick={handleLogout} className="w-full flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-rose-400 hover:bg-white/8 text-left">
-                                    <LogOut size={18} /> Sign Out
-                                </button>
-                            </>
-                        ) : (
-                            <div className="flex flex-col gap-3 mt-2">
-                                <Link to="/login" className="flex justify-center items-center gap-2 rounded-2xl border border-white/20 px-4 py-3 text-sm font-semibold text-slate-300">
-                                    <LogIn size={16} /> Log In
-                                </Link>
-                                <Link to="/register" className="flex justify-center items-center gap-2 rounded-2xl bg-[#48c96f] px-4 py-3 text-sm font-bold text-[#0a192f]">
-                                    Create Account
-                                </Link>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
         </>
     );
 }

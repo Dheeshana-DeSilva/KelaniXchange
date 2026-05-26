@@ -14,6 +14,8 @@ import MySales from "../pages/MySales";
 import Profile from "../pages/Profile";
 import Wishlist from "../pages/Wishlist";
 import MyExchanges from "../pages/MyExchanges";
+import UserSearch from "../pages/UserSearch";
+import PublicUserProfile from "../pages/PublicUserProfile";
 
 /* ── Admin ── */
 import AdminRoute from "./AdminRoute";
@@ -45,6 +47,8 @@ function AppRoutes() {
             <Route path="/exchanges" element={<MyExchanges />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/wishlist" element={<Wishlist />} />
+            <Route path="/users" element={<UserSearch />} />
+            <Route path="/users/:id" element={<PublicUserProfile />} />
             <Route path="/about" element={<About />} />
 
             {/* Admin — protected & nested under AdminLayout */}

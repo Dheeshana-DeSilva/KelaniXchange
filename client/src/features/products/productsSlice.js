@@ -48,8 +48,10 @@ const productsSlice = createSlice({
         filters: {
             search: "",
             category: "",
+            condition: "",
             minPrice: "",
             maxPrice: "",
+            exchangeAvailable: false,
             sort: "newest",
         },
     },
@@ -58,7 +60,15 @@ const productsSlice = createSlice({
             state.filters = { ...state.filters, ...action.payload };
         },
         clearFilters(state) {
-            state.filters = { search: "", category: "", minPrice: "", maxPrice: "", sort: "newest" };
+            state.filters = {
+                search: "",
+                category: "",
+                condition: "",
+                minPrice: "",
+                maxPrice: "",
+                exchangeAvailable: false,
+                sort: "newest",
+            };
         },
         clearSelectedItem(state) {
             state.selectedItem = null;
@@ -83,7 +93,7 @@ const productsSlice = createSlice({
                 } else {
                     // Server returns { message, count, listings }
                     state.items = payload.listings ?? payload.data ?? [];
-                    state.total = payload.count ?? payload.total ?? state.items.length;
+                    state.total = payload.total ?? payload.count ?? state.items.length;
                     state.page = payload.page ?? 1;
                     state.pages = payload.pages ?? 1;
                 }

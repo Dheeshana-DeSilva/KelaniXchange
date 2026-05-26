@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { Fragment, useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router";
 import {
@@ -7,7 +7,7 @@ import {
     AlertCircle, Loader2, ShoppingBag, ArrowRight,
     ArrowUpDown, Filter, LayoutGrid, BookOpen,
     Laptop, Headphones, Home, Pencil, Trophy,
-    MoreHorizontal, GraduationCap, Car, ShoppingCart
+    MoreHorizontal, GraduationCap, Car, ShoppingCart, Users
 } from "lucide-react";
 import { fetchListings, setFilters, clearFilters } from "../features/products/productsSlice";
 import { addToCart, deleteFromCart } from "../features/cart/cartSlice";
@@ -58,6 +58,15 @@ const SORT_OPTIONS = [
     { label: "Price: Low to High", value: "price_asc" },
     { label: "Price: High to Low", value: "price_desc" },
 ];
+
+const ITEMS_PER_PAGE = 8;
+const DEFAULT_FILTERS = {
+    category: "",
+    condition: "",
+    minPrice: "",
+    maxPrice: "",
+    exchangeAvailable: false,
+};
 
 const CONDITION_COLORS = {
     "New": { bg: "rgba(72,201,111,0.15)", color: "#15945a", border: "rgba(72,201,111,0.3)" },
@@ -127,6 +136,7 @@ const pageStyles = `
 .cat-tab { display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: #fff; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 13px; font-weight: 700; color: #64748b; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
 .cat-tab:hover { border-color: #cbd5e1; color: #334155; background: #f8fafc; }
 .cat-tab.active { background: rgba(72,201,111,0.08); border-color: #48c96f; color: #15945a; }
+.mobile-filter-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
 
 /* Category Pills on cards */
 .card-cat-pill { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 800; letter-spacing: 0.3px; margin-bottom: 8px; }
@@ -141,7 +151,7 @@ const pageStyles = `
 .btn-exchange { width: 100%; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 700; background: rgba(72,201,111,0.08); color: #15945a; border: 1.5px solid rgba(72,201,111,0.3); cursor: pointer; transition: all 0.2s; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; }
 .btn-exchange:hover { background: rgba(72,201,111,0.15); border-color: #48c96f; }
 
-@media (min-width: 1024px) { .mobile-filter-btn { display:none !important; } }
+@media (min-width: 1024px) { .mobile-filter-btn { display:none !important; } .mobile-filter-row.empty { display:none !important; } }
 @media (max-width: 1023px) { .desktop-filters { display:none !important; } }
 `;
 
@@ -478,33 +488,39 @@ function FilterContent({ localFilters, setLocalFilters, onApply, onReset }) {
 /* ── Main Marketplace Page ── */
 export default function Marketplace() {
     const dispatch = useDispatch();
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
     const navigate = useNavigate();
     const cartItems = useSelector(s => s.cart?.items || []);
     const productsState = useSelector(s => s.products) || {};
     const { 
         items: listings = [], 
+        total = 0,
+        pages: serverPages = 1,
         isLoading = false, 
         error = null, 
         filters = { search: "", category: "", minPrice: "", maxPrice: "", sort: "newest" } 
     } = productsState;
     const [searchParams, setSearchParams] = useSearchParams();
+    const categoryParam = searchParams.get("category") ?? "";
 
     const [searchInput, setSearchInput] = useState(filters.search);
     const [sortBy, setSortBy] = useState(filters.sort);
     const [localFilters, setLocalFilters] = useState({
-        category: filters.category,
+        ...DEFAULT_FILTERS,
+        category: filters.category ?? "",
         condition: filters.condition ?? "",
-        minPrice: filters.minPrice,
-        maxPrice: filters.maxPrice,
-        exchangeAvailable: false,
+        minPrice: filters.minPrice ?? "",
+        maxPrice: filters.maxPrice ?? "",
     });
     const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
     const [wishlistIds, setWishlistIds] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
 
     const buildParams = useCallback((overrides = {}) => {
-        const f = { ...localFilters, search: searchInput, sort: sortBy, ...overrides };
+        const f = { ...localFilters, search: searchInput, sort: sortBy, page: currentPage, ...overrides };
         const params = {};
+        params.page = f.page || 1;
+        params.limit = ITEMS_PER_PAGE;
         if (f.search) params.search = f.search;
         if (f.category) params.category = f.category;
         if (f.condition) params.condition = f.condition;
@@ -515,21 +531,23 @@ export default function Marketplace() {
         if (f.sort === "price_desc") params.sort = "-price";
         if (f.sort === "oldest") params.sort = "createdAt";
         return params;
-    }, [localFilters, searchInput, sortBy]);
+    }, [currentPage, localFilters, searchInput, sortBy]);
 
     const dispatchFetch = useCallback((overrides = {}) => {
         const params = buildParams(overrides);
         dispatch(fetchListings(params));
     }, [buildParams, dispatch]);
 
-    /* Read category from URL on mount */
+    /* Reset marketplace filters when the logged-in account changes. */
     useEffect(() => {
-        const cat = searchParams.get("category") ?? "";
-        if (cat) {
-            setLocalFilters(f => ({ ...f, category: cat }));
-            dispatch(setFilters({ category: cat }));
-        }
-    }, [dispatch, searchParams]);
+        const reset = { ...DEFAULT_FILTERS, category: categoryParam };
+        setLocalFilters(reset);
+        setSearchInput("");
+        setSortBy("newest");
+        setCurrentPage(1);
+        dispatch(clearFilters());
+        if (categoryParam) dispatch(setFilters({ category: categoryParam }));
+    }, [categoryParam, dispatch, isAuthenticated, user?._id]);
 
     /* Initial fetch */
     useEffect(() => {
@@ -573,6 +591,7 @@ export default function Marketplace() {
     }, [sortBy, dispatchFetch]);
 
     const handleApplyFilters = () => {
+        setCurrentPage(1);
         dispatch(setFilters({
             category: localFilters.category,
             condition: localFilters.condition,
@@ -584,7 +603,8 @@ export default function Marketplace() {
     };
 
     const handleReset = () => {
-        const reset = { category: "", condition: "", minPrice: "", maxPrice: "", exchangeAvailable: false };
+        const reset = { ...DEFAULT_FILTERS };
+        setCurrentPage(1);
         setLocalFilters(reset);
         setSearchInput("");
         setSortBy("newest");
@@ -627,6 +647,42 @@ export default function Marketplace() {
         if (sortBy === "oldest") return new Date(a.createdAt) - new Date(b.createdAt);
         return new Date(b.createdAt) - new Date(a.createdAt);
     });
+    const totalListings = total || sortedListings.length;
+    const totalPages = Math.max(1, serverPages || Math.ceil(totalListings / ITEMS_PER_PAGE));
+    const safeCurrentPage = Math.min(currentPage, totalPages);
+    const visibleCount = sortedListings.length;
+    const startIndex = totalListings === 0 || visibleCount === 0 ? 0 : (safeCurrentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex === 0 ? 0 : Math.min(startIndex + visibleCount, totalListings);
+    const visibleListings = sortedListings;
+    const canLoadMore = safeCurrentPage < totalPages;
+    const paginationPages = Array.from({ length: totalPages }, (_, i) => i + 1).filter((page) => (
+        page === 1
+        || page === totalPages
+        || Math.abs(page - safeCurrentPage) <= 1
+    ));
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [
+        searchInput,
+        sortBy,
+        localFilters.category,
+        localFilters.condition,
+        localFilters.minPrice,
+        localFilters.maxPrice,
+        localFilters.exchangeAvailable,
+    ]);
+
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [currentPage, totalPages]);
+
+    const handlePageChange = (page) => {
+        setCurrentPage(Math.min(Math.max(page, 1), totalPages));
+        window.scrollTo({ top: 420, behavior: "smooth" });
+    };
 
     /* Active filter chips */
     const activeFilters = [
@@ -708,15 +764,28 @@ export default function Marketplace() {
                                     {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                                 </select>
                             </div>
-                            
-                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                <button style={{ width: 36, height: 36, borderRadius: 10, background: "#48c96f", color: "#fff", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                                    <LayoutGrid size={18} />
-                                </button>
-                                <button style={{ width: 36, height: 36, borderRadius: 10, background: "#fff", border: "1.5px solid #e2e8f0", color: "#94a3b8", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                                    <SlidersHorizontal size={18} />
-                                </button>
-                            </div>
+                            <button
+                                type="button"
+                                onClick={() => navigate("/users")}
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 6,
+                                    border: "1.5px solid #e2e8f0",
+                                    background: "#fff",
+                                    color: "#334155",
+                                    borderRadius: 10,
+                                    padding: "9px 14px",
+                                    fontSize: 12,
+                                    fontWeight: 800,
+                                    cursor: "pointer",
+                                    fontFamily: "inherit",
+                                    whiteSpace: "nowrap",
+                                }}
+                                title="Search users"
+                            >
+                                <Users size={15} /> Users
+                            </button>
                         </div>
                     </div>
 
@@ -741,44 +810,46 @@ export default function Marketplace() {
                         })}
                     </div>
 
-                    {/* Active Filters Row (if any) */}
-                    {activeFilters.length > 0 && (
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 20 }}>
-                            <button
-                                className="mobile-filter-btn"
-                                onClick={() => setMobileFilterOpen(true)}
-                                style={{
-                                    display: "flex", alignItems: "center", gap: 7,
-                                    padding: "9px 16px", borderRadius: 10, border: "1.5px solid #e2e8f0",
-                                    background: "#fff", fontSize: 13, fontWeight: 600, color: "#334155",
-                                    cursor: "pointer", fontFamily: "inherit",
-                                }}
-                            >
-                                <Filter size={14} /> Filters
-                            </button>
+                    {/* Mobile Filters / Active Filters */}
+                    <div className={`mobile-filter-row ${activeFilters.length === 0 ? "empty" : ""}`}>
+                        <button
+                            className="mobile-filter-btn"
+                            onClick={() => setMobileFilterOpen(true)}
+                            style={{
+                                display: "flex", alignItems: "center", gap: 7,
+                                padding: "9px 16px", borderRadius: 10, border: "1.5px solid #e2e8f0",
+                                background: "#fff", fontSize: 13, fontWeight: 600, color: "#334155",
+                                cursor: "pointer", fontFamily: "inherit",
+                            }}
+                        >
+                            <Filter size={14} /> Filters
+                        </button>
 
-                            {activeFilters.map(f => (
-                                <span key={f.key} className="filter-chip">
-                                    {f.label}
-                                    <button onClick={() => {
-                                        const reset = { ...localFilters };
-                                        if (f.key === "category") reset.category = "";
-                                        if (f.key === "condition") reset.condition = "";
-                                        if (f.key === "price") { reset.minPrice = ""; reset.maxPrice = ""; }
-                                        if (f.key === "exchange") reset.exchangeAvailable = false;
-                                        setLocalFilters(reset);
-                                        dispatchFetch(reset);
-                                    }} style={{ background: "none", border: "none", cursor: "pointer", color: "#15945a", display: "flex", padding: 0 }}>
-                                        <X size={11} />
-                                    </button>
-                                </span>
-                            ))}
+                        {activeFilters.length > 0 && (
+                            <>
+                                {activeFilters.map(f => (
+                                    <span key={f.key} className="filter-chip">
+                                        {f.label}
+                                        <button onClick={() => {
+                                            const reset = { ...localFilters };
+                                            if (f.key === "category") reset.category = "";
+                                            if (f.key === "condition") reset.condition = "";
+                                            if (f.key === "price") { reset.minPrice = ""; reset.maxPrice = ""; }
+                                            if (f.key === "exchange") reset.exchangeAvailable = false;
+                                            setLocalFilters(reset);
+                                            dispatchFetch(reset);
+                                        }} style={{ background: "none", border: "none", cursor: "pointer", color: "#15945a", display: "flex", padding: 0 }}>
+                                            <X size={11} />
+                                        </button>
+                                    </span>
+                                ))}
 
-                            <button onClick={handleReset} style={{ fontSize: 12, fontWeight: 600, color: "#94a3b8", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
-                                Clear all
-                            </button>
-                        </div>
-                    )}
+                                <button onClick={handleReset} style={{ fontSize: 12, fontWeight: 600, color: "#94a3b8", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                                    Clear all
+                                </button>
+                            </>
+                        )}
+                    </div>
 
                     {/* Layout */}
                     <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
@@ -837,10 +908,10 @@ export default function Marketplace() {
                             ) : (
                                 <>
                                     <p style={{ fontSize: 12, color: "#94a3b8", fontWeight: 500, marginBottom: 16 }}>
-                                        Showing <strong style={{ color: "#334155" }}>{sortedListings.length}</strong> {sortedListings.length === 1 ? "listing" : "listings"}
+                                        Showing <strong style={{ color: "#334155" }}>{startIndex + 1}-{endIndex}</strong> of <strong style={{ color: "#334155" }}>{totalListings}</strong> {totalListings === 1 ? "listing" : "listings"}
                                     </p>
                                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 20 }}>
-                                        {sortedListings.map((listing, i) => (
+                                        {visibleListings.map((listing, i) => (
                                             <ListingCard
                                                 key={listing._id}
                                                 listing={listing}
@@ -856,20 +927,49 @@ export default function Marketplace() {
                                     {sortedListings.length > 0 && (
                                         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginTop: 40, gap: 16, flexWrap: "wrap" }}>
                                             <div style={{ display: "flex", gap: 8 }}>
-                                                <button style={{ width: 36, height: 36, borderRadius: 8, background: "#48c96f", color: "#fff", border: "none", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>1</button>
-                                                <button style={{ width: 36, height: 36, borderRadius: 8, background: "#fff", color: "#64748b", border: "1px solid #e2e8f0", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>2</button>
-                                                <button style={{ width: 36, height: 36, borderRadius: 8, background: "#fff", color: "#64748b", border: "1px solid #e2e8f0", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>3</button>
-                                                <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 24, color: "#94a3b8" }}>...</span>
-                                                <button style={{ width: 36, height: 36, borderRadius: 8, background: "#fff", color: "#64748b", border: "1px solid #e2e8f0", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>8</button>
-                                                <button style={{ width: 36, height: 36, borderRadius: 8, background: "#fff", color: "#64748b", border: "1px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                                                {paginationPages.map((page, index) => (
+                                                    <Fragment key={page}>
+                                                        {index > 0 && page - paginationPages[index - 1] > 1 && (
+                                                            <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 24, color: "#94a3b8" }}>...</span>
+                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handlePageChange(page)}
+                                                            style={{
+                                                                width: 36,
+                                                                height: 36,
+                                                                borderRadius: 8,
+                                                                background: page === safeCurrentPage ? "#48c96f" : "#fff",
+                                                                color: page === safeCurrentPage ? "#fff" : "#64748b",
+                                                                border: page === safeCurrentPage ? "none" : "1px solid #e2e8f0",
+                                                                fontWeight: 700,
+                                                                cursor: "pointer",
+                                                                fontFamily: "inherit",
+                                                            }}
+                                                        >
+                                                            {page}
+                                                        </button>
+                                                    </Fragment>
+                                                ))}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handlePageChange(safeCurrentPage + 1)}
+                                                    disabled={!canLoadMore}
+                                                    style={{ width: 36, height: 36, borderRadius: 8, background: "#fff", color: canLoadMore ? "#64748b" : "#cbd5e1", border: "1px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", cursor: canLoadMore ? "pointer" : "not-allowed" }}
+                                                    title="Next page"
+                                                >
                                                     <ChevronDown size={14} style={{ transform: "rotate(-90deg)" }} />
                                                 </button>
                                             </div>
 
-                                            <button style={{
-                                                padding: "10px 24px", borderRadius: 10, background: "#fff", border: "1.5px solid #e2e8f0", color: "#15945a", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s"
+                                            <button
+                                                type="button"
+                                                onClick={() => handlePageChange(safeCurrentPage + 1)}
+                                                disabled={!canLoadMore}
+                                                style={{
+                                                padding: "10px 24px", borderRadius: 10, background: "#fff", border: "1.5px solid #e2e8f0", color: canLoadMore ? "#15945a" : "#94a3b8", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 8, cursor: canLoadMore ? "pointer" : "not-allowed", fontFamily: "inherit", transition: "all 0.2s"
                                             }}>
-                                                Load More Items <ChevronDown size={14} />
+                                                {canLoadMore ? "Load More Items" : "All Items Loaded"} <ChevronDown size={14} />
                                             </button>
                                         </div>
                                     )}

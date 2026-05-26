@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Listing = require("../models/Listing");
 const cloudinary = require("../config/cloudinary");
 
 const buildPublicPaymentProfile = (user) => ({
@@ -29,6 +30,15 @@ const buildPrivateProfile = (user) => ({
         bankBranch: user.payoutDetails?.bankBranch || "",
         bankAccountNumber: user.payoutDetails?.bankAccountNumber || "",
     },
+});
+
+const buildPublicUserProfile = (user) => ({
+    id: user._id,
+    fullName: user.fullName,
+    username: user.username,
+    profileImage: user.profileImage || "",
+    isVerified: user.isVerified,
+    createdAt: user.createdAt,
 });
 
 const uploadProfileImage = async (file) => {
@@ -157,8 +167,71 @@ const getSellerPaymentProfile = async (req, res) => {
     }
 };
 
+const searchUsers = async (req, res) => {
+    try {
+        const search = (req.query.search || "").trim();
+
+        if (search.length < 2) {
+            return res.status(200).json({
+                message: "Users fetched successfully",
+                users: [],
+            });
+        }
+
+        const users = await User.find({
+            role: "USER",
+            accountStatus: { $ne: "blocked" },
+            $or: [
+                { username: { $regex: search, $options: "i" } },
+                { fullName: { $regex: search, $options: "i" } },
+            ],
+        })
+            .select("fullName username profileImage isVerified createdAt")
+            .limit(20)
+            .sort({ username: 1 });
+
+        res.status(200).json({
+            message: "Users fetched successfully",
+            users: users.map(buildPublicUserProfile),
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to search users",
+            error: error.message,
+        });
+    }
+};
+
+const getPublicUserProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select("fullName username profileImage isVerified createdAt role accountStatus");
+
+        if (!user || user.role !== "USER" || user.accountStatus === "blocked") {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const listings = await Listing.find({
+            seller: user._id,
+            status: { $in: ["available", "active"] },
+        }).sort({ createdAt: -1 });
+
+        res.status(200).json({
+            message: "User profile fetched successfully",
+            user: buildPublicUserProfile(user),
+            listings,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to fetch user profile",
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     getUserProfile,
     updateUserProfile,
     getSellerPaymentProfile,
+    searchUsers,
+    getPublicUserProfile,
 };

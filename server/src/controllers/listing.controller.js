@@ -98,6 +98,9 @@ const getListings = async (req, res) => {
             minPrice,
             maxPrice,
             exchangeAvailable,
+            page = 1,
+            limit = 8,
+            sort,
         } = req.query;
 
         const filter = {
@@ -140,13 +143,34 @@ const getListings = async (req, res) => {
             filter.isExchangeAvailable = exchangeAvailable === "true";
         }
 
+        const currentPage = Math.max(1, Number(page) || 1);
+        const pageSize = Math.min(48, Math.max(1, Number(limit) || 8));
+        const skip = (currentPage - 1) * pageSize;
+        const sortOption = {};
+
+        if (sort === "price") {
+            sortOption.price = 1;
+        } else if (sort === "-price") {
+            sortOption.price = -1;
+        } else if (sort === "createdAt") {
+            sortOption.createdAt = 1;
+        } else {
+            sortOption.createdAt = -1;
+        }
+
+        const total = await Listing.countDocuments(filter);
         const listings = await Listing.find(filter)
             .populate("seller", "username")
-            .sort({ createdAt: -1 });
+            .sort(sortOption)
+            .skip(skip)
+            .limit(pageSize);
 
         res.status(200).json({
             message: "Listings fetched successfully",
             count: listings.length,
+            total,
+            page: currentPage,
+            pages: Math.max(1, Math.ceil(total / pageSize)),
             listings,
         });
     } catch (error) {
