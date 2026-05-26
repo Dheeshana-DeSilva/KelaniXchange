@@ -16,6 +16,9 @@ import Wishlist from "../pages/Wishlist";
 import MyExchanges from "../pages/MyExchanges";
 import UserSearch from "../pages/UserSearch";
 import PublicUserProfile from "../pages/PublicUserProfile";
+import Notifications from "../pages/Notifications";
+import ChatList from "../pages/ChatList";
+import ChatConversation from "../pages/ChatConversation";
 
 /* ── Admin ── */
 import AdminRoute from "./AdminRoute";
@@ -47,6 +50,9 @@ function AppRoutes() {
             <Route path="/exchanges" element={<MyExchanges />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/wishlist" element={<Wishlist />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/chats" element={<ChatList />} />
+            <Route path="/chats/:chatId" element={<ChatConversation />} />
             <Route path="/users" element={<UserSearch />} />
             <Route path="/users/:id" element={<PublicUserProfile />} />
             <Route path="/about" element={<About />} />

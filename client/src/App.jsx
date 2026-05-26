@@ -14,6 +14,8 @@ const MARKETPLACE_FLOW_PREFIXES = [
   "/sales",
   "/exchanges",
   "/wishlist",
+  "/notifications",
+  "/chats",
   "/users",
   "/profile",
 ];

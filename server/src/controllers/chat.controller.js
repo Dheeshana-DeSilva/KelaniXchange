@@ -59,6 +59,9 @@ const startChat = async (req, res) => {
             chat = await Chat.findById(chat._id)
                 .populate("participants", "username email")
                 .populate("listing", "title price images");
+        } else if (chat.deletedFor?.some((userId) => userId.toString() === req.user._id.toString())) {
+            chat.deletedFor = chat.deletedFor.filter((userId) => userId.toString() !== req.user._id.toString());
+            await chat.save();
         }
 
         res.status(200).json({
@@ -78,6 +81,7 @@ const getMyChats = async (req, res) => {
     try {
         const chats = await Chat.find({
             participants: req.user._id,
+            deletedFor: { $ne: req.user._id },
         })
             .populate("participants", "username email")
             .populate("listing", "title price images")
@@ -90,14 +94,58 @@ const getMyChats = async (req, res) => {
             })
             .sort({ updatedAt: -1 });
 
+        const chatsWithUnread = await Promise.all(
+            chats.map(async (chat) => {
+                const chatObject = chat.toObject();
+                chatObject.unreadCount = await Message.countDocuments({
+                    chat: chat._id,
+                    sender: { $ne: req.user._id },
+                    isRead: false,
+                });
+                return chatObject;
+            })
+        );
+
+        const unreadCount = await Message.countDocuments({
+            chat: { $in: chats.map((chat) => chat._id) },
+            sender: { $ne: req.user._id },
+            isRead: false,
+        });
+
         res.status(200).json({
             message: "Chats fetched successfully",
-            count: chats.length,
-            chats,
+            count: chatsWithUnread.length,
+            unreadCount,
+            chats: chatsWithUnread,
         });
     } catch (error) {
         res.status(500).json({
             message: "Failed to fetch chats",
+            error: error.message,
+        });
+    }
+};
+
+// Get unread message count for logged-in user
+const getUnreadMessageCount = async (req, res) => {
+    try {
+        const chats = await Chat.find({ participants: req.user._id }).select("_id deletedFor");
+        const visibleChatIds = chats
+            .filter((chat) => !chat.deletedFor?.some((userId) => userId.toString() === req.user._id.toString()))
+            .map((chat) => chat._id);
+        const unreadCount = await Message.countDocuments({
+            chat: { $in: visibleChatIds },
+            sender: { $ne: req.user._id },
+            isRead: false,
+        });
+
+        res.status(200).json({
+            message: "Unread message count fetched successfully",
+            unreadCount,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to fetch unread message count",
             error: error.message,
         });
     }
@@ -119,7 +167,11 @@ const getChatMessages = async (req, res) => {
                 participantId.toString() === req.user._id.toString()
         );
 
-        if (!isParticipant) {
+        const isDeletedForUser = chat.deletedFor?.some(
+            (userId) => userId.toString() === req.user._id.toString()
+        );
+
+        if (!isParticipant || isDeletedForUser) {
             return res.status(403).json({
                 message: "You are not authorized to view this chat",
             });
@@ -138,6 +190,55 @@ const getChatMessages = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             message: "Failed to fetch messages",
+            error: error.message,
+        });
+    }
+};
+
+// Mark incoming messages in one chat as read
+const markChatAsRead = async (req, res) => {
+    try {
+        const chat = await Chat.findById(req.params.chatId);
+
+        if (!chat) {
+            return res.status(404).json({
+                message: "Chat not found",
+            });
+        }
+
+        const isParticipant = chat.participants.some(
+            (participantId) =>
+                participantId.toString() === req.user._id.toString()
+        );
+
+        const isDeletedForUser = chat.deletedFor?.some(
+            (userId) => userId.toString() === req.user._id.toString()
+        );
+
+        if (!isParticipant || isDeletedForUser) {
+            return res.status(403).json({
+                message: "You are not authorized to update this chat",
+            });
+        }
+
+        await Message.updateMany(
+            {
+                chat: chat._id,
+                sender: { $ne: req.user._id },
+                isRead: false,
+            },
+            { isRead: true }
+        );
+
+        const io = getIO();
+        io.to(`user:${req.user._id}`).emit("messagesRead", { chatId: chat._id });
+
+        res.status(200).json({
+            message: "Chat marked as read",
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to mark chat as read",
             error: error.message,
         });
     }
@@ -167,7 +268,11 @@ const sendMessage = async (req, res) => {
                 participantId.toString() === req.user._id.toString()
         );
 
-        if (!isParticipant) {
+        const isDeletedForUser = chat.deletedFor?.some(
+            (userId) => userId.toString() === req.user._id.toString()
+        );
+
+        if (!isParticipant || isDeletedForUser) {
             return res.status(403).json({
                 message: "You are not authorized to send messages in this chat",
             });
@@ -195,6 +300,11 @@ const sendMessage = async (req, res) => {
                 participantId.toString() !== req.user._id.toString()
         );
 
+        chat.deletedFor = chat.deletedFor.filter(
+            (userId) => userId.toString() !== receiverId.toString()
+        );
+        await chat.save();
+
         await Notification.create({
             user: receiverId,
             type: "chat_message",
@@ -202,6 +312,16 @@ const sendMessage = async (req, res) => {
             message: `${req.user.username} sent you a message.`,
             relatedId: chat._id,
         });
+
+        io.to(`user:${receiverId}`).emit("chatUpdated", {
+            chatId: chat._id,
+            message: populatedMessage,
+        });
+        io.to(`user:${req.user._id}`).emit("chatUpdated", {
+            chatId: chat._id,
+            message: populatedMessage,
+        });
+        io.to(`user:${receiverId}`).emit("notificationUpdated");
 
         res.status(201).json({
             message: "Message sent successfully",
@@ -215,9 +335,70 @@ const sendMessage = async (req, res) => {
     }
 };
 
+// Hide a chat from the logged-in user's chat list
+const deleteChatForUser = async (req, res) => {
+    try {
+        const chat = await Chat.findById(req.params.chatId);
+
+        if (!chat) {
+            return res.status(404).json({
+                message: "Chat not found",
+            });
+        }
+
+        const isParticipant = chat.participants.some(
+            (participantId) =>
+                participantId.toString() === req.user._id.toString()
+        );
+
+        if (!isParticipant) {
+            return res.status(403).json({
+                message: "You are not authorized to delete this chat",
+            });
+        }
+
+        if (!chat.deletedFor.some((userId) => userId.toString() === req.user._id.toString())) {
+            chat.deletedFor.push(req.user._id);
+            await chat.save();
+        }
+
+        await Message.updateMany(
+            {
+                chat: chat._id,
+                sender: { $ne: req.user._id },
+                isRead: false,
+            },
+            { isRead: true }
+        );
+
+        await Notification.deleteMany({
+            user: req.user._id,
+            type: "chat_message",
+            relatedId: chat._id,
+        });
+
+        const io = getIO();
+        io.to(`user:${req.user._id}`).emit("chatUpdated", { chatId: chat._id, deleted: true });
+        io.to(`user:${req.user._id}`).emit("notificationUpdated");
+
+        res.status(200).json({
+            message: "Chat deleted successfully",
+            chatId: chat._id,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to delete chat",
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     startChat,
     getMyChats,
+    getUnreadMessageCount,
     getChatMessages,
+    markChatAsRead,
     sendMessage,
+    deleteChatForUser,
 };

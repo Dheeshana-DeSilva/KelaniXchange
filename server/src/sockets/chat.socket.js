@@ -28,6 +28,7 @@ const initializeChatSocket = (io) => {
 
     io.on("connection", (socket) => {
         console.log(`Socket connected: ${socket.user.username}`);
+        socket.join(`user:${socket.user._id}`);
 
         // Join a specific chat room
         socket.on("joinChat", (chatId) => {

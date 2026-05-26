@@ -1,9 +1,23 @@
 const Order = require("../models/Order");
 const Listing = require("../models/Listing");
+const Notification = require("../models/Notification");
 const cloudinary = require("../config/cloudinary");
+const { getIO } = require("../config/socket");
+
+const createNotification = async ({ user, type, title, message, relatedId }) => {
+    if (!user) return;
+    const notification = await Notification.create({ user, type, title, message, relatedId });
+
+    try {
+        getIO().to(`user:${user.toString()}`).emit("notificationUpdated", notification);
+    } catch (error) {
+        // Socket.IO may not be initialized in scripts/tests.
+    }
+};
 
 const restoreListingQuantity = async (order) => {
-    const listing = await Listing.findById(order.listing);
+    const listingId = order.listing?._id || order.listing;
+    const listing = await Listing.findById(listingId);
     if (!listing) return;
 
     listing.quantity += order.quantity;
@@ -88,13 +102,14 @@ const updateOrderStatusAdmin = async (req, res) => {
     try {
         const { orderStatus, paymentStatus } = req.body;
         
-        const order = await Order.findById(req.params.id);
+        const order = await Order.findById(req.params.id).populate("listing", "title");
 
         if (!order) {
             return res.status(404).json({ message: "Order not found" });
         }
 
         const previousOrderStatus = order.orderStatus;
+        const previousPaymentStatus = order.paymentStatus;
 
         if (orderStatus) {
             const validOrderStatuses = ["pending", "processing", "shipped", "delivered", "cancelled"];
@@ -119,6 +134,26 @@ const updateOrderStatusAdmin = async (req, res) => {
 
         if (previousOrderStatus !== "cancelled" && order.orderStatus === "cancelled") {
             await restoreListingQuantity(order);
+        }
+
+        if (orderStatus && previousOrderStatus !== order.orderStatus) {
+            await createNotification({
+                user: order.user,
+                type: order.orderStatus === "cancelled" ? "order_cancelled" : "order_updated",
+                title: "Order status updated",
+                message: `Your order status changed to ${order.orderStatus}.`,
+                relatedId: order._id,
+            });
+        }
+
+        if (paymentStatus && previousPaymentStatus !== order.paymentStatus) {
+            await createNotification({
+                user: order.user,
+                type: "payment_updated",
+                title: "Payment status updated",
+                message: `Your payment status changed to ${order.paymentStatus}.`,
+                relatedId: order._id,
+            });
         }
 
         res.status(200).json({
@@ -211,6 +246,22 @@ const createOrders = async (req, res) => {
             await listing.save();
 
             createdOrders.push(order);
+
+            await createNotification({
+                user: listing.seller,
+                type: "order_received",
+                title: "New order received",
+                message: `${req.user.username} placed an order for "${listing.title}".`,
+                relatedId: order._id,
+            });
+
+            await createNotification({
+                user: req.user.id,
+                type: "order_placed",
+                title: "Order placed",
+                message: `Your order for "${listing.title}" was placed successfully.`,
+                relatedId: order._id,
+            });
         }
 
         const responsePayload = {
@@ -273,7 +324,7 @@ const getUserSales = async (req, res) => {
 // Cancel a pending order (buyer)
 const cancelUserOrder = async (req, res) => {
     try {
-        const order = await Order.findById(req.params.id);
+        const order = await Order.findById(req.params.id).populate("listing", "title");
 
         if (!order) {
             return res.status(404).json({ message: "Order not found" });
@@ -294,6 +345,22 @@ const cancelUserOrder = async (req, res) => {
 
         // Release the listing quantity back
         await restoreListingQuantity(order);
+
+        await createNotification({
+            user: order.seller,
+            type: "order_cancelled",
+            title: "Order cancelled",
+            message: `A buyer cancelled an order for "${order.listing?.title || "one of your listings"}".`,
+            relatedId: order._id,
+        });
+
+        await createNotification({
+            user: order.user,
+            type: "order_cancelled",
+            title: "Order cancelled",
+            message: `Your order for "${order.listing?.title || "this listing"}" was cancelled successfully.`,
+            relatedId: order._id,
+        });
 
         res.status(200).json({
             message: "Order cancelled successfully",
@@ -353,6 +420,7 @@ const updateSellerOrderStatus = async (req, res) => {
         }
 
         const previousOrderStatus = order.orderStatus;
+        const previousPaymentStatus = order.paymentStatus;
 
         if (order.orderStatus === "cancelled") {
             return res.status(400).json({ message: "Cancelled orders cannot be updated" });
@@ -381,6 +449,26 @@ const updateSellerOrderStatus = async (req, res) => {
 
         if (previousOrderStatus !== "cancelled" && order.orderStatus === "cancelled") {
             await restoreListingQuantity(order);
+        }
+
+        if (orderStatus && previousOrderStatus !== order.orderStatus) {
+            await createNotification({
+                user: order.user,
+                type: order.orderStatus === "cancelled" ? "order_cancelled" : "order_updated",
+                title: "Order status updated",
+                message: `Your order status changed to ${order.orderStatus}.`,
+                relatedId: order._id,
+            });
+        }
+
+        if (paymentStatus && previousPaymentStatus !== order.paymentStatus) {
+            await createNotification({
+                user: order.user,
+                type: "payment_updated",
+                title: "Payment status updated",
+                message: `Your payment status changed to ${order.paymentStatus}.`,
+                relatedId: order._id,
+            });
         }
 
         res.status(200).json({

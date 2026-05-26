@@ -6,7 +6,7 @@ import {
     Heart, MessageCircle, RefreshCw, Tag,
     AlertCircle, Loader2, ShoppingBag, ArrowRight,
     ArrowUpDown, Filter, LayoutGrid, BookOpen,
-    Laptop, Headphones, Home, Pencil, Trophy,
+    Laptop, Headphones, Home, Trophy,
     MoreHorizontal, GraduationCap, Car, ShoppingCart, Users
 } from "lucide-react";
 import { fetchListings, setFilters, clearFilters } from "../features/products/productsSlice";
@@ -94,49 +94,184 @@ const pageStyles = `
 @keyframes shimmer { from { background-position: -200% 0 } to { background-position: 200% 0 } }
 @keyframes spin { to { transform: rotate(360deg) } }
 
-.mp-page { min-height:100vh; background:#f8fafc; font-family:'Inter',sans-serif; }
+.mp-page { min-height:100vh; background:#f6f8fb; font-family:'Inter',sans-serif; color:#0f172a; }
 .mp-container { max-width:1450px; margin:0 auto; padding:0 24px; }
 @media (min-width:640px) { .mp-container { padding:0 48px; } }
 
 /* Listing card */
-.listing-card { background:#fff; border-radius:20px; overflow:hidden; border:1px solid #f1f5f9; box-shadow:0 2px 12px rgba(0,0,0,0.04); transition:all 0.25s ease; cursor:pointer; display:flex; flex-direction:column; animation:fadeUp 0.4s ease both; }
-.listing-card:hover { transform:translateY(-4px); box-shadow:0 16px 48px rgba(0,0,0,0.1); border-color:#e2e8f0; }
-.listing-card:hover .card-img { transform:scale(1.05); }
+.listing-card { background:#fff; border-radius:16px; overflow:hidden; border:1px solid #e6ebf2; box-shadow:0 1px 2px rgba(15,23,42,0.04); transition:box-shadow 0.2s ease,border-color 0.2s ease,transform 0.2s ease; cursor:pointer; display:flex; flex-direction:column; animation:fadeUp 0.4s ease both; }
+.listing-card:hover { transform:translateY(-2px); box-shadow:0 14px 34px rgba(15,23,42,0.09); border-color:#cfd8e6; }
+.listing-card:hover .card-img { transform:scale(1.03); }
 .card-img { transition:transform 0.4s ease; width:100%; height:100%; object-fit:cover; }
 
 /* Skeleton */
 .skeleton { background:linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:8px; }
 
 /* Filter panel */
-.filter-panel { background:#fff; border-radius:20px; border:1px solid #f1f5f9; box-shadow:0 2px 12px rgba(0,0,0,0.04); padding:24px; }
+.filter-panel { background:#fff; border-radius:16px; border:1px solid #e6ebf2; box-shadow:0 1px 2px rgba(15,23,42,0.04); padding:20px; }
 
 /* Select */
-.mp-select { appearance:none; background:#f8fafc url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center; border:1.5px solid #e2e8f0; border-radius:10px; padding:9px 32px 9px 12px; font-size:13px; color:#334155; font-family:inherit; width:100%; cursor:pointer; outline:none; transition:border-color 0.2s; }
-.mp-select:focus { border-color:#48c96f; background-color:#fff; }
+.mp-select { appearance:none; background:#f8fafc url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center; border:1px solid #dbe3ee; border-radius:10px; padding:10px 32px 10px 12px; font-size:13px; color:#334155; font-family:inherit; width:100%; cursor:pointer; outline:none; transition:border-color 0.2s,box-shadow 0.2s,background 0.2s; }
+.mp-select:focus { border-color:#48c96f; background-color:#fff; box-shadow:0 0 0 3px rgba(72,201,111,0.11); }
 
 /* Search input */
 .mp-search { background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:12px; padding:11px 16px 11px 44px; font-size:14px; color:#1e293b; font-family:inherit; width:100%; box-sizing:border-box; outline:none; transition:all 0.2s; }
 .mp-search:focus { border-color:#48c96f; background:#fff; box-shadow:0 0 0 3px rgba(72,201,111,0.08); }
 
 /* Active filter chip */
-.filter-chip { display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:99px; background:rgba(72,201,111,0.1); border:1px solid rgba(72,201,111,0.25); color:#15945a; font-size:12px; font-weight:600; }
+.filter-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; background:#ecfdf3; border:1px solid #bbf7d0; color:#137a4b; font-size:12px; font-weight:700; }
 
 /* Mobile filter overlay */
 .filter-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:50; display:flex; align-items:flex-end; backdrop-filter:blur(4px); }
 .filter-sheet { background:#fff; border-radius:24px 24px 0 0; width:100%; max-height:85vh; overflow-y:auto; padding:28px 24px 36px; }
 
-/* Overlapping Search and Tabs */
-.search-container { background: #fff; border-radius: 16px; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 8px 30px rgba(0,0,0,0.06); margin-top: -36px; position: relative; z-index: 10; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
-.search-input-wrapper { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 280px; }
-.search-input-large { border: none; font-size: 15px; color: #1e293b; width: 100%; outline: none; background: transparent; font-family: inherit; }
-.search-input-large::placeholder { color: #94a3b8; }
+/* ── Compact Professional Hero ── */
+@keyframes heroFadeIn { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+@keyframes heroPulse { 0%,100% { opacity:0.5; } 50% { opacity:1; } }
 
-.cat-tabs-container { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 32px; scrollbar-width: none; }
+.mp-hero {
+  margin-top:72px;
+  background:#05111f;
+  padding:28px 0 52px;
+  position:relative;
+  overflow:hidden;
+  border-bottom:1px solid rgba(72,201,111,0.12);
+}
+.mp-hero::before {
+  content:"";
+  position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 70% 80% at 10% 50%, rgba(15,138,95,0.28) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 60% at 90% 30%, rgba(45,100,180,0.2) 0%, transparent 50%);
+  pointer-events:none;
+}
+.mp-hero::after {
+  content:"";
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(72,201,111,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(72,201,111,0.03) 1px, transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;
+}
+
+.mp-hero-shell { position:relative; z-index:2; }
+
+/* Single-row compact layout */
+.mp-hero-row {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:32px;
+  flex-wrap:wrap;
+  animation:heroFadeIn 0.6s ease both;
+}
+
+.mp-hero-left { flex:1; min-width:280px; }
+
+.mp-eyebrow {
+  display:inline-flex; align-items:center; gap:7px;
+  padding:5px 12px;
+  border:1px solid rgba(72,201,111,0.35);
+  border-radius:999px;
+  margin-bottom:12px;
+  color:#86efac;
+  font-size:10px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase;
+  background:rgba(72,201,111,0.1);
+  backdrop-filter:blur(8px);
+}
+.mp-eyebrow-dot { width:5px; height:5px; border-radius:50%; background:#48c96f; box-shadow:0 0 6px rgba(72,201,111,0.9); animation:heroPulse 2s ease-in-out infinite; }
+
+.mp-hero-title {
+  font-size:clamp(22px,3vw,38px);
+  font-weight:900;
+  color:#fff;
+  margin:0 0 8px;
+  line-height:1.1;
+  letter-spacing:-1px;
+}
+.mp-hero-title .accent {
+  background:linear-gradient(135deg, #48c96f 0%, #2dd4bf 100%);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+
+.mp-hero-sub {
+  color:rgba(186,220,200,0.65);
+  font-size:13px;
+  font-weight:500;
+  margin:0;
+  line-height:1.5;
+}
+
+/* Right side: stats + CTA */
+.mp-hero-right {
+  display:flex;
+  align-items:center;
+  gap:24px;
+  flex-shrink:0;
+}
+
+.mp-hero-stats {
+  display:flex;
+  gap:0;
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:14px;
+  background:rgba(255,255,255,0.04);
+  backdrop-filter:blur(10px);
+  overflow:hidden;
+}
+.mp-stat {
+  display:flex; flex-direction:column; align-items:center;
+  padding:12px 20px;
+}
+.mp-stat:not(:first-child) { border-left:1px solid rgba(255,255,255,0.08); }
+.mp-stat-num { font-size:18px; font-weight:900; color:#fff; line-height:1; margin-bottom:2px; }
+.mp-stat-label { font-size:10px; font-weight:600; color:rgba(134,200,160,0.7); letter-spacing:0.06em; text-transform:uppercase; white-space:nowrap; }
+
+.mp-hero-cta {
+  display:inline-flex; align-items:center; gap:8px;
+  border-radius:12px; padding:11px 20px;
+  font-size:13px; font-weight:800; font-family:inherit; cursor:pointer;
+  border:0;
+  background:linear-gradient(135deg, #48c96f 0%, #15945a 100%);
+  color:#fff;
+  box-shadow:0 6px 20px rgba(72,201,111,0.35);
+  transition:transform 0.2s, box-shadow 0.2s;
+  white-space:nowrap;
+}
+.mp-hero-cta:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(72,201,111,0.45); }
+
+.search-container { background:#fff; border-radius:16px; padding:12px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 18px 40px rgba(15,23,42,0.10); border:1px solid #e6ebf2; margin-top:-28px; position:relative; z-index:10; margin-bottom:22px; gap:12px; flex-wrap:wrap; }
+.search-input-wrapper { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 280px; }
+.search-input-large { border:none; font-size:15px; color:#1e293b; width:100%; outline:none; background:transparent; font-family:inherit; font-weight:600; }
+.search-input-large::placeholder { color: #94a3b8; }
+.search-actions { display:flex; align-items:center; gap:10px; }
+.sort-control { display:flex; align-items:center; gap:8px; border-left:1px solid #e6ebf2; padding-left:14px; min-height:38px; }
+.sort-control select { border:none; outline:none; font-size:13px; font-weight:800; color:#334155; background:transparent; cursor:pointer; font-family:inherit; }
+.mp-secondary-btn { display:flex; align-items:center; gap:7px; border:1px solid #dbe3ee; background:#fff; color:#334155; border-radius:10px; padding:10px 14px; font-size:12px; font-weight:900; cursor:pointer; font-family:inherit; white-space:nowrap; transition:background 0.2s,border-color 0.2s,color 0.2s; }
+.mp-secondary-btn:hover { background:#f8fafc; border-color:#cbd5e1; color:#0f172a; }
+
+.cat-tabs-container { display:flex; gap:10px; overflow-x:auto; padding-bottom:8px; margin-bottom:22px; scrollbar-width:none; }
 .cat-tabs-container::-webkit-scrollbar { display: none; }
-.cat-tab { display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: #fff; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 13px; font-weight: 700; color: #64748b; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
-.cat-tab:hover { border-color: #cbd5e1; color: #334155; background: #f8fafc; }
-.cat-tab.active { background: rgba(72,201,111,0.08); border-color: #48c96f; color: #15945a; }
+.cat-tab { display:flex; align-items:center; gap:8px; padding:10px 16px; background:#fff; border:1px solid #dbe3ee; border-radius:999px; font-size:13px; font-weight:800; color:#64748b; cursor:pointer; white-space:nowrap; transition:background 0.2s,border-color 0.2s,color 0.2s,box-shadow 0.2s; }
+.cat-tab:hover { border-color:#cbd5e1; color:#334155; background:#f8fafc; }
+.cat-tab.active { background:#0f172a; border-color:#0f172a; color:#fff; box-shadow:0 10px 20px rgba(15,23,42,0.12); }
 .mobile-filter-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
+.market-layout { display:flex; gap:24px; align-items:flex-start; }
+.results-header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; }
+.results-count { font-size:13px; color:#64748b; font-weight:700; margin:0; }
+.listing-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:18px; }
+.pagination-wrap { display:flex; align-items:center; justify-content:center; margin-top:36px; gap:16px; flex-wrap:wrap; }
+.pagination-group { display:flex; gap:8px; align-items:center; }
+.page-btn { width:38px; height:38px; border-radius:10px; background:#fff; color:#64748b; border:1px solid #dbe3ee; font-weight:800; cursor:pointer; font-family:inherit; display:flex; align-items:center; justify-content:center; transition:background 0.2s,border-color 0.2s,color 0.2s; }
+.page-btn:hover:not(:disabled) { border-color:#48c96f; color:#15945a; background:#f0fdf4; }
+.page-btn.active { background:#0f172a; color:#fff; border-color:#0f172a; }
+.page-btn:disabled { color:#cbd5e1; cursor:not-allowed; }
+.load-more-btn { padding:10px 22px; border-radius:12px; background:#fff; border:1px solid #dbe3ee; color:#15945a; font-size:13px; font-weight:900; display:flex; align-items:center; gap:8px; cursor:pointer; font-family:inherit; transition:background 0.2s,border-color 0.2s; }
+.load-more-btn:hover:not(:disabled) { background:#f0fdf4; border-color:#48c96f; }
+.load-more-btn:disabled { color:#94a3b8; cursor:not-allowed; }
 
 /* Category Pills on cards */
 .card-cat-pill { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 800; letter-spacing: 0.3px; margin-bottom: 8px; }
@@ -148,11 +283,13 @@ const pageStyles = `
 .cat-vehicles { background: #fce7f3; color: #db2777; }
 .cat-others { background: #f1f5f9; color: #475569; }
 
-.btn-exchange { width: 100%; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 700; background: rgba(72,201,111,0.08); color: #15945a; border: 1.5px solid rgba(72,201,111,0.3); cursor: pointer; transition: all 0.2s; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.btn-exchange { width:100%; padding:10px; border-radius:10px; font-size:13px; font-weight:800; background:#f8fafc; color:#0f766e; border:1px solid #ccfbf1; cursor:pointer; transition:all 0.2s; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; }
 .btn-exchange:hover { background: rgba(72,201,111,0.15); border-color: #48c96f; }
 
 @media (min-width: 1024px) { .mobile-filter-btn { display:none !important; } .mobile-filter-row.empty { display:none !important; } }
-@media (max-width: 1023px) { .desktop-filters { display:none !important; } }
+@media (max-width: 1023px) { .desktop-filters { display:none !important; } .market-layout { display:block; } .results-header { align-items:flex-start; flex-direction:column; } }
+@media (max-width: 860px) { .mp-hero-stats { display:none; } }
+@media (max-width: 700px) { .mp-container { padding:0 18px; } .mp-hero { padding:20px 0 26px; } .mp-hero-title { font-size:clamp(20px,6vw,30px); } .mp-hero-sub { font-size:12px; } .mp-hero-cta { padding:10px 16px; font-size:12px; } .search-container { margin-top:-20px; padding:10px; } .listing-grid { grid-template-columns:1fr; } }
 `;
 
 /* ── Skeleton Card ── */
@@ -700,35 +837,47 @@ export default function Marketplace() {
             <div className="mp-page">
 
                 {/* ── Hero Banner ── */}
-                <div style={{
-                    background: "linear-gradient(135deg,#0a192f 0%,#0d2a42 50%,#0a192f 100%)",
-                    padding: "80px 0 80px", position: "relative", overflow: "hidden",
-                }}>
-                    {/* Background Graphics */}
-                    <div style={{ position: "absolute", top: 0, right: 0, width: "60%", height: "100%", opacity: 0.1, backgroundImage: "url('data:image/svg+xml;utf8,<svg viewBox=\"0 0 100 100\" xmlns=\"http://www.w3.org/2000/svg\"><line x1=\"0\" y1=\"50\" x2=\"100\" y2=\"50\" stroke=\"white\" stroke-width=\"0.5\"/><line x1=\"50\" y1=\"0\" x2=\"50\" y2=\"100\" stroke=\"white\" stroke-width=\"0.5\"/></svg>')", backgroundSize: "30px 30px" }} />
-                    <div style={{ position: "absolute", top: "-20%", right: "-5%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle,rgba(72,201,111,0.15) 0%,transparent 70%)" }} />
-                    <div style={{ position: "absolute", bottom: "-30%", right: "20%", width: 350, height: 350, borderRadius: "50%", background: "radial-gradient(circle,rgba(45,164,196,0.1) 0%,transparent 70%)" }} />
+                <div className="mp-hero">
+                    <div className="mp-container">
+                        <div className="mp-hero-shell">
+                            <div className="mp-hero-row">
+                                {/* Left: title + subtitle */}
+                                <div className="mp-hero-left">
+                                    <div className="mp-eyebrow">
+                                        <span className="mp-eyebrow-dot" />
+                                        <ShoppingBag size={11} /> KelaniXchange Marketplace
+                                    </div>
+                                    <h1 className="mp-hero-title">
+                                        Buy, sell &amp; <span className="accent">exchange</span><br />
+                                        campus essentials
+                                    </h1>
+                                    <p className="mp-hero-sub">
+                                        The student marketplace for University of Kelaniya.
+                                    </p>
+                                </div>
 
-                    {/* Floating icons */}
-                    <div style={{ position: "absolute", top: "25%", right: "15%", width: 64, height: 64, borderRadius: "50%", border: "1px solid rgba(72,201,111,0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: "#48c96f", background: "rgba(72,201,111,0.05)" }}>
-                        <ShoppingBag size={24} />
-                    </div>
-                    <div style={{ position: "absolute", bottom: "30%", right: "8%", width: 56, height: 56, borderRadius: "50%", border: "1px solid rgba(45,164,196,0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: "#2da4c4", background: "rgba(45,164,196,0.05)" }}>
-                        <GraduationCap size={24} />
-                    </div>
-
-                    <div className="mp-container" style={{ position: "relative", zIndex: 1 }}>
-                        <div style={{ display: "inline-block", padding: "4px 10px", border: "1px solid rgba(72,201,111,0.5)", borderRadius: 6, marginBottom: 20 }}>
-                            <span style={{ fontSize: 10, fontWeight: 800, color: "#48c96f", letterSpacing: "0.5px" }}>
-                                ONLINE MARKETPLACE FOR KELANIYA STUDENTS
-                            </span>
+                                {/* Right: stats pill + CTA */}
+                                <div className="mp-hero-right">
+                                    <div className="mp-hero-stats">
+                                        <div className="mp-stat">
+                                            <span className="mp-stat-num">{totalListings > 0 ? totalListings.toLocaleString() : "—"}</span>
+                                            <span className="mp-stat-label">Listings</span>
+                                        </div>
+                                        <div className="mp-stat">
+                                            <span className="mp-stat-num">7</span>
+                                            <span className="mp-stat-label">Categories</span>
+                                        </div>
+                                        <div className="mp-stat">
+                                            <span className="mp-stat-num">Free</span>
+                                            <span className="mp-stat-label">To Join</span>
+                                        </div>
+                                    </div>
+                                    <button type="button" className="mp-hero-cta" onClick={() => navigate("/marketplace/create")}>
+                                        <Tag size={14} /> Post a Listing
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <h1 style={{ fontSize: "clamp(32px,5vw,56px)", fontWeight: 900, color: "#fff", margin: "0 0 16px", letterSpacing: "-1px", lineHeight: 1.1 }}>
-                            Browse <span style={{ color: "#48c96f" }}>Marketplace</span>
-                        </h1>
-                        <p style={{ color: "rgba(255,255,255,0.8)", fontSize: 16, fontWeight: 500, margin: "0", maxWidth: 500 }}>
-                            Buy, sell, and exchange items with fellow Kelaniya students.
-                        </p>
                     </div>
                 </div>
 
@@ -753,13 +902,12 @@ export default function Marketplace() {
                             )}
                         </div>
 
-                        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 8, borderLeft: "1px solid #e2e8f0", paddingLeft: 16 }}>
+                        <div className="search-actions">
+                            <div className="sort-control">
                                 <span style={{ fontSize: 13, color: "#64748b", fontWeight: 600 }}>Sort by:</span>
                                 <select
                                     value={sortBy}
                                     onChange={e => setSortBy(e.target.value)}
-                                    style={{ border: "none", outline: "none", fontSize: 13, fontWeight: 700, color: "#334155", background: "transparent", cursor: "pointer", fontFamily: "inherit" }}
                                 >
                                     {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                                 </select>
@@ -767,21 +915,7 @@ export default function Marketplace() {
                             <button
                                 type="button"
                                 onClick={() => navigate("/users")}
-                                style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 6,
-                                    border: "1.5px solid #e2e8f0",
-                                    background: "#fff",
-                                    color: "#334155",
-                                    borderRadius: 10,
-                                    padding: "9px 14px",
-                                    fontSize: 12,
-                                    fontWeight: 800,
-                                    cursor: "pointer",
-                                    fontFamily: "inherit",
-                                    whiteSpace: "nowrap",
-                                }}
+                                className="mp-secondary-btn"
                                 title="Search users"
                             >
                                 <Users size={15} /> Users
@@ -852,7 +986,7 @@ export default function Marketplace() {
                     </div>
 
                     {/* Layout */}
-                    <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
+                    <div className="market-layout">
 
                         {/* ── Desktop Sidebar Filters ── */}
                         <div className="filter-panel desktop-filters" style={{ width: 260, flexShrink: 0, position: "sticky", top: 88 }}>
@@ -878,7 +1012,7 @@ export default function Marketplace() {
                         {/* ── Grid ── */}
                         <div style={{ flex: 1, minWidth: 0 }}>
                             {isLoading ? (
-                                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 20 }}>
+                                <div className="listing-grid">
                                     {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
                                 </div>
                             ) : error ? (
@@ -907,10 +1041,12 @@ export default function Marketplace() {
                                 </div>
                             ) : (
                                 <>
-                                    <p style={{ fontSize: 12, color: "#94a3b8", fontWeight: 500, marginBottom: 16 }}>
-                                        Showing <strong style={{ color: "#334155" }}>{startIndex + 1}-{endIndex}</strong> of <strong style={{ color: "#334155" }}>{totalListings}</strong> {totalListings === 1 ? "listing" : "listings"}
-                                    </p>
-                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 20 }}>
+                                    <div className="results-header">
+                                        <p className="results-count">
+                                            Showing <strong style={{ color: "#334155" }}>{startIndex + 1}-{endIndex}</strong> of <strong style={{ color: "#334155" }}>{totalListings}</strong> {totalListings === 1 ? "listing" : "listings"}
+                                        </p>
+                                    </div>
+                                    <div className="listing-grid">
                                         {visibleListings.map((listing, i) => (
                                             <ListingCard
                                                 key={listing._id}
@@ -925,8 +1061,8 @@ export default function Marketplace() {
 
                                     {/* Pagination / Load More */}
                                     {sortedListings.length > 0 && (
-                                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginTop: 40, gap: 16, flexWrap: "wrap" }}>
-                                            <div style={{ display: "flex", gap: 8 }}>
+                                        <div className="pagination-wrap">
+                                            <div className="pagination-group">
                                                 {paginationPages.map((page, index) => (
                                                     <Fragment key={page}>
                                                         {index > 0 && page - paginationPages[index - 1] > 1 && (

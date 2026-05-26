@@ -3,13 +3,14 @@ import { useParams, Link, useNavigate } from "react-router";
 import { useDispatch } from "react-redux";
 import {
     ArrowLeft, Calendar, MapPin, Tag, ShieldCheck,
-    Mail, User, Star, ArrowUpDown, Loader2, AlertCircle, Heart, X, ShoppingCart, Plus, Minus, ShoppingBag
+    Mail, User, Star, ArrowUpDown, Loader2, AlertCircle, Heart, X, ShoppingCart, Plus, Minus, ShoppingBag, MessageCircle
 } from "lucide-react";
 import { addToCart } from "../features/cart/cartSlice";
 import { getListingById, getMyListings, deleteListing, updateListing } from "../services/listingService";
 import { getWishlist, addToWishlist, removeFromWishlist } from "../services/wishlistService";
 import { createExchangeRequest } from "../services/exchangeService";
 import { createReport } from "../services/reportService";
+import { startChat } from "../services/chatService";
 import { useAuth } from "../context/AuthContext";
 
 import catBooksStationery from "../assets/category_books_stationery.png";
@@ -47,6 +48,7 @@ export default function ListingDetails() {
     const dispatch = useDispatch();
 
     const [cartQuantity, setCartQuantity] = useState(1);
+    const [chatLoading, setChatLoading] = useState(false);
 
     const getCartItem = () => ({
         id: listing._id,
@@ -72,6 +74,27 @@ export default function ListingDetails() {
         const buyNowItem = getCartItem();
         sessionStorage.setItem("kx_buy_now", JSON.stringify(buyNowItem));
         navigate("/checkout?mode=buy-now", { state: { buyNowItem } });
+    };
+
+    const handleStartChat = async () => {
+        if (!user) {
+            navigate("/login");
+            return;
+        }
+        if (!listing?.seller?._id && !listing?.seller) return;
+
+        try {
+            setChatLoading(true);
+            const data = await startChat({
+                recipientId: listing.seller?._id || listing.seller,
+                listingId: listing._id,
+            });
+            navigate(`/chats/${data.chat._id}`);
+        } catch (err) {
+            alert(err.response?.data?.message || "Failed to start chat.");
+        } finally {
+            setChatLoading(false);
+        }
     };
 
     const [listing, setListing] = useState(null);
@@ -137,8 +160,8 @@ export default function ListingDetails() {
                 try {
                     const data = await getWishlist();
                     const list = data.wishlist || [];
-                    const inWishlist = list.some(item => 
-                        (typeof item === 'string' && item === id) || 
+                    const inWishlist = list.some(item =>
+                        (typeof item === 'string' && item === id) ||
                         (item && item._id === id)
                     );
                     setIsWishlisted(inWishlist);
@@ -172,8 +195,8 @@ export default function ListingDetails() {
                         <h3 className="text-xl font-black text-slate-800">Error Occurred</h3>
                         <p className="text-sm text-slate-500">{error || "The listing you are looking for does not exist."}</p>
                     </div>
-                    <button 
-                        onClick={() => navigate(-1)} 
+                    <button
+                        onClick={() => navigate(-1)}
                         className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-slate-800 text-white font-bold py-3 hover:bg-slate-900 transition-colors text-sm"
                     >
                         <ArrowLeft size={16} /> Go Back
@@ -218,7 +241,7 @@ export default function ListingDetails() {
         setExchangeLoading(true);
         try {
             const data = await getMyListings();
-            const availableListings = (data.listings || []).filter(l => 
+            const availableListings = (data.listings || []).filter(l =>
                 (l.status === "available" || l.status === "active") && l._id !== id
             );
             setMyListings(availableListings);
@@ -327,50 +350,50 @@ export default function ListingDetails() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50/50 pt-28 pb-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-6xl mx-auto space-y-8">
-                
+        <div className="min-h-screen bg-slate-50/50 pt-20 pb-6 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-6xl mx-auto space-y-3">
+
                 {/* Back button */}
                 <div>
-                    <button 
-                        onClick={() => navigate(-1)} 
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-slate-900 shadow-sm transition-all text-sm font-semibold hover:border-slate-300"
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-slate-900 shadow-sm transition-all text-xs font-semibold hover:border-slate-300"
                     >
-                        <ArrowLeft size={16} /> Back
+                        <ArrowLeft size={14} /> Back
                     </button>
                 </div>
 
                 {/* Main Card Grid */}
-                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-0">
-                    
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-0">
+
                     {/* Left Column: Image/Gallery */}
-                    <div className="lg:col-span-7 bg-slate-50 border-r border-slate-100 p-6 flex flex-col justify-between space-y-6">
+                    <div className="lg:col-span-7 bg-slate-50 border-r border-slate-100 p-4 flex flex-col justify-between space-y-3">
                         {/* Main Image container */}
-                        <div className="flex-1 min-h-[300px] max-h-[460px] rounded-2xl bg-white border border-slate-100 flex items-center justify-center p-6 overflow-hidden relative shadow-inner">
+                        <div className="flex-1 min-h-[280px] max-h-[380px] rounded-xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden relative shadow-inner">
                             {listing.isFeatured && (
-                                <span className="absolute top-4 left-4 inline-flex items-center gap-1 text-xs font-black text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full shadow-sm">
+                                <span className="absolute top-4 left-4 inline-flex items-center gap-1 text-xs font-black text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full shadow-sm z-10">
                                     <Star size={12} className="fill-amber-600 text-amber-600 animate-pulse" /> FEATURED
                                 </span>
                             )}
-                            <img 
-                                src={mainImage} 
-                                alt={listing.title} 
-                                className="max-w-full max-h-full object-contain rounded-lg transition-transform duration-300 hover:scale-105" 
+                            <img
+                                src={mainImage}
+                                alt={listing.title}
+                                className="w-full h-full object-contain transition-transform duration-300 hover:scale-105 p-3"
+                                style={{ maxHeight: "380px" }}
                             />
                         </div>
 
                         {/* Thumbnails */}
                         {images.length > 1 && (
-                            <div className="flex gap-3 overflow-x-auto py-2 scrollbar-thin">
+                            <div className="flex gap-2 overflow-x-auto py-1 scrollbar-thin">
                                 {images.map((img, idx) => (
-                                    <button 
+                                    <button
                                         key={idx}
                                         onClick={() => setActiveImageIndex(idx)}
-                                        className={`h-16 w-16 rounded-xl border-2 bg-white flex items-center justify-center p-1.5 shrink-0 transition-all ${
-                                            activeImageIndex === idx ? "border-[#48c96f] shadow-md scale-95" : "border-slate-200 hover:border-slate-400"
-                                        }`}
+                                        className={`h-12 w-12 rounded-lg border-2 bg-white flex items-center justify-center p-1 shrink-0 transition-all ${activeImageIndex === idx ? "border-[#48c96f] shadow-md scale-95" : "border-slate-200 hover:border-slate-400"
+                                            }`}
                                     >
-                                        <img src={img} alt="" className="max-h-full max-w-full object-contain rounded-md" />
+                                        <img src={img} alt="" className="max-h-full max-w-full object-contain rounded-sm" />
                                     </button>
                                 ))}
                             </div>
@@ -378,20 +401,19 @@ export default function ListingDetails() {
                     </div>
 
                     {/* Right Column: Listing Details */}
-                    <div className="lg:col-span-5 p-8 flex flex-col justify-between space-y-8 bg-white">
-                        <div className="space-y-6">
-                            
+                    <div className="lg:col-span-5 p-5 flex flex-col justify-between space-y-4 bg-white">
+                        <div className="space-y-4">
+
                             {/* Tags / Badges */}
                             <div className="flex flex-wrap gap-2">
                                 <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 bg-slate-100 border border-slate-200/60 px-3 py-1 rounded-full">
                                     <Tag size={12} /> {catName}
                                 </span>
-                                <span className={`inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full border ${
-                                    listing.condition === "New" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
-                                    listing.condition === "Like New" ? "bg-sky-50 text-sky-700 border-sky-200" :
-                                    listing.condition === "Good" ? "bg-amber-50 text-amber-700 border-amber-200" :
-                                    "bg-slate-50 text-slate-700 border-slate-200"
-                                }`}>
+                                <span className={`inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full border ${listing.condition === "New" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
+                                        listing.condition === "Like New" ? "bg-sky-50 text-sky-700 border-sky-200" :
+                                            listing.condition === "Good" ? "bg-amber-50 text-amber-700 border-amber-200" :
+                                                "bg-slate-50 text-slate-700 border-slate-200"
+                                    }`}>
                                     {listing.condition}
                                 </span>
                                 {listing.isExchangeAvailable && (
@@ -402,33 +424,32 @@ export default function ListingDetails() {
                             </div>
 
                             {/* Title & Price */}
-                            <div className="space-y-2">
-                                <div className="flex items-start justify-between gap-4">
-                                    <h1 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight leading-snug">
+                            <div className="space-y-1">
+                                <div className="flex items-start justify-between gap-3">
+                                    <h1 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight leading-snug">
                                         {listing.title}
                                     </h1>
                                     {!isOwner && (
-                                        <button 
+                                        <button
                                             onClick={handleWishlistToggle}
                                             disabled={wishlistLoading}
-                                            className={`h-11 w-11 rounded-full border flex items-center justify-center transition-all shrink-0 shadow-sm ${
-                                                isWishlisted 
-                                                    ? "bg-rose-50 border-rose-200 text-rose-500 hover:bg-rose-100" 
+                                            className={`h-9 w-9 rounded-full border flex items-center justify-center transition-all shrink-0 shadow-sm ${isWishlisted
+                                                    ? "bg-rose-50 border-rose-200 text-rose-500 hover:bg-rose-100"
                                                     : "bg-white border-slate-200 text-slate-400 hover:text-slate-600 hover:border-slate-300"
-                                            }`}
+                                                }`}
                                             title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
                                         >
-                                            <Heart size={20} className={isWishlisted ? "fill-rose-500" : ""} />
+                                            <Heart size={16} className={isWishlisted ? "fill-rose-500" : ""} />
                                         </button>
                                     )}
                                 </div>
-                                <p className="text-3xl font-black text-[#15945a]">
+                                <p className="text-2xl font-black text-[#15945a]">
                                     Rs. {Number(listing.price).toLocaleString()}
                                 </p>
                             </div>
 
                             {/* Details Table */}
-                            <div className="border-y border-slate-100 py-4 space-y-3.5">
+                            <div className="border-y border-slate-100 py-3 space-y-2.5">
                                 <div className="flex items-center justify-between text-sm">
                                     <span className="text-slate-400 font-medium flex items-center gap-1.5"><MapPin size={15} /> Location</span>
                                     <span className="text-slate-700 font-bold">{listing.location || "Kelaniya Campus"}</span>
@@ -440,142 +461,138 @@ export default function ListingDetails() {
                                 {(listing.quantity !== undefined) && (
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="text-slate-400 font-medium flex items-center gap-1.5"><Tag size={15} /> Available</span>
-                                        <span className={`font-bold px-2.5 py-0.5 rounded-full text-xs border ${
-                                            listing.quantity > 0
+                                        <span className={`font-bold px-2.5 py-0.5 rounded-full text-xs border ${listing.quantity > 0
                                                 ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                                 : "bg-rose-50 text-rose-700 border-rose-200"
-                                        }`}>
+                                            }`}>
                                             {listing.quantity} {listing.quantity === 1 ? "item" : "items"}
                                         </span>
                                     </div>
                                 )}
                                 <div className="flex items-center justify-between text-sm">
                                     <span className="text-slate-400 font-medium flex items-center gap-1.5"><ShieldCheck size={15} /> Status</span>
-                                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-bold border ${
-                                        listing.status === "available" || listing.status === "active"
+                                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-bold border ${listing.status === "available" || listing.status === "active"
                                             ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                             : "bg-rose-50 text-rose-700 border-rose-200"
-                                    }`}>
+                                        }`}>
                                         {listing.status}
                                     </span>
                                 </div>
                             </div>
 
                             {/* Description */}
-                            <div className="space-y-2">
-                                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Description</h3>
-                                <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">
+                            <div className="space-y-1">
+                                <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Description</h3>
+                                <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line line-clamp-3">
                                     {listing.description}
                                 </p>
                             </div>
                         </div>
 
                         {/* Seller Box / Actions */}
-                        <div className="space-y-4">
-                            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 space-y-3">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold border border-slate-300 shadow-sm shrink-0">
-                                        <User size={18} />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-slate-400 font-medium">Listed by</p>
-                                        <p className="text-sm font-black text-slate-700">@{listing.seller?.username || "student_seller"}</p>
-                                    </div>
+                        <div className="space-y-3">
+                            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center gap-3">
+                                <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold border border-slate-300 shadow-sm shrink-0">
+                                    <User size={14} />
                                 </div>
-                                
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[10px] text-slate-400 font-medium">Listed by</p>
+                                    <p className="text-xs font-black text-slate-700 truncate">@{listing.seller?.username || "student_seller"}</p>
+                                </div>
                                 {listing.seller?.email && (
-                                    <div className="flex items-center gap-2 text-xs text-slate-500 font-medium border-t border-slate-200/50 pt-2.5">
-                                        <Mail size={13} />
-                                        <span>{listing.seller.email}</span>
+                                    <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-medium">
+                                        <Mail size={11} />
+                                        <span className="truncate max-w-[120px]">{listing.seller.email}</span>
                                     </div>
                                 )}
                             </div>
 
                             {/* Contact CTA or Owner Actions */}
                             {isOwner ? (
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-2 gap-2">
                                     <button
                                         onClick={handleOpenEditModal}
-                                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 font-bold py-3.5 hover:bg-blue-100 transition-all text-sm cursor-pointer"
+                                        className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 font-bold py-2.5 hover:bg-blue-100 transition-all text-xs cursor-pointer"
                                     >
                                         Edit Details
                                     </button>
                                     <button
                                         onClick={handleDeleteListing}
-                                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 font-bold py-3.5 hover:bg-rose-100 transition-all text-sm cursor-pointer"
+                                        className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 font-bold py-2.5 hover:bg-rose-100 transition-all text-xs cursor-pointer"
                                     >
                                         Delete Post
                                     </button>
                                 </div>
                             ) : (
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                     {(listing.status === "available" || listing.status === "active") && (listing.quantity || 1) > 0 && (
                                         <>
                                             <div>
-                                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Quantity to Buy</label>
-                                                <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 gap-2">
+                                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Quantity</label>
+                                                <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 gap-1">
                                                     <button
                                                         type="button"
                                                         onClick={() => setCartQuantity(Math.max(1, cartQuantity - 1))}
-                                                        className="text-slate-400 hover:text-slate-700 transition-colors p-1"
+                                                        className="text-slate-400 hover:text-slate-700 transition-colors p-0.5"
                                                     >
-                                                        <Minus size={14} />
+                                                        <Minus size={12} />
                                                     </button>
-                                                    <span className="flex-1 text-center text-sm font-bold text-slate-700">{cartQuantity}</span>
+                                                    <span className="flex-1 text-center text-xs font-bold text-slate-700">{cartQuantity}</span>
                                                     <button
                                                         type="button"
                                                         onClick={() => setCartQuantity(Math.min(listing.quantity || 1, cartQuantity + 1))}
-                                                        className="text-slate-400 hover:text-slate-700 transition-colors p-1"
+                                                        className="text-slate-400 hover:text-slate-700 transition-colors p-0.5"
                                                     >
-                                                        <Plus size={14} />
+                                                        <Plus size={12} />
                                                     </button>
                                                 </div>
-                                                <p className="text-xs text-slate-500 mt-1">Max: {listing.quantity || 1} available</p>
                                             </div>
-                                            <button
-                                                onClick={handleAddToCart}
-                                                className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 shadow-md transition-all text-sm cursor-pointer"
-                                            >
-                                                <ShoppingCart size={16} /> Add to Cart
-                                            </button>
-                                            <button
-                                                onClick={handleBuyNow}
-                                                className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#48c96f] hover:bg-[#3db65e] text-white font-bold py-3.5 shadow-md shadow-emerald-100 hover:shadow-lg transition-all text-sm cursor-pointer"
-                                            >
-                                                <ShoppingBag size={16} /> Buy Now
-                                            </button>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <button
+                                                    onClick={handleAddToCart}
+                                                    className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 shadow-sm transition-all text-xs cursor-pointer"
+                                                >
+                                                    <ShoppingCart size={13} /> Add to Cart
+                                                </button>
+                                                <button
+                                                    onClick={handleBuyNow}
+                                                    className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#48c96f] hover:bg-[#3db65e] text-white font-bold py-2.5 shadow-sm transition-all text-xs cursor-pointer"
+                                                >
+                                                    <ShoppingBag size={13} /> Buy Now
+                                                </button>
+                                            </div>
                                         </>
                                     )}
 
                                     {(listing.status === "sold" || (listing.quantity || 1) <= 0) && (
-                                        <div className="w-full rounded-xl bg-rose-50 border border-rose-200 text-rose-700 font-bold py-3.5 text-center text-sm">
+                                        <div className="w-full rounded-lg bg-rose-50 border border-rose-200 text-rose-700 font-bold py-2.5 text-center text-xs">
                                             Out of Stock
                                         </div>
                                     )}
 
-                                    {listing.seller?.email && (
-                                        <a
-                                            href={`mailto:${listing.seller.email}?subject=Inquiry about ${listing.title} on KelaniXchange`}
-                                            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#48c96f] hover:bg-[#3db65e] text-white font-bold py-3.5 shadow-md shadow-emerald-100 hover:shadow-lg transition-all text-sm"
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={handleStartChat}
+                                            disabled={chatLoading}
+                                            className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-slate-700 hover:bg-slate-800 text-white font-bold py-2.5 shadow-sm transition-all text-xs disabled:opacity-50 cursor-pointer"
                                         >
-                                            <Mail size={16} /> Contact Seller via Email
-                                        </a>
-                                    )}
-                                    
-                                    {listing.isExchangeAvailable && (
-                                        <button 
-                                            onClick={handleOpenExchangeModal}
-                                            disabled={exchangeLoading}
-                                            className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-[#48c96f]/30 bg-emerald-50/50 hover:bg-emerald-50 text-[#15945a] font-bold py-3.5 shadow-sm transition-all text-sm cursor-pointer disabled:opacity-50"
-                                        >
-                                            {exchangeLoading ? (
-                                                <Loader2 size={16} className="animate-spin" />
-                                            ) : (
-                                                <ArrowUpDown size={16} />
-                                            )}
-                                            Request Exchange Offer
+                                            {chatLoading ? <Loader2 size={13} className="animate-spin" /> : <MessageCircle size={13} />}
+                                            Chat Seller
                                         </button>
-                                    )}
+                                        {listing.isExchangeAvailable ? (
+                                            <button
+                                                onClick={handleOpenExchangeModal}
+                                                disabled={exchangeLoading}
+                                                className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#48c96f]/30 bg-emerald-50/50 hover:bg-emerald-50 text-[#15945a] font-bold py-2.5 shadow-sm transition-all text-xs cursor-pointer disabled:opacity-50"
+                                            >
+                                                {exchangeLoading ? <Loader2 size={13} className="animate-spin" /> : <ArrowUpDown size={13} />}
+                                                Exchange
+                                            </button>
+                                        ) : (
+                                            <div />
+                                        )}
+                                    </div>
 
                                     <button
                                         onClick={handleOpenReportModal}
@@ -589,17 +606,12 @@ export default function ListingDetails() {
                     </div>
                 </div>
 
-                {/* Safety Guidelines */}
-                <div className="bg-amber-50/50 rounded-2xl border border-amber-200/60 p-6 flex items-start gap-4">
-                    <div className="p-2 rounded-xl bg-amber-100/80 text-amber-800 shrink-0">
-                        <ShieldCheck size={20} />
-                    </div>
-                    <div className="space-y-1">
-                        <h4 className="text-sm font-bold text-amber-900">KelaniXchange Safety Tip</h4>
-                        <p className="text-xs text-amber-700/90 leading-relaxed">
-                            For physical handovers and exchanges, we highly recommend meeting in public spaces inside the University of Kelaniya campus (e.g., near the library, student center, or canteen) during daylight hours. Inspect the item thoroughly before making any payments.
-                        </p>
-                    </div>
+                {/* Safety Guidelines - compact inline */}
+                <div className="bg-amber-50/50 rounded-xl border border-amber-200/60 px-4 py-2.5 flex items-center gap-3">
+                    <ShieldCheck size={16} className="text-amber-700 shrink-0" />
+                    <p className="text-[11px] text-amber-700/90 leading-snug">
+                        <span className="font-bold">Safety tip:</span> Meet in public campus spaces and inspect items before payment.
+                    </p>
                 </div>
             </div>
 
@@ -656,14 +668,14 @@ export default function ListingDetails() {
                                 </div>
 
                                 <div className="flex gap-3 justify-end pt-2">
-                                    <button 
-                                        type="button" 
+                                    <button
+                                        type="button"
                                         onClick={() => setExchangeModalOpen(false)}
                                         className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
                                     >
                                         Cancel
                                     </button>
-                                    <button 
+                                    <button
                                         type="submit"
                                         disabled={exchangeLoading}
                                         className="rounded-xl bg-[#48c96f] hover:bg-[#3db65e] px-5 py-2.5 text-xs font-bold text-white shadow-sm flex items-center gap-1.5 transition-colors disabled:opacity-50"
@@ -724,14 +736,14 @@ export default function ListingDetails() {
                             </div>
 
                             <div className="flex gap-3 justify-end pt-2">
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     onClick={() => setReportModalOpen(false)}
                                     className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
                                 >
                                     Cancel
                                 </button>
-                                <button 
+                                <button
                                     type="submit"
                                     disabled={reportLoading}
                                     className="rounded-xl bg-rose-600 hover:bg-rose-700 px-5 py-2.5 text-xs font-bold text-white shadow-sm flex items-center gap-1.5 transition-colors disabled:opacity-50"
@@ -750,7 +762,7 @@ export default function ListingDetails() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setEditModalOpen(false)} />
                     <div className="relative w-full max-w-xl bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
-                        
+
                         {/* Header */}
                         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50 shrink-0">
                             <div>
@@ -768,10 +780,10 @@ export default function ListingDetails() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="md:col-span-2">
                                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Listing Title</label>
-                                        <input 
-                                            type="text" 
+                                        <input
+                                            type="text"
                                             required
-                                            value={editForm.title} 
+                                            value={editForm.title}
                                             onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
                                             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#48c96f]/40"
                                         />
@@ -779,10 +791,10 @@ export default function ListingDetails() {
 
                                     <div className="md:col-span-2">
                                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Description</label>
-                                        <textarea 
+                                        <textarea
                                             rows={3}
                                             required
-                                            value={editForm.description} 
+                                            value={editForm.description}
                                             onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                                             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#48c96f]/40 resize-none"
                                         />
@@ -790,8 +802,8 @@ export default function ListingDetails() {
 
                                     <div>
                                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Category</label>
-                                        <select 
-                                            value={editForm.category} 
+                                        <select
+                                            value={editForm.category}
                                             onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
                                             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#48c96f]/40"
                                         >
@@ -825,8 +837,8 @@ export default function ListingDetails() {
 
                                     <div>
                                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Condition</label>
-                                        <select 
-                                            value={editForm.condition} 
+                                        <select
+                                            value={editForm.condition}
                                             onChange={(e) => setEditForm({ ...editForm, condition: e.target.value })}
                                             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#48c96f]/40"
                                         >
@@ -839,10 +851,10 @@ export default function ListingDetails() {
 
                                     <div>
                                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Location</label>
-                                        <input 
-                                            type="text" 
+                                        <input
+                                            type="text"
                                             required
-                                            value={editForm.location} 
+                                            value={editForm.location}
                                             onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
                                             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#48c96f]/40"
                                         />
@@ -850,8 +862,8 @@ export default function ListingDetails() {
 
                                     <div>
                                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Status</label>
-                                        <select 
-                                            value={editForm.status} 
+                                        <select
+                                            value={editForm.status}
                                             onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
                                             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#48c96f]/40"
                                         >
@@ -863,8 +875,8 @@ export default function ListingDetails() {
 
                                     <div className="flex items-center gap-3 h-full pt-6">
                                         <label className="relative inline-flex items-center cursor-pointer">
-                                            <input 
-                                                type="checkbox" 
+                                            <input
+                                                type="checkbox"
                                                 checked={editForm.isExchangeAvailable}
                                                 onChange={(e) => setEditForm({ ...editForm, isExchangeAvailable: e.target.checked })}
                                                 className="sr-only peer"
@@ -880,14 +892,14 @@ export default function ListingDetails() {
                             </div>
 
                             <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50 shrink-0">
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     onClick={() => setEditModalOpen(false)}
                                     className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
                                 >
                                     Cancel
                                 </button>
-                                <button 
+                                <button
                                     type="submit"
                                     disabled={editLoading}
                                     className="rounded-xl bg-[#48c96f] hover:bg-[#3db65e] px-5 py-2.5 text-sm font-bold text-white shadow-sm flex items-center gap-2 transition-colors disabled:opacity-50"

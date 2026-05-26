@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import {
     AlertCircle, ArrowLeft, Calendar, Loader2, MapPin,
-    PackageCheck, Phone, ReceiptText, Trash2, XCircle
+    ExternalLink, PackageCheck, Phone, ReceiptText, Trash2, XCircle
 } from "lucide-react";
 import { cancelMyOrder, clearOrderErrors, deleteMyCancelledOrder, fetchMyOrders } from "../features/orders/orderSlice";
 import { useAuth } from "../context/AuthContext";
@@ -187,6 +187,15 @@ export default function MyOrders() {
                                             <p className="text-xs text-slate-500">Qty {order.quantity}</p>
                                             <p className="text-lg font-black text-[#15945a]">Rs. {Number(order.totalAmount).toLocaleString()}</p>
                                         </div>
+                                        {order.listing?._id && (
+                                            <Link
+                                                to={`/marketplace/${order.listing._id}`}
+                                                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:border-[#48c96f] hover:text-[#15945a] transition-colors"
+                                            >
+                                                <ExternalLink size={14} />
+                                                View Item
+                                            </Link>
+                                        )}
                                         {order.orderStatus === "cancelled" ? (
                                             <button
                                                 onClick={() => handleDelete(order._id)}

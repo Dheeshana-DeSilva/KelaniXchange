@@ -2,13 +2,16 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import { 
-    Heart, ShoppingCart, ChevronDown,
+    Bell, Heart, MessageCircle, ShoppingCart, ChevronDown,
     User, LogIn, LogOut, Package, PlusCircle, ReceiptText, Store, ArrowRightLeft
 } from "lucide-react";
 import logo from "../../assets/X_logo.png";
 import { useAuth } from "../../context/AuthContext";
 import { logout } from "../../features/auth/authSlice";
 import { getWishlist } from "../../services/wishlistService";
+import { getNotifications } from "../../services/notificationService";
+import { getUnreadMessageCount } from "../../services/chatService";
+import { getSocket } from "../../services/socketService";
 
 function MarketplaceNavbar() {
     const [scrolled, setScrolled] = useState(false);
@@ -21,6 +24,8 @@ function MarketplaceNavbar() {
     const { user, isAuthenticated } = useAuth();
     const cartItemsCount = useSelector(state => state.cart?.totalItems || 0);
     const [wishlistCount, setWishlistCount] = useState(0);
+    const [notificationCount, setNotificationCount] = useState(0);
+    const [chatUnreadCount, setChatUnreadCount] = useState(0);
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -58,6 +63,74 @@ function MarketplaceNavbar() {
         return () => {
             isMounted = false;
             window.removeEventListener("kx:wishlist-updated", loadWishlistCount);
+        };
+    }, [isAuthenticated, location.pathname]);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadChatUnreadCount = async () => {
+            if (!isAuthenticated) {
+                setChatUnreadCount(0);
+                return;
+            }
+
+            try {
+                const data = await getUnreadMessageCount();
+                if (isMounted) {
+                    setChatUnreadCount(data.unreadCount || 0);
+                }
+            } catch (err) {
+                console.error("Failed to load chat unread count:", err);
+            }
+        };
+
+        loadChatUnreadCount();
+        const socket = getSocket();
+        const handleUpdate = () => loadChatUnreadCount();
+        socket?.on("chatUpdated", handleUpdate);
+        socket?.on("messagesRead", handleUpdate);
+        window.addEventListener("kx:chat-updated", loadChatUnreadCount);
+
+        return () => {
+            isMounted = false;
+            socket?.off("chatUpdated", handleUpdate);
+            socket?.off("messagesRead", handleUpdate);
+            window.removeEventListener("kx:chat-updated", loadChatUnreadCount);
+        };
+    }, [isAuthenticated, location.pathname]);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadNotificationCount = async () => {
+            if (!isAuthenticated) {
+                setNotificationCount(0);
+                return;
+            }
+
+            try {
+                const data = await getNotifications();
+                if (isMounted) {
+                    setNotificationCount(data.unreadCount || 0);
+                }
+            } catch (err) {
+                console.error("Failed to load notification count:", err);
+            }
+        };
+
+        loadNotificationCount();
+        const intervalId = window.setInterval(loadNotificationCount, 30000);
+        const socket = getSocket();
+        const handleSocketNotification = () => loadNotificationCount();
+        socket?.on("notificationUpdated", handleSocketNotification);
+        window.addEventListener("kx:notifications-updated", loadNotificationCount);
+
+        return () => {
+            isMounted = false;
+            window.clearInterval(intervalId);
+            socket?.off("notificationUpdated", handleSocketNotification);
+            window.removeEventListener("kx:notifications-updated", loadNotificationCount);
         };
     }, [isAuthenticated, location.pathname]);
 
@@ -160,6 +233,28 @@ function MarketplaceNavbar() {
                                 )}
                             </Link>
 
+                            {isAuthenticated && (
+                                <Link to="/chats" className={iconLinkClass("/chats")} title="Chats">
+                                    <MessageCircle size={20} />
+                                    {chatUnreadCount > 0 && (
+                                        <span className="absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full border border-[#0a192f] bg-amber-500 px-1 text-[10px] font-bold text-white">
+                                            {chatUnreadCount > 99 ? "99+" : chatUnreadCount}
+                                        </span>
+                                    )}
+                                </Link>
+                            )}
+
+                            {isAuthenticated && (
+                                <Link to="/notifications" className={iconLinkClass("/notifications")} title="Notifications">
+                                    <Bell size={20} />
+                                    {notificationCount > 0 && (
+                                        <span className="absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full border border-[#0a192f] bg-blue-500 px-1 text-[10px] font-bold text-white">
+                                            {notificationCount > 99 ? "99+" : notificationCount}
+                                        </span>
+                                    )}
+                                </Link>
+                            )}
+
                             {/* Auth / Profile */}
                             <div className="mx-1 hidden h-6 w-px bg-white/15 sm:block" />
 
@@ -204,6 +299,9 @@ function MarketplaceNavbar() {
                                             </Link>
                                             <Link to="/exchanges" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
                                                 <ArrowRightLeft size={16} className="text-[#48c96f]" /> My Exchanges
+                                            </Link>
+                                            <Link to="/chats" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
+                                                <MessageCircle size={16} className="text-[#48c96f]" /> Chats
                                             </Link>
                                             <Link to="/orders" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
                                                 <ReceiptText size={16} className="text-[#48c96f]" /> My Orders
