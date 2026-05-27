@@ -179,7 +179,7 @@ const searchUsers = async (req, res) => {
         }
 
         const users = await User.find({
-            role: "USER",
+            role: { $in: ["USER", "SELLER"] },
             accountStatus: { $ne: "blocked" },
             $or: [
                 { username: { $regex: search, $options: "i" } },
@@ -206,7 +206,7 @@ const getPublicUserProfile = async (req, res) => {
     try {
         const user = await User.findById(req.params.id).select("fullName username profileImage isVerified createdAt role accountStatus");
 
-        if (!user || user.role !== "USER" || user.accountStatus === "blocked") {
+        if (!user || !["USER", "SELLER"].includes(user.role) || user.accountStatus === "blocked") {
             return res.status(404).json({ message: "User not found" });
         }
 
