@@ -10,7 +10,7 @@ import {
 } from "../../services/adminService";
 
 /* ─── helpers ─── */
-const ROLES = ["USER", "ADMIN"];
+const ROLES = ["USER", "SELLER", "ADMIN"];
 const STATUSES = ["active", "blocked", "deactivated"];
 
 const statusBadge = (user) => {
@@ -24,6 +24,8 @@ const statusBadge = (user) => {
 const roleBadge = (role) =>
     role === "ADMIN"
         ? "bg-amber-50 text-amber-700 border-amber-200"
+        : role === "SELLER"
+        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
         : "bg-slate-100 text-slate-600 border-slate-200";
 
 const avatarGradient = (username) => {
@@ -190,6 +192,7 @@ const ManageUsers = () => {
                         >
                             <option value="all">All Roles</option>
                             <option value="USER">User</option>
+                            <option value="SELLER">Seller</option>
                             <option value="ADMIN">Admin</option>
                         </select>
                         <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
@@ -376,6 +379,7 @@ const ManageUsers = () => {
                             <Field label="Role">
                                 <select value={newUser.role} onChange={(e) => setNewUser({ ...newUser, role: e.target.value })} className={inputCls}>
                                     <option value="USER">User</option>
+                                    <option value="SELLER">Seller</option>
                                     <option value="ADMIN">Admin</option>
                                 </select>
                             </Field>
