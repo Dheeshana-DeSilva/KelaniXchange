@@ -18,6 +18,7 @@ const MARKETPLACE_FLOW_PREFIXES = [
   "/chats",
   "/users",
   "/profile",
+  "/lost-found",
 ];
 
 function App() {

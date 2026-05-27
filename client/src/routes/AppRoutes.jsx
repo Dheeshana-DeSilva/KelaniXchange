@@ -19,6 +19,10 @@ import PublicUserProfile from "../pages/PublicUserProfile";
 import Notifications from "../pages/Notifications";
 import ChatList from "../pages/ChatList";
 import ChatConversation from "../pages/ChatConversation";
+import LostFound from "../pages/LostFound";
+import CreateLostFound from "../pages/CreateLostFound";
+import LostFoundDetails from "../pages/LostFoundDetails";
+import MyLostFoundPosts from "../pages/MyLostFoundPosts";
 
 /* ── Admin ── */
 import AdminRoute from "./AdminRoute";
@@ -56,6 +60,12 @@ function AppRoutes() {
             <Route path="/users" element={<UserSearch />} />
             <Route path="/users/:id" element={<PublicUserProfile />} />
             <Route path="/about" element={<About />} />
+
+            {/* Lost & Found */}
+            <Route path="/lost-found" element={<LostFound />} />
+            <Route path="/lost-found/create" element={<CreateLostFound />} />
+            <Route path="/lost-found/my-posts" element={<MyLostFoundPosts />} />
+            <Route path="/lost-found/:id" element={<LostFoundDetails />} />
 
             {/* Admin — protected & nested under AdminLayout */}
             <Route
