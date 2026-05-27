@@ -4,6 +4,9 @@ const Listing = require("../models/Listing");
 const Report = require("../models/Report");
 const ExchangeRequest = require("../models/ExchangeRequest");
 const LostFound = require("../models/LostFound");
+const Order = require("../models/Order");
+
+const VALID_ROLES = ["USER", "SELLER", "ADMIN"];
 
 // Admin dashboard statistics
 const getDashboardStats = async (req, res) => {
@@ -21,6 +24,14 @@ const getDashboardStats = async (req, res) => {
             status: "pending",
         });
         const totalExchangeRequests = await ExchangeRequest.countDocuments();
+        const totalOrders = await Order.countDocuments();
+        const pendingOrders = await Order.countDocuments({ orderStatus: "pending" });
+        const totalPayments = await Order.countDocuments({ paymentMethod: { $exists: true } });
+        const pendingPayments = await Order.countDocuments({ paymentStatus: "pending" });
+        const paidPayments = await Order.countDocuments({ paymentStatus: "paid" });
+        const failedPayments = await Order.countDocuments({ paymentStatus: "failed" });
+        const totalLostFoundPosts = await LostFound.countDocuments();
+        const openLostFoundPosts = await LostFound.countDocuments({ status: "open" });
 
         res.status(200).json({
             message: "Dashboard statistics fetched successfully",
@@ -32,6 +43,14 @@ const getDashboardStats = async (req, res) => {
                 totalReports,
                 pendingReports,
                 totalExchangeRequests,
+                totalOrders,
+                pendingOrders,
+                totalPayments,
+                pendingPayments,
+                paidPayments,
+                failedPayments,
+                totalLostFoundPosts,
+                openLostFoundPosts,
             },
         });
     } catch (error) {
@@ -135,8 +154,8 @@ const updateUserRole = async (req, res) => {
     try {
         const { role } = req.body;
 
-        if (!["USER", "ADMIN"].includes(role)) {
-            return res.status(400).json({ message: "Invalid role. Must be USER or ADMIN." });
+        if (!VALID_ROLES.includes(role)) {
+            return res.status(400).json({ message: "Invalid role. Must be USER, SELLER, or ADMIN." });
         }
 
         const user = await User.findById(req.params.id);
@@ -318,6 +337,10 @@ const addUser = async (req, res) => {
         const existingUsername = await User.findOne({ username });
         if (existingUsername) {
             return res.status(400).json({ message: "Username already taken" });
+        }
+
+        if (role && !VALID_ROLES.includes(role)) {
+            return res.status(400).json({ message: "Invalid role. Must be USER, SELLER, or ADMIN." });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);

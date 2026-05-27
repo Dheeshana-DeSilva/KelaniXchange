@@ -31,6 +31,7 @@ import AdminDashboard from "../pages/admin/AdminDashboard";
 import ManageUsers from "../pages/admin/ManageUsers";
 import ManageProducts from "../pages/admin/ManageProducts";
 import ManageOrders from "../pages/admin/ManageOrders";
+import ManagePayments from "../pages/admin/ManagePayments";
 import OrderDetails from "../pages/admin/OrderDetails";
 import ManageReports from "../pages/admin/ManageReports";
 import ManageLostFound from "../pages/admin/ManageLostFound";
@@ -81,6 +82,7 @@ function AppRoutes() {
                 <Route path="listings" element={<ManageProducts />} />
                 <Route path="orders" element={<ManageOrders />} />
                 <Route path="orders/:id" element={<OrderDetails />} />
+                <Route path="payments" element={<ManagePayments />} />
                 <Route path="reports" element={<ManageReports />} />
                 <Route path="lost-found" element={<ManageLostFound />} />
             </Route>

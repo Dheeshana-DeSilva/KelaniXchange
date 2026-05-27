@@ -4,7 +4,7 @@ import { useNavigate, Link, useLocation } from "react-router";
 import { 
     Menu, X, LogOut, Bell, LayoutDashboard, 
     Users, Package, ShoppingCart, AlertTriangle, ArrowLeft,
-    HelpCircle
+    HelpCircle, CreditCard
 } from "lucide-react";
 import { logout } from "../../features/auth/authSlice";
 import logo from "../../assets/X_logo.png";
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
     { to: "/admin/users", icon: Users, label: "Users" },
     { to: "/admin/listings", icon: Package, label: "Listings" },
     { to: "/admin/orders", icon: ShoppingCart, label: "Orders" },
+    { to: "/admin/payments", icon: CreditCard, label: "Payments" },
     { to: "/admin/reports", icon: AlertTriangle, label: "Reports" },
     { to: "/admin/lost-found", icon: HelpCircle, label: "Lost & Found" },
 ];

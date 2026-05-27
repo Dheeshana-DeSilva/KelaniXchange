@@ -86,234 +86,43 @@ const CATEGORY_ICONS = {
     "others": MoreHorizontal,
 };
 
-/* ── Styles ── */
-const pageStyles = `
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+const categoryPillClasses = {
+    "books-and-stationery": "bg-sky-100 text-sky-700",
+    "electronics": "bg-purple-100 text-purple-700",
+    "furniture": "bg-cyan-100 text-cyan-700",
+    "fashion-and-accessories": "bg-orange-100 text-orange-700",
+    "sports-and-outdoor": "bg-green-100 text-green-700",
+    "vehicles": "bg-pink-100 text-pink-700",
+    "others": "bg-slate-100 text-slate-600",
+};
 
-@keyframes fadeUp { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:translateY(0) } }
-@keyframes shimmer { from { background-position: -200% 0 } to { background-position: 200% 0 } }
-@keyframes spin { to { transform: rotate(360deg) } }
-
-.mp-page { min-height:100vh; background:#f6f8fb; font-family:'Inter',sans-serif; color:#0f172a; }
-.mp-container { max-width:1450px; margin:0 auto; padding:0 24px; }
-@media (min-width:640px) { .mp-container { padding:0 48px; } }
-
-/* Listing card */
-.listing-card { background:#fff; border-radius:16px; overflow:hidden; border:1px solid #e6ebf2; box-shadow:0 1px 2px rgba(15,23,42,0.04); transition:box-shadow 0.2s ease,border-color 0.2s ease,transform 0.2s ease; cursor:pointer; display:flex; flex-direction:column; animation:fadeUp 0.4s ease both; }
-.listing-card:hover { transform:translateY(-2px); box-shadow:0 14px 34px rgba(15,23,42,0.09); border-color:#cfd8e6; }
-.listing-card:hover .card-img { transform:scale(1.03); }
-.card-img { transition:transform 0.4s ease; width:100%; height:100%; object-fit:cover; }
-
-/* Skeleton */
-.skeleton { background:linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:8px; }
-
-/* Filter panel */
-.filter-panel { background:#fff; border-radius:16px; border:1px solid #e6ebf2; box-shadow:0 1px 2px rgba(15,23,42,0.04); padding:20px; }
-
-/* Select */
-.mp-select { appearance:none; background:#f8fafc url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center; border:1px solid #dbe3ee; border-radius:10px; padding:10px 32px 10px 12px; font-size:13px; color:#334155; font-family:inherit; width:100%; cursor:pointer; outline:none; transition:border-color 0.2s,box-shadow 0.2s,background 0.2s; }
-.mp-select:focus { border-color:#48c96f; background-color:#fff; box-shadow:0 0 0 3px rgba(72,201,111,0.11); }
-
-/* Search input */
-.mp-search { background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:12px; padding:11px 16px 11px 44px; font-size:14px; color:#1e293b; font-family:inherit; width:100%; box-sizing:border-box; outline:none; transition:all 0.2s; }
-.mp-search:focus { border-color:#48c96f; background:#fff; box-shadow:0 0 0 3px rgba(72,201,111,0.08); }
-
-/* Active filter chip */
-.filter-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; background:#ecfdf3; border:1px solid #bbf7d0; color:#137a4b; font-size:12px; font-weight:700; }
-
-/* Mobile filter overlay */
-.filter-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:50; display:flex; align-items:flex-end; backdrop-filter:blur(4px); }
-.filter-sheet { background:#fff; border-radius:24px 24px 0 0; width:100%; max-height:85vh; overflow-y:auto; padding:28px 24px 36px; }
-
-/* ── Compact Professional Hero ── */
-@keyframes heroFadeIn { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
-@keyframes heroPulse { 0%,100% { opacity:0.5; } 50% { opacity:1; } }
-
-.mp-hero {
-  margin-top:72px;
-  background:#05111f;
-  padding:28px 0 52px;
-  position:relative;
-  overflow:hidden;
-  border-bottom:1px solid rgba(72,201,111,0.12);
-}
-.mp-hero::before {
-  content:"";
-  position:absolute; inset:0;
-  background:
-    radial-gradient(ellipse 70% 80% at 10% 50%, rgba(15,138,95,0.28) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 60% at 90% 30%, rgba(45,100,180,0.2) 0%, transparent 50%);
-  pointer-events:none;
-}
-.mp-hero::after {
-  content:"";
-  position:absolute; inset:0;
-  background-image:
-    linear-gradient(rgba(72,201,111,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(72,201,111,0.03) 1px, transparent 1px);
-  background-size:40px 40px;
-  pointer-events:none;
-}
-
-.mp-hero-shell { position:relative; z-index:2; }
-
-/* Single-row compact layout */
-.mp-hero-row {
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:32px;
-  flex-wrap:wrap;
-  animation:heroFadeIn 0.6s ease both;
-}
-
-.mp-hero-left { flex:1; min-width:280px; }
-
-.mp-eyebrow {
-  display:inline-flex; align-items:center; gap:7px;
-  padding:5px 12px;
-  border:1px solid rgba(72,201,111,0.35);
-  border-radius:999px;
-  margin-bottom:12px;
-  color:#86efac;
-  font-size:10px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase;
-  background:rgba(72,201,111,0.1);
-  backdrop-filter:blur(8px);
-}
-.mp-eyebrow-dot { width:5px; height:5px; border-radius:50%; background:#48c96f; box-shadow:0 0 6px rgba(72,201,111,0.9); animation:heroPulse 2s ease-in-out infinite; }
-
-.mp-hero-title {
-  font-size:clamp(22px,3vw,38px);
-  font-weight:900;
-  color:#fff;
-  margin:0 0 8px;
-  line-height:1.1;
-  letter-spacing:-1px;
-}
-.mp-hero-title .accent {
-  background:linear-gradient(135deg, #48c96f 0%, #2dd4bf 100%);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  background-clip:text;
-}
-
-.mp-hero-sub {
-  color:rgba(186,220,200,0.65);
-  font-size:13px;
-  font-weight:500;
-  margin:0;
-  line-height:1.5;
-}
-
-/* Right side: stats + CTA */
-.mp-hero-right {
-  display:flex;
-  align-items:center;
-  gap:24px;
-  flex-shrink:0;
-}
-
-.mp-hero-stats {
-  display:flex;
-  gap:0;
-  border:1px solid rgba(255,255,255,0.08);
-  border-radius:14px;
-  background:rgba(255,255,255,0.04);
-  backdrop-filter:blur(10px);
-  overflow:hidden;
-}
-.mp-stat {
-  display:flex; flex-direction:column; align-items:center;
-  padding:12px 20px;
-}
-.mp-stat:not(:first-child) { border-left:1px solid rgba(255,255,255,0.08); }
-.mp-stat-num { font-size:18px; font-weight:900; color:#fff; line-height:1; margin-bottom:2px; }
-.mp-stat-label { font-size:10px; font-weight:600; color:rgba(134,200,160,0.7); letter-spacing:0.06em; text-transform:uppercase; white-space:nowrap; }
-
-.mp-hero-cta {
-  display:inline-flex; align-items:center; gap:8px;
-  border-radius:12px; padding:11px 20px;
-  font-size:13px; font-weight:800; font-family:inherit; cursor:pointer;
-  border:0;
-  background:linear-gradient(135deg, #48c96f 0%, #15945a 100%);
-  color:#fff;
-  box-shadow:0 6px 20px rgba(72,201,111,0.35);
-  transition:transform 0.2s, box-shadow 0.2s;
-  white-space:nowrap;
-}
-.mp-hero-cta:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(72,201,111,0.45); }
-
-.search-container { background:#fff; border-radius:16px; padding:12px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 18px 40px rgba(15,23,42,0.10); border:1px solid #e6ebf2; margin-top:-28px; position:relative; z-index:10; margin-bottom:22px; gap:12px; flex-wrap:wrap; }
-.search-input-wrapper { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 280px; }
-.search-input-large { border:none; font-size:15px; color:#1e293b; width:100%; outline:none; background:transparent; font-family:inherit; font-weight:600; }
-.search-input-large::placeholder { color: #94a3b8; }
-.search-actions { display:flex; align-items:center; gap:10px; }
-.sort-control { display:flex; align-items:center; gap:8px; border-left:1px solid #e6ebf2; padding-left:14px; min-height:38px; }
-.sort-control select { border:none; outline:none; font-size:13px; font-weight:800; color:#334155; background:transparent; cursor:pointer; font-family:inherit; }
-.mp-secondary-btn { display:flex; align-items:center; gap:7px; border:1px solid #dbe3ee; background:#fff; color:#334155; border-radius:10px; padding:10px 14px; font-size:12px; font-weight:900; cursor:pointer; font-family:inherit; white-space:nowrap; transition:background 0.2s,border-color 0.2s,color 0.2s; }
-.mp-secondary-btn:hover { background:#f8fafc; border-color:#cbd5e1; color:#0f172a; }
-
-.cat-tabs-container { display:flex; gap:10px; overflow-x:auto; padding-bottom:8px; margin-bottom:22px; scrollbar-width:none; }
-.cat-tabs-container::-webkit-scrollbar { display: none; }
-.cat-tab { display:flex; align-items:center; gap:8px; padding:10px 16px; background:#fff; border:1px solid #dbe3ee; border-radius:999px; font-size:13px; font-weight:800; color:#64748b; cursor:pointer; white-space:nowrap; transition:background 0.2s,border-color 0.2s,color 0.2s,box-shadow 0.2s; }
-.cat-tab:hover { border-color:#cbd5e1; color:#334155; background:#f8fafc; }
-.cat-tab.active { background:#0f172a; border-color:#0f172a; color:#fff; box-shadow:0 10px 20px rgba(15,23,42,0.12); }
-.mobile-filter-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
-.market-layout { display:flex; gap:24px; align-items:flex-start; }
-.results-header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; }
-.results-count { font-size:13px; color:#64748b; font-weight:700; margin:0; }
-.listing-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:18px; }
-.pagination-wrap { display:flex; align-items:center; justify-content:center; margin-top:36px; gap:16px; flex-wrap:wrap; }
-.pagination-group { display:flex; gap:8px; align-items:center; }
-.page-btn { width:38px; height:38px; border-radius:10px; background:#fff; color:#64748b; border:1px solid #dbe3ee; font-weight:800; cursor:pointer; font-family:inherit; display:flex; align-items:center; justify-content:center; transition:background 0.2s,border-color 0.2s,color 0.2s; }
-.page-btn:hover:not(:disabled) { border-color:#48c96f; color:#15945a; background:#f0fdf4; }
-.page-btn.active { background:#0f172a; color:#fff; border-color:#0f172a; }
-.page-btn:disabled { color:#cbd5e1; cursor:not-allowed; }
-.load-more-btn { padding:10px 22px; border-radius:12px; background:#fff; border:1px solid #dbe3ee; color:#15945a; font-size:13px; font-weight:900; display:flex; align-items:center; gap:8px; cursor:pointer; font-family:inherit; transition:background 0.2s,border-color 0.2s; }
-.load-more-btn:hover:not(:disabled) { background:#f0fdf4; border-color:#48c96f; }
-.load-more-btn:disabled { color:#94a3b8; cursor:not-allowed; }
-
-/* Category Pills on cards */
-.card-cat-pill { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 800; letter-spacing: 0.3px; margin-bottom: 8px; }
-.cat-books-and-stationery { background: #e0f2fe; color: #0284c7; }
-.cat-electronics { background: #f3e8ff; color: #9333ea; }
-.cat-furniture { background: #cffafe; color: #0891b2; }
-.cat-fashion-and-accessories { background: #ffedd5; color: #ea580c; }
-.cat-sports-and-outdoor { background: #dcfce7; color: #16a34a; }
-.cat-vehicles { background: #fce7f3; color: #db2777; }
-.cat-others { background: #f1f5f9; color: #475569; }
-
-.btn-exchange { width:100%; padding:10px; border-radius:10px; font-size:13px; font-weight:800; background:#f8fafc; color:#0f766e; border:1px solid #ccfbf1; cursor:pointer; transition:all 0.2s; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; }
-.btn-exchange:hover { background: rgba(72,201,111,0.15); border-color: #48c96f; }
-
-@media (min-width: 1024px) { .mobile-filter-btn { display:none !important; } .mobile-filter-row.empty { display:none !important; } }
-@media (max-width: 1023px) { .desktop-filters { display:none !important; } .market-layout { display:block; } .results-header { align-items:flex-start; flex-direction:column; } }
-@media (max-width: 860px) { .mp-hero-stats { display:none; } }
-@media (max-width: 700px) { .mp-container { padding:0 18px; } .mp-hero { padding:20px 0 26px; } .mp-hero-title { font-size:clamp(20px,6vw,30px); } .mp-hero-sub { font-size:12px; } .mp-hero-cta { padding:10px 16px; font-size:12px; } .search-container { margin-top:-20px; padding:10px; } .listing-grid { grid-template-columns:1fr; } }
-`;
+const conditionDotClasses = {
+    New: "bg-[#15945a]",
+    "Like New": "bg-sky-600",
+    Good: "bg-amber-600",
+    Used: "bg-slate-500",
+};
 
 /* ── Skeleton Card ── */
 function SkeletonCard() {
     return (
-        <div style={{ background: "#fff", borderRadius: 20, overflow: "hidden", border: "1px solid #f1f5f9" }}>
-            <div className="skeleton" style={{ height: 200 }} />
-            <div style={{ padding: 16 }}>
-                <div className="skeleton" style={{ height: 14, width: "70%", marginBottom: 8 }} />
-                <div className="skeleton" style={{ height: 12, width: "90%", marginBottom: 16 }} />
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div className="skeleton" style={{ height: 20, width: "35%" }} />
-                    <div className="skeleton" style={{ height: 32, width: 80, borderRadius: 8 }} />
+        <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white">
+            <div className="h-[200px] animate-pulse rounded-lg bg-slate-200" />
+            <div className="p-4">
+                <div className="mb-2 h-3.5 w-[70%] animate-pulse rounded-lg bg-slate-200" />
+                <div className="mb-4 h-3 w-[90%] animate-pulse rounded-lg bg-slate-200" />
+                <div className="flex items-center justify-between">
+                    <div className="h-5 w-[35%] animate-pulse rounded-lg bg-slate-200" />
+                    <div className="h-8 w-20 animate-pulse rounded-lg bg-slate-200" />
                 </div>
             </div>
         </div>
     );
 }
-
 /* ── Listing Card ── */
 function ListingCard({ listing, index, isWishlisted, isInCart, onWishlistToggle }) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const condStyle = CONDITION_COLORS[listing.condition] ?? CONDITION_COLORS["Used"];
     const img = listing.images?.[0] || CATEGORY_IMAGES[listing.category] || catOthers;
     const cartItem = {
         id: listing._id,
@@ -373,29 +182,21 @@ function ListingCard({ listing, index, isWishlisted, isInCart, onWishlistToggle 
                 if (e.target !== e.currentTarget) return;
                 if (e.key === "Enter" || e.key === " ") goToDetails(e);
             }}
-            className="listing-card"
-            style={{ animationDelay: `${index * 40}ms`, textDecoration: "none", color: "inherit" }}
+            className="flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-inherit shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-xl"
+            style={{ animationDelay: `${index * 40}ms` }}
         >
             {/* Image */}
-            <div style={{ position: "relative", height: 220, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px 16px 0", overflow: "hidden" }}>
-                <img src={img} alt={listing.title} className="card-img" style={{ objectFit: "contain" }} />
+            <div className="relative flex h-[220px] items-center justify-center overflow-hidden bg-white px-4 pt-4">
+                <img src={img} alt={listing.title} className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105" />
 
                 {/* Top-left Badges */}
-                <div style={{ position: "absolute", top: 16, left: 16, display: "flex", flexDirection: "column", gap: 6 }}>
+                <div className="absolute left-4 top-4 flex flex-col gap-1.5">
                     {listing.isExchangeAvailable ? (
-                        <span style={{
-                            background: "rgba(45,164,196,0.15)", color: "#0284c7",
-                            fontSize: 10, fontWeight: 800, padding: "4px 10px",
-                            borderRadius: 99, letterSpacing: "0.3px",
-                        }}>
+                        <span className="rounded-full bg-sky-100 px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-sky-700">
                             Exchange Available
                         </span>
                     ) : (
-                        <span style={{
-                            background: "rgba(72,201,111,0.15)", color: "#15945a",
-                            fontSize: 10, fontWeight: 800, padding: "4px 10px",
-                            borderRadius: 99, letterSpacing: "0.3px",
-                        }}>
+                        <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-[#15945a]">
                             For Sale
                         </span>
                     )}
@@ -405,15 +206,9 @@ function ListingCard({ listing, index, isWishlisted, isInCart, onWishlistToggle 
                 <button
                     type="button"
                     onClick={handleWishlistClick}
-                    style={{
-                        position: "absolute", top: 16, right: 16,
-                        width: 32, height: 32, borderRadius: "50%",
-                        background: "#fff", border: "1px solid #e2e8f0",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        cursor: "pointer", color: isWishlisted ? "#f43f5e" : "#94a3b8", transition: "all 0.2s"
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.color = "#f43f5e"; e.currentTarget.style.borderColor = "#f43f5e"; }}
-                    onMouseLeave={e => { e.currentTarget.style.color = isWishlisted ? "#f43f5e" : "#94a3b8"; e.currentTarget.style.borderColor = "#e2e8f0"; }}
+                    className={`absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border bg-white transition-colors hover:border-rose-500 hover:text-rose-500 ${
+                        isWishlisted ? "border-rose-200 text-rose-500" : "border-slate-200 text-slate-400"
+                    }`}
                     title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
                 >
                     <Heart size={14} className={isWishlisted ? "fill-rose-500" : ""} />
@@ -421,52 +216,43 @@ function ListingCard({ listing, index, isWishlisted, isInCart, onWishlistToggle 
             </div>
 
             {/* Body */}
-            <div style={{ padding: "12px 16px 16px", flex: 1, display: "flex", flexDirection: "column" }}>
+            <div className="flex flex-1 flex-col px-4 pb-4 pt-3">
                 {/* Category Pill */}
                 <div>
-                    <span className={`card-cat-pill cat-${listing.category || "others"}`}>
+                    <span className={`mb-2 inline-block rounded-md px-2.5 py-1 text-[10px] font-extrabold tracking-wide ${categoryPillClasses[listing.category] || categoryPillClasses.others}`}>
                         {catName}
                     </span>
                 </div>
 
                 {/* Title */}
-                <h3 style={{
-                    fontSize: 15, fontWeight: 800, color: "#1e293b",
-                    margin: "0 0 6px", lineHeight: 1.3,
-                    display: "-webkit-box", WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical", overflow: "hidden",
-                }}>
+                <h3 className="mb-1.5 line-clamp-2 text-[15px] font-extrabold leading-snug text-slate-800">
                     {listing.title}
                 </h3>
 
                 {/* Condition dot */}
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: condStyle.color }} />
-                    <span style={{ fontSize: 12, color: "#64748b", fontWeight: 500 }}>
+                <div className="mb-3 flex items-center gap-1.5">
+                    <div className={`h-1.5 w-1.5 rounded-full ${conditionDotClasses[listing.condition] || conditionDotClasses.Used}`} />
+                    <span className="text-xs font-medium text-slate-500">
                         {listing.condition}
                     </span>
                 </div>
 
-                <div style={{ flex: 1 }} />
+                <div className="flex-1" />
 
                 {/* Price Row */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                    <span style={{ fontSize: 18, fontWeight: 900, color: "#15945a" }}>
+                <div className="mb-4 flex items-center justify-between">
+                    <span className="text-lg font-black text-[#15945a]">
                         Rs. {Number(listing.price).toLocaleString()}
                     </span>
                     
-                    <div style={{ display: "flex", gap: 6 }} onClick={e => e.stopPropagation()}>
+                    <div className="flex gap-1.5" onClick={e => e.stopPropagation()}>
                         <button
                             type="button"
                             onClick={handleCartToggle}
                             disabled={isUnavailable}
-                            style={{
-                                width: 32, height: 32, borderRadius: 8, background: isUnavailable ? "#cbd5e1" : isInCart ? "#0f172a" : "#48c96f", border: "none",
-                                display: "flex", alignItems: "center", justifyContent: "center", color: "#fff",
-                                cursor: isUnavailable ? "not-allowed" : "pointer", transition: "all 0.2s"
-                            }}
-                            onMouseEnter={e => { if (!isUnavailable) e.currentTarget.style.background = isInCart ? "#334155" : "#15945a"; }}
-                            onMouseLeave={e => { if (!isUnavailable) e.currentTarget.style.background = isInCart ? "#0f172a" : "#48c96f"; }}
+                            className={`flex h-8 w-8 items-center justify-center rounded-lg text-white transition-colors disabled:cursor-not-allowed ${
+                                isUnavailable ? "bg-slate-300" : isInCart ? "bg-slate-900 hover:bg-slate-700" : "bg-[#48c96f] hover:bg-[#15945a]"
+                            }`}
                             title={isUnavailable ? "Unavailable" : isInCart ? "Remove from Cart" : "Add to Cart"}
                         >
                             <ShoppingCart size={14} />
@@ -476,31 +262,16 @@ function ListingCard({ listing, index, isWishlisted, isInCart, onWishlistToggle 
 
                 {/* Action Buttons */}
                 {listing.isExchangeAvailable ? (
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                    <div className="grid grid-cols-2 gap-2">
                         <button
                             type="button"
                             onClick={handleBuyNow}
                             disabled={isUnavailable}
-                            style={{
-                                padding: 10,
-                                borderRadius: 10,
-                                fontSize: 13,
-                                fontWeight: 800,
-                                background: isUnavailable ? "#cbd5e1" : "#48c96f",
-                                color: "#fff",
-                                border: "none",
-                                cursor: isUnavailable ? "not-allowed" : "pointer",
-                                transition: "all 0.2s",
-                                fontFamily: "inherit",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                gap: 6,
-                            }}
+                            className="flex items-center justify-center gap-1.5 rounded-xl bg-[#48c96f] p-2.5 text-[13px] font-extrabold text-white transition-colors hover:bg-[#15945a] disabled:cursor-not-allowed disabled:bg-slate-300"
                         >
                             <ShoppingBag size={14} /> Buy Now
                         </button>
-                        <button type="button" className="btn-exchange" onClick={goToDetails}>
+                        <button type="button" className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-teal-100 bg-slate-50 p-2.5 text-[13px] font-extrabold text-teal-700 transition-colors hover:border-[#48c96f] hover:bg-emerald-50" onClick={goToDetails}>
                             <RefreshCw size={14} /> Exchange
                         </button>
                     </div>
@@ -509,23 +280,7 @@ function ListingCard({ listing, index, isWishlisted, isInCart, onWishlistToggle 
                         type="button"
                         onClick={handleBuyNow}
                         disabled={isUnavailable}
-                        style={{
-                            width: "100%",
-                            padding: 10,
-                            borderRadius: 10,
-                            fontSize: 13,
-                            fontWeight: 800,
-                            background: isUnavailable ? "#cbd5e1" : "#48c96f",
-                            color: "#fff",
-                            border: "none",
-                            cursor: isUnavailable ? "not-allowed" : "pointer",
-                            transition: "all 0.2s",
-                            fontFamily: "inherit",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: 6,
-                        }}
+                        className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#48c96f] p-2.5 text-[13px] font-extrabold text-white transition-colors hover:bg-[#15945a] disabled:cursor-not-allowed disabled:bg-slate-300"
                     >
                         <ShoppingBag size={14} /> Buy Now
                     </button>
@@ -538,32 +293,32 @@ function ListingCard({ listing, index, isWishlisted, isInCart, onWishlistToggle 
 /* ── Filter Panel (shared between desktop sidebar and mobile sheet) ── */
 function FilterContent({ localFilters, setLocalFilters, onApply, onReset }) {
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        <div className="flex flex-col gap-5">
             {/* Category */}
             <div>
-                <label style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", display: "block", marginBottom: 8 }}>Category</label>
-                <select className="mp-select" value={localFilters.category} onChange={e => setLocalFilters(f => ({ ...f, category: e.target.value }))}>
+                <label className="mb-2 block text-[11px] font-bold uppercase tracking-wide text-slate-500">Category</label>
+                <select className="w-full cursor-pointer appearance-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 pr-8 text-[13px] text-slate-700 outline-none transition-colors focus:border-[#48c96f] focus:bg-white focus:ring-4 focus:ring-emerald-500/10" value={localFilters.category} onChange={e => setLocalFilters(f => ({ ...f, category: e.target.value }))}>
                     {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                 </select>
             </div>
 
             {/* Condition */}
             <div>
-                <label style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", display: "block", marginBottom: 8 }}>Condition</label>
-                <select className="mp-select" value={localFilters.condition} onChange={e => setLocalFilters(f => ({ ...f, condition: e.target.value }))}>
+                <label className="mb-2 block text-[11px] font-bold uppercase tracking-wide text-slate-500">Condition</label>
+                <select className="w-full cursor-pointer appearance-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 pr-8 text-[13px] text-slate-700 outline-none transition-colors focus:border-[#48c96f] focus:bg-white focus:ring-4 focus:ring-emerald-500/10" value={localFilters.condition} onChange={e => setLocalFilters(f => ({ ...f, condition: e.target.value }))}>
                     {CONDITIONS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                 </select>
             </div>
 
             {/* Price Range */}
             <div>
-                <label style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", display: "block", marginBottom: 8 }}>Price Range (Rs.)</label>
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <label className="mb-2 block text-[11px] font-bold uppercase tracking-wide text-slate-500">Price Range (Rs.)</label>
+                <div className="flex items-center gap-2">
                     <input
                         type="number" placeholder="Min" min={0}
                         value={localFilters.minPrice}
                         onChange={e => setLocalFilters(f => ({ ...f, minPrice: e.target.value }))}
-                        style={{ flex: 1, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 10, padding: "9px 12px", fontSize: 13, color: "#334155", fontFamily: "inherit", outline: "none", width: "100%", boxSizing: "border-box" }}
+                        className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[13px] text-slate-700 outline-none focus:border-[#48c96f] focus:bg-white"
                     />
                     <span style={{ color: "#94a3b8", fontWeight: 600, fontSize: 12, flexShrink: 0 }}>–</span>
                     <input
@@ -833,46 +588,46 @@ export default function Marketplace() {
 
     return (
         <>
-            <style>{pageStyles}</style>
-            <div className="mp-page">
+            <div className="min-h-screen bg-[#f6f8fb] text-slate-900">
 
                 {/* ── Hero Banner ── */}
-                <div className="mp-hero">
-                    <div className="mp-container">
-                        <div className="mp-hero-shell">
-                            <div className="mp-hero-row">
+                <div className="relative mt-[72px] overflow-hidden border-b border-emerald-500/10 bg-[#05111f] py-7 pb-13">
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_80%_at_10%_50%,rgba(15,138,95,0.28)_0%,transparent_55%),radial-gradient(ellipse_50%_60%_at_90%_30%,rgba(45,100,180,0.2)_0%,transparent_50%)]" />
+                    <div className="relative z-10 mx-auto max-w-[1450px] px-6 sm:px-12">
+                        <div>
+                            <div className="flex flex-wrap items-center justify-between gap-8">
                                 {/* Left: title + subtitle */}
-                                <div className="mp-hero-left">
-                                    <div className="mp-eyebrow">
-                                        <span className="mp-eyebrow-dot" />
+                                <div className="min-w-[280px] flex-1">
+                                    <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#48c96f]/40 bg-[#48c96f]/10 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-emerald-200 backdrop-blur">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-[#48c96f] shadow-[0_0_8px_rgba(72,201,111,0.9)]" />
                                         <ShoppingBag size={11} /> KelaniXchange Marketplace
                                     </div>
-                                    <h1 className="mp-hero-title">
-                                        Buy, sell &amp; <span className="accent">exchange</span><br />
+                                    <h1 className="m-0 mb-2 text-[clamp(22px,3vw,38px)] font-black leading-tight tracking-normal text-white">
+                                        Buy, sell &amp; <span className="bg-gradient-to-br from-[#48c96f] to-teal-400 bg-clip-text text-transparent">exchange</span><br />
                                         campus essentials
                                     </h1>
-                                    <p className="mp-hero-sub">
+                                    <p className="m-0 text-[13px] font-medium leading-relaxed text-emerald-100/70">
                                         The student marketplace for University of Kelaniya.
                                     </p>
                                 </div>
 
                                 {/* Right: stats pill + CTA */}
-                                <div className="mp-hero-right">
-                                    <div className="mp-hero-stats">
-                                        <div className="mp-stat">
-                                            <span className="mp-stat-num">{totalListings > 0 ? totalListings.toLocaleString() : "—"}</span>
-                                            <span className="mp-stat-label">Listings</span>
+                                <div className="flex shrink-0 items-center gap-6">
+                                    <div className="hidden overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur md:flex">
+                                        <div className="flex flex-col items-center px-5 py-3">
+                                            <span className="text-lg font-black leading-none text-white">{totalListings > 0 ? totalListings.toLocaleString() : "-"}</span>
+                                            <span className="mt-0.5 whitespace-nowrap text-[10px] font-semibold uppercase tracking-wide text-emerald-100/70">Listings</span>
                                         </div>
-                                        <div className="mp-stat">
-                                            <span className="mp-stat-num">7</span>
-                                            <span className="mp-stat-label">Categories</span>
+                                        <div className="flex flex-col items-center border-l border-white/10 px-5 py-3">
+                                            <span className="text-lg font-black leading-none text-white">7</span>
+                                            <span className="mt-0.5 whitespace-nowrap text-[10px] font-semibold uppercase tracking-wide text-emerald-100/70">Categories</span>
                                         </div>
-                                        <div className="mp-stat">
-                                            <span className="mp-stat-num">Free</span>
-                                            <span className="mp-stat-label">To Join</span>
+                                        <div className="flex flex-col items-center border-l border-white/10 px-5 py-3">
+                                            <span className="text-lg font-black leading-none text-white">Free</span>
+                                            <span className="mt-0.5 whitespace-nowrap text-[10px] font-semibold uppercase tracking-wide text-emerald-100/70">To Join</span>
                                         </div>
                                     </div>
-                                    <button type="button" className="mp-hero-cta" onClick={() => navigate("/marketplace/create")}>
+                                    <button type="button" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#48c96f] to-[#15945a] px-5 py-3 text-[13px] font-extrabold text-white shadow-lg shadow-emerald-500/30 transition-transform hover:-translate-y-0.5" onClick={() => navigate("/marketplace/create")}>
                                         <Tag size={14} /> Post a Listing
                                     </button>
                                 </div>
@@ -882,32 +637,33 @@ export default function Marketplace() {
                 </div>
 
                 {/* ── Body ── */}
-                <div className="mp-container" style={{ paddingBottom: 48 }}>
+                <div className="mx-auto max-w-[1450px] px-6 pb-12 sm:px-12">
                     
                     {/* Overlapping Search Bar */}
-                    <div className="search-container">
-                        <div className="search-input-wrapper">
+                    <div className="relative z-10 mb-6 mt-[-28px] flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl shadow-slate-200/70">
+                        <div className="flex min-w-[280px] flex-1 items-center gap-3">
                             <Search size={20} color="#94a3b8" />
                             <input
-                                className="search-input-large"
+                                className="w-full bg-transparent text-[15px] font-semibold text-slate-800 outline-none placeholder:text-slate-400"
                                 type="text"
                                 placeholder="Search for items, books, gadgets and more..."
                                 value={searchInput}
                                 onChange={e => setSearchInput(e.target.value)}
                             />
                             {searchInput && (
-                                <button onClick={() => setSearchInput("")} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", display: "flex", padding: 0 }}>
+                                <button type="button" onClick={() => setSearchInput("")} className="flex p-0 text-slate-400 hover:text-slate-700">
                                     <X size={18} />
                                 </button>
                             )}
                         </div>
 
-                        <div className="search-actions">
-                            <div className="sort-control">
-                                <span style={{ fontSize: 13, color: "#64748b", fontWeight: 600 }}>Sort by:</span>
+                        <div className="flex items-center gap-2">
+                            <div className="flex min-h-10 items-center gap-2 border-l border-slate-200 pl-3">
+                                <span className="text-[13px] font-semibold text-slate-500">Sort by:</span>
                                 <select
                                     value={sortBy}
                                     onChange={e => setSortBy(e.target.value)}
+                                    className="cursor-pointer bg-transparent text-[13px] font-extrabold text-slate-700 outline-none"
                                 >
                                     {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                                 </select>
@@ -915,7 +671,7 @@ export default function Marketplace() {
                             <button
                                 type="button"
                                 onClick={() => navigate("/users")}
-                                className="mp-secondary-btn"
+                                className="flex items-center gap-2 whitespace-nowrap rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-black text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"
                                 title="Search users"
                             >
                                 <Users size={15} /> Users
@@ -924,14 +680,18 @@ export default function Marketplace() {
                     </div>
 
                     {/* Category Tabs */}
-                    <div className="cat-tabs-container">
+                    <div className="mb-6 flex gap-2.5 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                         {CATEGORIES.map(c => {
                             const Icon = CATEGORY_ICONS[c.value] || LayoutGrid;
                             const isActive = localFilters.category === c.value;
                             return (
                                 <button
                                     key={c.value}
-                                    className={`cat-tab ${isActive ? "active" : ""}`}
+                                    className={`flex items-center gap-2 whitespace-nowrap rounded-full border px-4 py-2.5 text-[13px] font-extrabold transition-colors ${
+                                        isActive
+                                            ? "border-slate-900 bg-slate-900 text-white shadow-lg shadow-slate-900/10"
+                                            : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700"
+                                    }`}
                                     onClick={() => {
                                         setLocalFilters(f => ({ ...f, category: c.value }));
                                         dispatchFetch({ category: c.value });
@@ -945,16 +705,10 @@ export default function Marketplace() {
                     </div>
 
                     {/* Mobile Filters / Active Filters */}
-                    <div className={`mobile-filter-row ${activeFilters.length === 0 ? "empty" : ""}`}>
+                    <div className={`mb-5 flex flex-wrap items-center gap-2.5 ${activeFilters.length === 0 ? "lg:hidden" : ""}`}>
                         <button
-                            className="mobile-filter-btn"
+                            className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[13px] font-semibold text-slate-700 lg:hidden"
                             onClick={() => setMobileFilterOpen(true)}
-                            style={{
-                                display: "flex", alignItems: "center", gap: 7,
-                                padding: "9px 16px", borderRadius: 10, border: "1.5px solid #e2e8f0",
-                                background: "#fff", fontSize: 13, fontWeight: 600, color: "#334155",
-                                cursor: "pointer", fontFamily: "inherit",
-                            }}
                         >
                             <Filter size={14} /> Filters
                         </button>
@@ -962,7 +716,7 @@ export default function Marketplace() {
                         {activeFilters.length > 0 && (
                             <>
                                 {activeFilters.map(f => (
-                                    <span key={f.key} className="filter-chip">
+                                    <span key={f.key} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-[#137a4b]">
                                         {f.label}
                                         <button onClick={() => {
                                             const reset = { ...localFilters };
@@ -972,13 +726,13 @@ export default function Marketplace() {
                                             if (f.key === "exchange") reset.exchangeAvailable = false;
                                             setLocalFilters(reset);
                                             dispatchFetch(reset);
-                                        }} style={{ background: "none", border: "none", cursor: "pointer", color: "#15945a", display: "flex", padding: 0 }}>
+                                        }} className="flex p-0 text-[#15945a]">
                                             <X size={11} />
                                         </button>
                                     </span>
                                 ))}
 
-                                <button onClick={handleReset} style={{ fontSize: 12, fontWeight: 600, color: "#94a3b8", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                                <button onClick={handleReset} className="bg-transparent text-xs font-semibold text-slate-400 hover:text-slate-700">
                                     Clear all
                                 </button>
                             </>
@@ -986,17 +740,17 @@ export default function Marketplace() {
                     </div>
 
                     {/* Layout */}
-                    <div className="market-layout">
+                    <div className="flex items-start gap-6 max-lg:block">
 
                         {/* ── Desktop Sidebar Filters ── */}
-                        <div className="filter-panel desktop-filters" style={{ width: 260, flexShrink: 0, position: "sticky", top: 88 }}>
-                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                        <div className="sticky top-[88px] w-[260px] shrink-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm max-lg:hidden">
+                            <div className="mb-5 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
                                     <SlidersHorizontal size={15} color="#48c96f" />
-                                    <span style={{ fontSize: 14, fontWeight: 800, color: "#1e293b" }}>Filters</span>
+                                    <span className="text-sm font-extrabold text-slate-800">Filters</span>
                                 </div>
                                 {activeFilters.length > 0 && (
-                                    <button onClick={handleReset} style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                                    <button onClick={handleReset} className="bg-transparent text-[11px] font-bold text-slate-400 hover:text-slate-700">
                                         Clear all
                                     </button>
                                 )}
@@ -1010,9 +764,9 @@ export default function Marketplace() {
                         </div>
 
                         {/* ── Grid ── */}
-                        <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className="min-w-0 flex-1">
                             {isLoading ? (
-                                <div className="listing-grid">
+                                <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-[18px] max-[700px]:grid-cols-1">
                                     {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
                                 </div>
                             ) : error ? (
@@ -1041,12 +795,12 @@ export default function Marketplace() {
                                 </div>
                             ) : (
                                 <>
-                                    <div className="results-header">
-                                        <p className="results-count">
-                                            Showing <strong style={{ color: "#334155" }}>{startIndex + 1}-{endIndex}</strong> of <strong style={{ color: "#334155" }}>{totalListings}</strong> {totalListings === 1 ? "listing" : "listings"}
+                                    <div className="mb-4 flex items-center justify-between gap-4 max-lg:flex-col max-lg:items-start">
+                                        <p className="m-0 text-[13px] font-bold text-slate-500">
+                                            Showing <strong className="text-slate-700">{startIndex + 1}-{endIndex}</strong> of <strong className="text-slate-700">{totalListings}</strong> {totalListings === 1 ? "listing" : "listings"}
                                         </p>
                                     </div>
-                                    <div className="listing-grid">
+                                    <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-[18px] max-[700px]:grid-cols-1">
                                         {visibleListings.map((listing, i) => (
                                             <ListingCard
                                                 key={listing._id}
@@ -1061,8 +815,8 @@ export default function Marketplace() {
 
                                     {/* Pagination / Load More */}
                                     {sortedListings.length > 0 && (
-                                        <div className="pagination-wrap">
-                                            <div className="pagination-group">
+                                        <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
+                                            <div className="flex items-center gap-2">
                                                 {paginationPages.map((page, index) => (
                                                     <Fragment key={page}>
                                                         {index > 0 && page - paginationPages[index - 1] > 1 && (
@@ -1117,14 +871,14 @@ export default function Marketplace() {
 
                 {/* ── Mobile Filter Sheet ── */}
                 {mobileFilterOpen && (
-                    <div className="filter-overlay" onClick={() => setMobileFilterOpen(false)}>
-                        <div className="filter-sheet" onClick={e => e.stopPropagation()}>
-                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                    <div className="fixed inset-0 z-50 flex items-end bg-black/50 backdrop-blur-sm" onClick={() => setMobileFilterOpen(false)}>
+                        <div className="max-h-[85vh] w-full overflow-y-auto rounded-t-3xl bg-white px-6 pb-9 pt-7" onClick={e => e.stopPropagation()}>
+                            <div className="mb-5 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
                                     <SlidersHorizontal size={15} color="#48c96f" />
-                                    <span style={{ fontSize: 16, fontWeight: 800, color: "#1e293b" }}>Filters</span>
+                                    <span className="text-base font-extrabold text-slate-800">Filters</span>
                                 </div>
-                                <button onClick={() => setMobileFilterOpen(false)} style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <button onClick={() => setMobileFilterOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-slate-50">
                                     <X size={16} color="#64748b" />
                                 </button>
                             </div>
