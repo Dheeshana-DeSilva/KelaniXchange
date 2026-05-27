@@ -365,14 +365,13 @@ export default function Checkout() {
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Number</label>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Number Optional</label>
                                 <div className="relative">
                                     <input
                                         type="tel"
                                         value={phone}
                                         onChange={(e) => setPhone(e.target.value)}
-                                        required
-                                        placeholder="e.g. 071XXXXXXX"
+                                        placeholder="Optional, or use chat to coordinate"
                                         className="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 text-slate-800 focus:bg-white focus:border-[#48c96f] outline-none pl-10 pr-4 py-2.5 text-sm"
                                     />
                                     <Phone size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />

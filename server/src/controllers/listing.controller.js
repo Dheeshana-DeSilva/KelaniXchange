@@ -7,6 +7,38 @@ const parseQuantity = (value) => {
     return Number.isFinite(quantity) ? quantity : NaN;
 };
 
+const parseBoolean = (value) => {
+    if (value === undefined) return undefined;
+    if (typeof value === "boolean") return value;
+    return value === "true";
+};
+
+const uploadListingImages = async (files = []) => {
+    if (!files.length) return [];
+
+    const uploadPromises = files.map((file) => {
+        return new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+                {
+                    folder: "kelanixchange/listings",
+                    resource_type: "image",
+                },
+                (error, result) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(result.secure_url);
+                    }
+                }
+            );
+
+            uploadStream.end(file.buffer);
+        });
+    });
+
+    return Promise.all(uploadPromises);
+};
+
 // Create listing
 const createListing = async (req, res) => {
     try {
@@ -37,31 +69,7 @@ const createListing = async (req, res) => {
             });
         }
 
-        let imageUrls = [];
-
-        if (req.files && req.files.length > 0) {
-            const uploadPromises = req.files.map((file) => {
-                return new Promise((resolve, reject) => {
-                    const uploadStream = cloudinary.uploader.upload_stream(
-                        {
-                            folder: "kelanixchange/listings",
-                            resource_type: "image",
-                        },
-                        (error, result) => {
-                            if (error) {
-                                reject(error);
-                            } else {
-                                resolve(result.secure_url);
-                            }
-                        }
-                    );
-
-                    uploadStream.end(file.buffer);
-                });
-            });
-
-            imageUrls = await Promise.all(uploadPromises);
-        }
+        const imageUrls = await uploadListingImages(req.files || []);
 
         const listing = await Listing.create({
             title,
@@ -70,7 +78,7 @@ const createListing = async (req, res) => {
             price,
             quantity: parsedQuantity,
             condition,
-            isExchangeAvailable,
+            isExchangeAvailable: parseBoolean(isExchangeAvailable) || false,
             location,
             images: imageUrls,
             seller: req.user._id,
@@ -232,6 +240,7 @@ const updateListing = async (req, res) => {
             isExchangeAvailable,
             location,
             status,
+            existingImages,
         } = req.body;
 
         const parsedQuantity = parseQuantity(quantity);
@@ -248,10 +257,40 @@ const updateListing = async (req, res) => {
         if (parsedQuantity !== undefined) listing.quantity = parsedQuantity;
         if (condition !== undefined) listing.condition = condition;
         if (isExchangeAvailable !== undefined) {
-            listing.isExchangeAvailable = isExchangeAvailable;
+            listing.isExchangeAvailable = parseBoolean(isExchangeAvailable);
         }
         if (location !== undefined) listing.location = location;
         if (status !== undefined) listing.status = status;
+        if (existingImages !== undefined || (req.files && req.files.length > 0)) {
+            let keptImages = listing.images || [];
+
+            if (existingImages !== undefined) {
+                try {
+                    const parsedImages = typeof existingImages === "string"
+                        ? JSON.parse(existingImages)
+                        : existingImages;
+
+                    keptImages = Array.isArray(parsedImages)
+                        ? parsedImages.filter((url) => typeof url === "string" && url.trim())
+                        : [];
+                } catch {
+                    return res.status(400).json({
+                        message: "Invalid existing images payload",
+                    });
+                }
+            }
+
+            const newImages = await uploadListingImages(req.files || []);
+            const nextImages = [...keptImages, ...newImages];
+
+            if (nextImages.length > 5) {
+                return res.status(400).json({
+                    message: "You can upload a maximum of 5 images.",
+                });
+            }
+
+            listing.images = nextImages;
+        }
 
         const updatedListing = await listing.save();
 

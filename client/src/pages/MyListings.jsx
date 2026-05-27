@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import { 
     Tag, MapPin, Loader2, AlertCircle, Trash2, Edit, 
-    ExternalLink, HelpCircle, ArrowLeft, X, Sparkles, ShoppingBag
+    ExternalLink, ArrowLeft, X, Sparkles, ShoppingBag, Upload
 } from "lucide-react";
 import { getMyListings, deleteListing, updateListing } from "../services/listingService";
 import { useAuth } from "../context/AuthContext";
@@ -57,6 +57,9 @@ export default function MyListings() {
         status: "",
         isExchangeAvailable: false,
     });
+    const [editExistingImages, setEditExistingImages] = useState([]);
+    const [editNewImages, setEditNewImages] = useState([]);
+    const [editNewPreviews, setEditNewPreviews] = useState([]);
 
     // Guard route
     useEffect(() => {
@@ -99,6 +102,15 @@ export default function MyListings() {
         }
     };
 
+    const closeEditModal = () => {
+        editNewPreviews.forEach((url) => URL.revokeObjectURL(url));
+        setEditNewPreviews([]);
+        setEditNewImages([]);
+        setEditExistingImages([]);
+        setEditModalOpen(false);
+        setSelectedListing(null);
+    };
+
     const handleEditClick = (listing) => {
         setSelectedListing(listing);
         setEditForm({
@@ -112,7 +124,36 @@ export default function MyListings() {
             status: listing.status || "available",
             isExchangeAvailable: listing.isExchangeAvailable || false,
         });
+        editNewPreviews.forEach((url) => URL.revokeObjectURL(url));
+        setEditExistingImages(listing.images || []);
+        setEditNewImages([]);
+        setEditNewPreviews([]);
         setEditModalOpen(true);
+    };
+
+    const handleEditFileChange = (e) => {
+        const files = Array.from(e.target.files || []);
+        e.target.value = "";
+        if (!files.length) return;
+
+        const totalImages = editExistingImages.length + editNewImages.length + files.length;
+        if (totalImages > 5) {
+            alert("You can keep a maximum of 5 listing photos.");
+            return;
+        }
+
+        setEditNewImages((prev) => [...prev, ...files]);
+        setEditNewPreviews((prev) => [...prev, ...files.map((file) => URL.createObjectURL(file))]);
+    };
+
+    const removeExistingEditImage = (index) => {
+        setEditExistingImages((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const removeNewEditImage = (index) => {
+        URL.revokeObjectURL(editNewPreviews[index]);
+        setEditNewImages((prev) => prev.filter((_, i) => i !== index));
+        setEditNewPreviews((prev) => prev.filter((_, i) => i !== index));
     };
 
     const handleSaveEdit = async (e) => {
@@ -120,13 +161,22 @@ export default function MyListings() {
         if (!selectedListing) return;
         setActionLoading(selectedListing._id);
         try {
-            const data = await updateListing(selectedListing._id, editForm);
+            const formData = new FormData();
+            Object.entries(editForm).forEach(([key, value]) => {
+                formData.append(key, value);
+            });
+            formData.append("existingImages", JSON.stringify(editExistingImages));
+            editNewImages.forEach((file) => {
+                formData.append("images", file);
+            });
+
+            const data = await updateListing(selectedListing._id, formData);
             // Refresh list
             const updatedListings = listings.map((l) => 
                 l._id === selectedListing._id ? (data.listing || data) : l
             );
             setListings(updatedListings);
-            setEditModalOpen(false);
+            closeEditModal();
             alert("Listing updated successfully!");
         } catch (err) {
             alert(err.response?.data?.message || "Failed to update listing.");
@@ -307,8 +357,8 @@ export default function MyListings() {
             {/* Edit Modal (Owner) */}
             {editModalOpen && selectedListing && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setEditModalOpen(false)} />
-                    <div className="relative w-full max-w-xl bg-white border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh] z-50">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={closeEditModal} />
+                    <div className="relative w-full max-w-xl rounded-3xl bg-white border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh] z-50">
                         
                         {/* Header */}
                         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50 shrink-0">
@@ -316,7 +366,7 @@ export default function MyListings() {
                                 <h3 className="text-lg font-black text-slate-800 tracking-tight">Edit Your Listing</h3>
                                 <p className="text-xs text-slate-500 mt-0.5">Modify fields and save changes instantly</p>
                             </div>
-                            <button onClick={() => setEditModalOpen(false)} className="h-8 w-8 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors">
+                            <button onClick={closeEditModal} className="h-8 w-8 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors">
                                 <X size={16} />
                             </button>
                         </div>
@@ -324,6 +374,66 @@ export default function MyListings() {
                         {/* Form */}
                         <form onSubmit={handleSaveEdit} className="flex flex-col flex-1 overflow-hidden">
                             <div className="p-6 space-y-4 overflow-y-auto flex-1">
+                                <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+                                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Listing Photos</label>
+                                            <p className="mt-1 text-xs text-slate-500">
+                                                Keep, remove, or add photos. Maximum 5 photos.
+                                            </p>
+                                        </div>
+                                        <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#48c96f]/30 bg-white px-4 py-2 text-xs font-bold text-[#15945a] transition-colors hover:bg-emerald-50">
+                                            <Upload size={14} />
+                                            Add Photos
+                                            <input
+                                                type="file"
+                                                multiple
+                                                accept="image/*"
+                                                onChange={handleEditFileChange}
+                                                className="hidden"
+                                            />
+                                        </label>
+                                    </div>
+
+                                    {(editExistingImages.length > 0 || editNewPreviews.length > 0) ? (
+                                        <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-5">
+                                            {editExistingImages.map((image, index) => (
+                                                <div key={image} className="group relative aspect-square overflow-hidden rounded-xl border border-slate-200 bg-white">
+                                                    <img src={image} alt="" className="h-full w-full object-cover" />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeExistingEditImage(index)}
+                                                        className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full border border-white/20 bg-slate-900/80 text-white transition-colors hover:bg-rose-600"
+                                                        title="Remove photo"
+                                                    >
+                                                        <X size={12} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                            {editNewPreviews.map((preview, index) => (
+                                                <div key={preview} className="group relative aspect-square overflow-hidden rounded-xl border border-[#48c96f]/30 bg-white">
+                                                    <img src={preview} alt="" className="h-full w-full object-cover" />
+                                                    <span className="absolute bottom-1.5 left-1.5 rounded-full bg-[#48c96f] px-2 py-0.5 text-[10px] font-bold text-white">
+                                                        New
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeNewEditImage(index)}
+                                                        className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full border border-white/20 bg-slate-900/80 text-white transition-colors hover:bg-rose-600"
+                                                        title="Remove photo"
+                                                    >
+                                                        <X size={12} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="mt-4 rounded-xl border border-dashed border-slate-300 bg-white px-4 py-6 text-center text-xs font-semibold text-slate-500">
+                                            No photos selected. A category image will be used as fallback.
+                                        </div>
+                                    )}
+                                </div>
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="md:col-span-2">
                                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Listing Title</label>
@@ -441,7 +551,7 @@ export default function MyListings() {
                             <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50 shrink-0">
                                 <button 
                                     type="button" 
-                                    onClick={() => setEditModalOpen(false)}
+                                    onClick={closeEditModal}
                                     className="rounded-xl border border-slate-200/80 bg-slate-50/50 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
                                 >
                                     Cancel

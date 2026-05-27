@@ -18,7 +18,10 @@ export const createListing = async (formData) => {
 };
 
 export const updateListing = async (id, data) => {
-    const response = await api.put(`/listings/${id}`, data);
+    const config = data instanceof FormData
+        ? { headers: { "Content-Type": "multipart/form-data" } }
+        : undefined;
+    const response = await api.put(`/listings/${id}`, data, config);
     return response.data;
 };
 

@@ -17,7 +17,7 @@ router.post("/", protect, upload.array("images", 5), createListing);
 router.get("/", getListings);
 router.get("/my-listings", protect, getMyListings);
 router.get("/:id", getListingById);
-router.put("/:id", protect, updateListing);
+router.put("/:id", protect, upload.array("images", 5), updateListing);
 router.delete("/:id", protect, deleteListing);
 
 module.exports = router;
