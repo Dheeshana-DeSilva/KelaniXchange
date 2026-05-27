@@ -22,6 +22,7 @@ const paymentClasses = {
     failed: "bg-rose-50 text-rose-700 border-rose-200",
     cancelled: "bg-slate-100 text-slate-600 border-slate-200",
     refunded: "bg-purple-50 text-purple-700 border-purple-200",
+    expired: "bg-orange-50 text-orange-700 border-orange-200",
 };
 
 const orderStatusLabels = {
@@ -38,6 +39,7 @@ const paymentStatusLabels = {
     failed: "Payment: Failed",
     cancelled: "Payment: Cancelled",
     refunded: "Payment: Refunded",
+    expired: "Payment: Expired",
 };
 
 const paymentMethodLabels = {
@@ -209,6 +211,7 @@ export default function MySales() {
                                                 <option value="failed">Payment failed</option>
                                                 <option value="cancelled">Payment cancelled</option>
                                                 <option value="refunded">Refunded</option>
+                                                <option value="expired">Payment expired</option>
                                             </select>
                                         </label>
                                         <div className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5 text-xs font-bold text-slate-500">

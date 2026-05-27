@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import {
     AlertCircle, ArrowLeft, Calendar, Loader2, MapPin,
-    ExternalLink, PackageCheck, Phone, ReceiptText, Trash2, XCircle
+    ExternalLink, PackageCheck, Phone, ReceiptText, RefreshCw, Trash2, X, XCircle
 } from "lucide-react";
-import { cancelMyOrder, clearOrderErrors, deleteMyCancelledOrder, fetchMyOrders } from "../features/orders/orderSlice";
+import { cancelMyOrder, clearOrderErrors, deleteMyCancelledOrder, fetchMyOrders, retryMyOrderPayment } from "../features/orders/orderSlice";
 import { useAuth } from "../context/AuthContext";
 
 const statusClasses = {
@@ -22,6 +22,7 @@ const paymentClasses = {
     failed: "bg-rose-50 text-rose-700 border-rose-200",
     cancelled: "bg-slate-100 text-slate-600 border-slate-200",
     refunded: "bg-purple-50 text-purple-700 border-purple-200",
+    expired: "bg-orange-50 text-orange-700 border-orange-200",
 };
 
 const orderStatusLabels = {
@@ -38,6 +39,7 @@ const paymentStatusLabels = {
     failed: "Payment: Failed",
     cancelled: "Payment: Cancelled",
     refunded: "Payment: Refunded",
+    expired: "Payment: Expired",
 };
 
 const paymentMethodLabels = {
@@ -63,6 +65,9 @@ export default function MyOrders() {
         actionLoadingId,
         actionError,
     } = useSelector(state => state.orders);
+    const [retryOrder, setRetryOrder] = useState(null);
+    const [retryReference, setRetryReference] = useState("");
+    const [retryProof, setRetryProof] = useState(null);
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -91,6 +96,38 @@ export default function MyOrders() {
     const handleDelete = async (orderId) => {
         if (!confirm("Delete this cancelled order from your order history?")) return;
         dispatch(deleteMyCancelledOrder(orderId));
+    };
+
+    const openRetryModal = (order) => {
+        setRetryOrder(order);
+        setRetryReference(order.paymentReference || "");
+        setRetryProof(null);
+    };
+
+    const closeRetryModal = () => {
+        setRetryOrder(null);
+        setRetryReference("");
+        setRetryProof(null);
+    };
+
+    const handleRetryPayment = async (e) => {
+        e.preventDefault();
+        if (!retryOrder) return;
+        if (!retryReference.trim() && !retryProof) {
+            alert("Add a transaction reference or upload a receipt screenshot.");
+            return;
+        }
+
+        const result = await dispatch(retryMyOrderPayment({
+            orderId: retryOrder._id,
+            paymentReference: retryReference.trim(),
+            paymentProof: retryProof,
+        }));
+
+        if (retryMyOrderPayment.fulfilled.match(result)) {
+            closeRetryModal();
+            alert("Payment retry submitted. Seller/admin can verify it now.");
+        }
     };
 
     if (loading) {
@@ -206,14 +243,27 @@ export default function MyOrders() {
                                                 Delete
                                             </button>
                                         ) : (
-                                            <button
-                                                onClick={() => handleCancel(order._id)}
-                                                disabled={order.orderStatus !== "pending" || actionLoadingId === order._id}
-                                                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-600 hover:bg-rose-100 disabled:opacity-45 disabled:cursor-not-allowed transition-colors"
-                                            >
-                                                {actionLoadingId === order._id ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
-                                                Cancel
-                                            </button>
+                                            <div className="flex flex-wrap justify-start gap-2 lg:justify-end">
+                                                {order.paymentMethod === "BankTransfer" && order.paymentStatus === "failed" && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => openRetryModal(order)}
+                                                        disabled={actionLoadingId === order._id}
+                                                        className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-bold text-[#15945a] hover:bg-emerald-100 disabled:opacity-45 disabled:cursor-not-allowed transition-colors"
+                                                    >
+                                                        <RefreshCw size={14} />
+                                                        Retry Payment
+                                                    </button>
+                                                )}
+                                                <button
+                                                    onClick={() => handleCancel(order._id)}
+                                                    disabled={order.orderStatus !== "pending" || actionLoadingId === order._id}
+                                                    className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-600 hover:bg-rose-100 disabled:opacity-45 disabled:cursor-not-allowed transition-colors"
+                                                >
+                                                    {actionLoadingId === order._id ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
+                                                    Cancel
+                                                </button>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
@@ -242,6 +292,61 @@ export default function MyOrders() {
                     </div>
                 )}
             </div>
+
+            {retryOrder && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={closeRetryModal} />
+                    <form onSubmit={handleRetryPayment} className="relative z-10 w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl">
+                        <div className="mb-5 flex items-start justify-between gap-4">
+                            <div>
+                                <h2 className="text-lg font-black text-slate-900">Retry Payment</h2>
+                                <p className="mt-1 text-xs font-medium text-slate-500">
+                                    Resubmit bank transfer details for {retryOrder.listing?.title || "this order"}.
+                                </p>
+                            </div>
+                            <button type="button" onClick={closeRetryModal} className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-400 hover:text-slate-700">
+                                <X size={16} />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">Transaction Reference</label>
+                                <input
+                                    type="text"
+                                    value={retryReference}
+                                    onChange={(e) => setRetryReference(e.target.value)}
+                                    placeholder="Reference ID, sender name, or payment note"
+                                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 outline-none focus:border-[#48c96f] focus:bg-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">Receipt Screenshot</label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => setRetryProof(e.target.files?.[0] || null)}
+                                    className="w-full rounded-xl border border-slate-200 bg-white text-xs text-slate-700 file:mr-4 file:border-0 file:bg-slate-100 file:px-4 file:py-2.5 file:text-xs file:font-bold file:text-slate-600"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="mt-6 flex justify-end gap-3">
+                            <button type="button" onClick={closeRetryModal} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50">
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={actionLoadingId === retryOrder._id}
+                                className="inline-flex items-center gap-2 rounded-xl bg-[#48c96f] px-5 py-2.5 text-sm font-black text-white hover:bg-[#3db65e] disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                {actionLoadingId === retryOrder._id && <Loader2 size={15} className="animate-spin" />}
+                                Submit Retry
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
         </div>
     );
 }

@@ -4,6 +4,7 @@ import {
     deleteOrder,
     getMyOrders,
     getMySales,
+    retryOrderPayment,
     updateSaleStatus,
 } from "../../services/orderService";
 
@@ -55,6 +56,23 @@ export const deleteMyCancelledOrder = createAsyncThunk(
     }
 );
 
+export const retryMyOrderPayment = createAsyncThunk(
+    "orders/retryMyOrderPayment",
+    async ({ orderId, paymentReference, paymentProof }, { rejectWithValue }) => {
+        try {
+            const formData = new FormData();
+            formData.append("paymentReference", paymentReference || "");
+            if (paymentProof) {
+                formData.append("paymentProof", paymentProof);
+            }
+            const data = await retryOrderPayment(orderId, formData);
+            return data.order;
+        } catch (err) {
+            return rejectWithValue(err?.response?.data?.message || "Failed to retry payment.");
+        }
+    }
+);
+
 export const updateMySaleStatus = createAsyncThunk(
     "orders/updateMySaleStatus",
     async ({ orderId, orderStatus, paymentStatus }, { rejectWithValue }) => {
@@ -71,6 +89,10 @@ const mergeOrderStatus = (existing, updated) => ({
     ...existing,
     orderStatus: updated.orderStatus,
     paymentStatus: updated.paymentStatus,
+    paymentReference: updated.paymentReference,
+    paymentProofUrl: updated.paymentProofUrl,
+    paymentExpiresAt: updated.paymentExpiresAt,
+    expiredAt: updated.expiredAt,
 });
 
 const ordersSlice = createSlice({
@@ -149,6 +171,20 @@ const ordersSlice = createSlice({
                 state.orders = state.orders.filter((order) => order._id !== action.payload);
             })
             .addCase(deleteMyCancelledOrder.rejected, (state, action) => {
+                state.actionLoadingId = null;
+                state.actionError = action.payload;
+            })
+            .addCase(retryMyOrderPayment.pending, (state, action) => {
+                state.actionLoadingId = action.meta.arg.orderId;
+                state.actionError = null;
+            })
+            .addCase(retryMyOrderPayment.fulfilled, (state, action) => {
+                state.actionLoadingId = null;
+                state.orders = state.orders.map((order) =>
+                    order._id === action.payload._id ? mergeOrderStatus(order, action.payload) : order
+                );
+            })
+            .addCase(retryMyOrderPayment.rejected, (state, action) => {
                 state.actionLoadingId = null;
                 state.actionError = action.payload;
             })

@@ -27,6 +27,7 @@ const typeMeta = {
 };
 
 const notificationTarget = (notification) => {
+    if (notification.targetPath) return notification.targetPath;
     if (notification.type?.startsWith("exchange")) return "/exchanges";
     if (notification.type === "chat_message") return `/chats/${notification.relatedId}`;
     if (notification.type === "order_received") return "/sales";

@@ -20,6 +20,13 @@ export const cancelOrder = async (orderId) => {
     return res.data;
 };
 
+export const retryOrderPayment = async (orderId, paymentData) => {
+    const res = await api.put(`/orders/${orderId}/retry-payment`, paymentData, {
+        headers: { "Content-Type": "multipart/form-data" },
+    });
+    return res.data;
+};
+
 export const deleteOrder = async (orderId) => {
     const res = await api.delete(`/orders/${orderId}`);
     return res.data;

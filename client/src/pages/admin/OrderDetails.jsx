@@ -17,6 +17,7 @@ const paymentStatusLabels = {
     failed: "Payment failed",
     cancelled: "Payment cancelled",
     refunded: "Refunded",
+    expired: "Payment expired",
 };
 
 const paymentMethodLabels = {

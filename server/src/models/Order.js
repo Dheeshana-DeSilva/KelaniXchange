@@ -28,7 +28,7 @@ const orderSchema = new mongoose.Schema(
         },
         paymentStatus: {
             type: String,
-            enum: ["pending", "paid", "failed", "cancelled", "refunded"],
+            enum: ["pending", "paid", "failed", "cancelled", "refunded", "expired"],
             default: "pending",
         },
         meetupLocation: {
@@ -63,6 +63,12 @@ const orderSchema = new mongoose.Schema(
             trim: true,
         },
         paidAt: {
+            type: Date,
+        },
+        paymentExpiresAt: {
+            type: Date,
+        },
+        expiredAt: {
             type: Date,
         },
         orderStatus: {

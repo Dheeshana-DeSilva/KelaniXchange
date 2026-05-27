@@ -8,6 +8,7 @@ const {
     getUserSales,
     cancelUserOrder,
     deleteUserCancelledOrder,
+    retryOrderPayment,
     updateSellerOrderStatus,
 } = require("../controllers/orderController");
 
@@ -21,6 +22,7 @@ const router = express.Router();
 router.post("/", protect, upload.single("paymentProof"), createOrders);
 router.get("/my-orders", protect, getUserOrders);
 router.get("/my-sales", protect, getUserSales);
+router.put("/:id/retry-payment", protect, upload.single("paymentProof"), retryOrderPayment);
 router.put("/:id/cancel", protect, cancelUserOrder);
 router.delete("/:id", protect, deleteUserCancelledOrder);
 router.put("/sales/:id/status", protect, updateSellerOrderStatus);

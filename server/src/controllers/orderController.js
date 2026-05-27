@@ -4,15 +4,21 @@ const Notification = require("../models/Notification");
 const cloudinary = require("../config/cloudinary");
 const { getIO } = require("../config/socket");
 
-const createNotification = async ({ user, type, title, message, relatedId }) => {
+const createNotification = async ({ user, type, title, message, relatedId, targetPath }) => {
     if (!user) return;
-    const notification = await Notification.create({ user, type, title, message, relatedId });
+    const notification = await Notification.create({ user, type, title, message, relatedId, targetPath });
 
     try {
         getIO().to(`user:${user.toString()}`).emit("notificationUpdated", notification);
     } catch (error) {
         // Socket.IO may not be initialized in scripts/tests.
     }
+};
+
+const PAYMENT_TIMEOUT_HOURS = Math.max(1, Number(process.env.PAYMENT_TIMEOUT_HOURS) || 48);
+
+const getPaymentExpiryDate = () => {
+    return new Date(Date.now() + PAYMENT_TIMEOUT_HOURS * 60 * 60 * 1000);
 };
 
 const restoreListingQuantity = async (order) => {
@@ -25,6 +31,46 @@ const restoreListingQuantity = async (order) => {
         listing.status = "available";
     }
     await listing.save();
+};
+
+const expireOrderIfTimedOut = async (order) => {
+    if (
+        order.paymentMethod !== "BankTransfer" ||
+        order.paymentStatus !== "pending" ||
+        order.orderStatus !== "pending" ||
+        !order.paymentExpiresAt ||
+        new Date(order.paymentExpiresAt).getTime() > Date.now()
+    ) {
+        return order;
+    }
+
+    order.paymentStatus = "expired";
+    order.orderStatus = "cancelled";
+    order.expiredAt = new Date();
+    await order.save();
+    await restoreListingQuantity(order);
+
+    await createNotification({
+        user: order.user,
+        type: "order_cancelled",
+        title: "Payment expired",
+        message: "Your order was cancelled because payment verification timed out.",
+        relatedId: order._id,
+    });
+
+    await createNotification({
+        user: order.seller,
+        type: "order_cancelled",
+        title: "Order expired",
+        message: "An order was cancelled because payment verification timed out.",
+        relatedId: order._id,
+    });
+
+    return order;
+};
+
+const expireTimedOutOrders = async (orders) => {
+    await Promise.all(orders.map((order) => expireOrderIfTimedOut(order)));
 };
 
 const uploadPaymentProof = async (file) => {
@@ -59,6 +105,7 @@ const getAllOrdersAdmin = async (req, res) => {
             .populate("seller", "username email")
             .populate("listing", "title price")
             .sort({ createdAt: -1 });
+        await expireTimedOutOrders(orders);
 
         res.status(200).json({
             message: "Orders fetched successfully",
@@ -120,13 +167,26 @@ const updateOrderStatusAdmin = async (req, res) => {
         }
 
         if (paymentStatus) {
-            const validPaymentStatuses = ["pending", "paid", "failed", "cancelled", "refunded"];
+            const validPaymentStatuses = ["pending", "paid", "failed", "cancelled", "refunded", "expired"];
             if (!validPaymentStatuses.includes(paymentStatus)) {
                 return res.status(400).json({ message: "Invalid payment status" });
             }
             order.paymentStatus = paymentStatus;
             if (paymentStatus === "paid" && !order.paidAt) {
                 order.paidAt = new Date();
+            }
+            if (paymentStatus === "paid" && order.orderStatus === "pending") {
+                order.orderStatus = "processing";
+            }
+            if (paymentStatus === "failed" && order.orderStatus !== "cancelled") {
+                order.orderStatus = "pending";
+            }
+            if (paymentStatus === "expired") {
+                order.orderStatus = "cancelled";
+                order.expiredAt = new Date();
+            }
+            if (paymentStatus === "pending" && order.paymentMethod === "BankTransfer") {
+                order.paymentExpiresAt = getPaymentExpiryDate();
             }
         }
 
@@ -230,6 +290,7 @@ const createOrders = async (req, res) => {
                 paymentProofUrl,
                 paymentStatus: "pending",
                 orderStatus: "pending",
+                paymentExpiresAt: selectedPaymentMethod === "BankTransfer" ? getPaymentExpiryDate() : undefined,
             });
 
             // Deduct from listing quantity
@@ -288,6 +349,7 @@ const getUserOrders = async (req, res) => {
             .populate("listing", "title price category images condition location")
             .populate("seller", "username email fullName")
             .sort({ createdAt: -1 });
+        await expireTimedOutOrders(orders);
 
         res.status(200).json({
             message: "Orders fetched successfully",
@@ -308,6 +370,7 @@ const getUserSales = async (req, res) => {
             .populate("listing", "title price category images condition location")
             .populate("user", "username email fullName")
             .sort({ createdAt: -1 });
+        await expireTimedOutOrders(sales);
 
         res.status(200).json({
             message: "Sales fetched successfully",
@@ -405,6 +468,75 @@ const deleteUserCancelledOrder = async (req, res) => {
     }
 };
 
+// Retry failed bank transfer payment
+const retryOrderPayment = async (req, res) => {
+    try {
+        const { paymentReference } = req.body;
+        const order = await Order.findById(req.params.id).populate("listing", "title");
+
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        await expireOrderIfTimedOut(order);
+
+        if (order.user.toString() !== req.user.id) {
+            return res.status(403).json({ message: "You are not authorized to retry this payment" });
+        }
+
+        if (order.paymentMethod !== "BankTransfer") {
+            return res.status(400).json({ message: "Only bank transfer payments can be retried" });
+        }
+
+        if (order.orderStatus !== "pending" || order.paymentStatus !== "failed") {
+            return res.status(400).json({ message: "Only failed pending payments can be retried" });
+        }
+
+        if (!paymentReference && !req.file) {
+            return res.status(400).json({ message: "Add a payment reference or upload a receipt screenshot" });
+        }
+
+        const paymentProofUrl = await uploadPaymentProof(req.file);
+
+        order.paymentStatus = "pending";
+        order.paymentReference = paymentReference || order.paymentReference;
+        if (paymentProofUrl) {
+            order.paymentProofUrl = paymentProofUrl;
+        }
+        order.paymentExpiresAt = getPaymentExpiryDate();
+        order.expiredAt = undefined;
+        await order.save();
+
+        await createNotification({
+            user: order.seller,
+            type: "payment_updated",
+            title: "Payment retry submitted",
+            message: `A buyer resubmitted payment details for "${order.listing?.title || "your listing"}".`,
+            relatedId: order._id,
+            targetPath: "/sales",
+        });
+
+        await createNotification({
+            user: order.user,
+            type: "payment_updated",
+            title: "Payment retry submitted",
+            message: `Your payment retry for "${order.listing?.title || "this listing"}" is pending verification.`,
+            relatedId: order._id,
+            targetPath: "/orders",
+        });
+
+        res.status(200).json({
+            message: "Payment retry submitted successfully",
+            order,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to retry payment",
+            error: error.message,
+        });
+    }
+};
+
 // Update a sale status by the seller who owns the order
 const updateSellerOrderStatus = async (req, res) => {
     try {
@@ -435,13 +567,26 @@ const updateSellerOrderStatus = async (req, res) => {
         }
 
         if (paymentStatus) {
-            const validPaymentStatuses = ["pending", "paid", "failed", "cancelled", "refunded"];
+            const validPaymentStatuses = ["pending", "paid", "failed", "cancelled", "refunded", "expired"];
             if (!validPaymentStatuses.includes(paymentStatus)) {
                 return res.status(400).json({ message: "Invalid payment status" });
             }
             order.paymentStatus = paymentStatus;
             if (paymentStatus === "paid" && !order.paidAt) {
                 order.paidAt = new Date();
+            }
+            if (paymentStatus === "paid" && order.orderStatus === "pending") {
+                order.orderStatus = "processing";
+            }
+            if (paymentStatus === "failed" && order.orderStatus !== "cancelled") {
+                order.orderStatus = "pending";
+            }
+            if (paymentStatus === "expired") {
+                order.orderStatus = "cancelled";
+                order.expiredAt = new Date();
+            }
+            if (paymentStatus === "pending" && order.paymentMethod === "BankTransfer") {
+                order.paymentExpiresAt = getPaymentExpiryDate();
             }
         }
 
@@ -492,5 +637,6 @@ module.exports = {
     getUserSales,
     cancelUserOrder,
     deleteUserCancelledOrder,
+    retryOrderPayment,
     updateSellerOrderStatus,
 };

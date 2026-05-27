@@ -17,6 +17,7 @@ const paymentStatusLabels = {
     failed: "Payment: Failed",
     cancelled: "Payment: Cancelled",
     refunded: "Payment: Refunded",
+    expired: "Payment: Expired",
 };
 
 const ManageOrders = () => {
@@ -72,6 +73,7 @@ const ManageOrders = () => {
             failed: "bg-rose-50 text-rose-700 border-rose-200",
             cancelled: "bg-slate-100 text-slate-600 border-slate-200",
             refunded: "bg-purple-50 text-purple-700 border-purple-200",
+            expired: "bg-orange-50 text-orange-700 border-orange-200",
         };
         return map[s] || "bg-slate-100 text-slate-600 border-slate-200";
     };
