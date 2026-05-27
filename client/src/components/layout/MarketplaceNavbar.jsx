@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import { 
     Bell, Heart, MessageCircle, ShoppingCart, ChevronDown,
-    User, LogIn, LogOut, Package, PlusCircle, ReceiptText, Store, ArrowRightLeft
+    User, LogIn, LogOut, Package, PlusCircle, ReceiptText, Store, ArrowRightLeft, Search
 } from "lucide-react";
 import logo from "../../assets/X_logo.png";
 import { useAuth } from "../../context/AuthContext";
@@ -20,7 +20,6 @@ function MarketplaceNavbar() {
     const location = useLocation();
     const dispatch = useDispatch();
     
-    // Selectors
     const { user, isAuthenticated } = useAuth();
     const cartItemsCount = useSelector(state => state.cart?.totalItems || 0);
     const [wishlistCount, setWishlistCount] = useState(0);
@@ -33,65 +32,39 @@ function MarketplaceNavbar() {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
-    // Close menus on route change
     useEffect(() => {
         setProfileDropdownOpen(false);
     }, [location.pathname]);
 
     useEffect(() => {
         let isMounted = true;
-
         const loadWishlistCount = async () => {
-            if (!isAuthenticated) {
-                setWishlistCount(0);
-                return;
-            }
-
+            if (!isAuthenticated) { setWishlistCount(0); return; }
             try {
                 const data = await getWishlist();
-                if (isMounted) {
-                    setWishlistCount(data.count ?? data.wishlist?.length ?? 0);
-                }
-            } catch (err) {
-                console.error("Failed to load wishlist count:", err);
-            }
+                if (isMounted) setWishlistCount(data.count ?? data.wishlist?.length ?? 0);
+            } catch (err) { console.error("Failed to load wishlist count:", err); }
         };
-
         loadWishlistCount();
         window.addEventListener("kx:wishlist-updated", loadWishlistCount);
-
-        return () => {
-            isMounted = false;
-            window.removeEventListener("kx:wishlist-updated", loadWishlistCount);
-        };
+        return () => { isMounted = false; window.removeEventListener("kx:wishlist-updated", loadWishlistCount); };
     }, [isAuthenticated, location.pathname]);
 
     useEffect(() => {
         let isMounted = true;
-
         const loadChatUnreadCount = async () => {
-            if (!isAuthenticated) {
-                setChatUnreadCount(0);
-                return;
-            }
-
+            if (!isAuthenticated) { setChatUnreadCount(0); return; }
             try {
                 const data = await getUnreadMessageCount();
-                if (isMounted) {
-                    setChatUnreadCount(data.unreadCount || 0);
-                }
-            } catch (err) {
-                console.error("Failed to load chat unread count:", err);
-            }
+                if (isMounted) setChatUnreadCount(data.unreadCount || 0);
+            } catch (err) { console.error("Failed to load chat unread count:", err); }
         };
-
         loadChatUnreadCount();
         const socket = getSocket();
         const handleUpdate = () => loadChatUnreadCount();
         socket?.on("chatUpdated", handleUpdate);
         socket?.on("messagesRead", handleUpdate);
         window.addEventListener("kx:chat-updated", loadChatUnreadCount);
-
         return () => {
             isMounted = false;
             socket?.off("chatUpdated", handleUpdate);
@@ -102,30 +75,19 @@ function MarketplaceNavbar() {
 
     useEffect(() => {
         let isMounted = true;
-
         const loadNotificationCount = async () => {
-            if (!isAuthenticated) {
-                setNotificationCount(0);
-                return;
-            }
-
+            if (!isAuthenticated) { setNotificationCount(0); return; }
             try {
                 const data = await getNotifications();
-                if (isMounted) {
-                    setNotificationCount(data.unreadCount || 0);
-                }
-            } catch (err) {
-                console.error("Failed to load notification count:", err);
-            }
+                if (isMounted) setNotificationCount(data.unreadCount || 0);
+            } catch (err) { console.error("Failed to load notification count:", err); }
         };
-
         loadNotificationCount();
         const intervalId = window.setInterval(loadNotificationCount, 30000);
         const socket = getSocket();
         const handleSocketNotification = () => loadNotificationCount();
         socket?.on("notificationUpdated", handleSocketNotification);
         window.addEventListener("kx:notifications-updated", loadNotificationCount);
-
         return () => {
             isMounted = false;
             window.clearInterval(intervalId);
@@ -134,7 +96,6 @@ function MarketplaceNavbar() {
         };
     }, [isAuthenticated, location.pathname]);
 
-    // Close profile dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (profileDropdownOpen && !e.target.closest('.profile-menu-container')) {
@@ -181,7 +142,7 @@ function MarketplaceNavbar() {
                 <div className="max-w-[1450px] mx-auto px-4 sm:px-8">
                     <div className="relative flex h-[72px] items-center justify-between gap-4">
 
-                        {/* ── Left: Logo ── */}
+                        {/* ── Left: Logo + Nav Links ── */}
                         <div className="z-10 flex items-center gap-8">
                             <Link to="/marketplace" className="flex items-center gap-3 group shrink-0">
                                 <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#0a192f]/40 to-[#0a192f]/20 border border-white/10 shadow-inner">
@@ -198,6 +159,9 @@ function MarketplaceNavbar() {
                             <div className="hidden lg:flex items-center gap-1.5">
                                 <Link to="/marketplace" className={desktopLinkClass("/marketplace", true)}>
                                     Browse
+                                </Link>
+                                <Link to="/lost-found" className={desktopLinkClass("/lost-found")}>
+                                    Lost &amp; Found
                                 </Link>
                                 {isAuthenticated && (
                                     <Link
@@ -288,6 +252,9 @@ function MarketplaceNavbar() {
                                             <Link to="/marketplace" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
                                                 <ShoppingCart size={16} className="text-[#48c96f]" /> Browse Marketplace
                                             </Link>
+                                            <Link to="/lost-found" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
+                                                <Search size={16} className="text-[#48c96f]" /> Lost &amp; Found
+                                            </Link>
                                             <Link to="/marketplace/create" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
                                                 <PlusCircle size={16} className="text-[#48c96f]" /> Sell an Item
                                             </Link>
@@ -299,6 +266,9 @@ function MarketplaceNavbar() {
                                             </Link>
                                             <Link to="/exchanges" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
                                                 <ArrowRightLeft size={16} className="text-[#48c96f]" /> My Exchanges
+                                            </Link>
+                                            <Link to="/lost-found/my-posts" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
+                                                <Search size={16} className="text-[#48c96f]" /> My L&amp;F Posts
                                             </Link>
                                             <Link to="/chats" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
                                                 <MessageCircle size={16} className="text-[#48c96f]" /> Chats
