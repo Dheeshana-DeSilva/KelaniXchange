@@ -258,7 +258,14 @@ const removeListingAdmin = async (req, res) => {
 const getAllReports = async (req, res) => {
     try {
         const reports = await Report.find()
-            .populate("reportedListing", "title category price status")
+            .populate({
+                path: "reportedListing",
+                select: "title category price status seller",
+                populate: {
+                    path: "seller",
+                    select: "username email",
+                },
+            })
             .populate("reportedBy", "username email")
             .sort({ createdAt: -1 });
 
