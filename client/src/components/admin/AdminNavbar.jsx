@@ -4,7 +4,7 @@ import { useNavigate, Link, useLocation } from "react-router";
 import { 
     Menu, X, LogOut, Bell, LayoutDashboard, 
     Users, Package, ShoppingCart, AlertTriangle, ArrowLeft,
-    HelpCircle, CreditCard, Megaphone
+    HelpCircle, CreditCard
 } from "lucide-react";
 import { logout } from "../../features/auth/authSlice";
 import logo from "../../assets/X_logo.png";
@@ -17,7 +17,6 @@ const NAV_ITEMS = [
     { to: "/admin/payments", icon: CreditCard, label: "Payments" },
     { to: "/admin/reports", icon: AlertTriangle, label: "Reports" },
     { to: "/admin/lost-found", icon: HelpCircle, label: "Lost & Found" },
-    { to: "/admin/notifications", icon: Megaphone, label: "Notifications" },
 ];
 
 const AdminNavbar = () => {
@@ -87,9 +86,17 @@ const AdminNavbar = () => {
                     {/* Right — Actions & Hamburger (Mobile) */}
                     <div className="flex items-center gap-2 sm:gap-4">
                         {/* Notifications (Desktop) */}
-                        <button className="hidden sm:flex relative h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors">
+                        <Link
+                            to="/admin/notifications"
+                            className={`hidden sm:flex relative h-10 w-10 items-center justify-center rounded-xl border transition-colors ${
+                                isActive("/admin/notifications")
+                                    ? "border-[#48c96f]/30 bg-[#48c96f]/10 text-[#48c96f]"
+                                    : "border-slate-200 bg-slate-50 text-slate-500 hover:text-slate-800 hover:bg-slate-100"
+                            }`}
+                            title="Manage notifications"
+                        >
                             <Bell size={18} />
-                        </button>
+                        </Link>
 
                         {/* Divider (Desktop) */}
                         <div className="hidden sm:block h-6 w-px bg-slate-200" />
