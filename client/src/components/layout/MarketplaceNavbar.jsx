@@ -250,36 +250,44 @@ function MarketplaceNavbar() {
                                             </div>
                                             
                                             <Link to="/marketplace" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
-                                                <ShoppingCart size={16} className="text-[#48c96f]" /> Browse Marketplace
+                                                <Store size={16} className="text-[#48c96f]" /> Browse Marketplace
                                             </Link>
                                             <Link to="/lost-found" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
                                                 <Search size={16} className="text-[#48c96f]" /> Lost &amp; Found
                                             </Link>
+                                            <Link to="/lost-found/my-posts" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
+                                                <Search size={16} className="text-[#48c96f]" /> My L&amp;F Posts
+                                            </Link>
+
+                                            <div className="my-2 border-t border-white/10" />
+
                                             <Link to="/marketplace/create" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
                                                 <PlusCircle size={16} className="text-[#48c96f]" /> Sell an Item
-                                            </Link>
-                                            <Link to="/profile" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
-                                                <User size={16} className="text-[#48c96f]" /> My Profile
                                             </Link>
                                             <Link to="/marketplace/my-listings" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
                                                 <Package size={16} className="text-[#48c96f]" /> My Listings
                                             </Link>
+                                            <Link to="/sales" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
+                                                <ReceiptText size={16} className="text-[#48c96f]" /> My Sales
+                                            </Link>
+
+                                            <div className="my-2 border-t border-white/10" />
+
+                                            <Link to="/orders" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
+                                                <ShoppingCart size={16} className="text-[#48c96f]" /> My Orders
+                                            </Link>
                                             <Link to="/exchanges" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
                                                 <ArrowRightLeft size={16} className="text-[#48c96f]" /> My Exchanges
-                                            </Link>
-                                            <Link to="/lost-found/my-posts" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
-                                                <Search size={16} className="text-[#48c96f]" /> My L&amp;F Posts
                                             </Link>
                                             <Link to="/chats" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
                                                 <MessageCircle size={16} className="text-[#48c96f]" /> Chats
                                             </Link>
-                                            <Link to="/orders" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
-                                                <ReceiptText size={16} className="text-[#48c96f]" /> My Orders
-                                            </Link>
-                                            <Link to="/sales" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
-                                                <Store size={16} className="text-[#48c96f]" /> My Sales
-                                            </Link>
+                                            
                                             <div className="my-2 border-t border-white/10" />
+
+                                            <Link to="/profile" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
+                                                <User size={16} className="text-[#48c96f]" /> My Profile
+                                            </Link>
                                             
                                             <button 
                                                 onClick={handleLogout}

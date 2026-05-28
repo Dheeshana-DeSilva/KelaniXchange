@@ -154,7 +154,7 @@ export default function Login() {
                         <div style={{
                             position: "relative", zIndex: 2,
                             display: "flex", flexDirection: "column",
-                            justifyContent: "space-between",
+                            justifyContent: "flex-start",
                             height: "100%", padding: "36px 32px",
                         }}>
 
@@ -176,7 +176,7 @@ export default function Login() {
                             </Link>
 
                             {/* Center: Hero text */}
-                            <div style={{ textAlign: "left" }}>
+                            <div style={{ textAlign: "left", marginTop: "auto", marginBottom: "auto" }}>
                                 <h1 style={{
                                     fontSize: "32px", fontWeight: 900, color: "#fff",
                                     lineHeight: 1.2, margin: "0 0 14px",
@@ -216,14 +216,6 @@ export default function Login() {
                                 </Link>
                             </div>
 
-                            {/* Bottom: Subtle trust line */}
-                            <p style={{
-                                color: "rgba(255,255,255,0.4)", fontSize: "11px",
-                                fontWeight: 600, margin: 0,
-                                letterSpacing: "0.5px",
-                            }}>
-                                Trusted by 5,000+ Kelaniya students
-                            </p>
                         </div>
                     </div>
 

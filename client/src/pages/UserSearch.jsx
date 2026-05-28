@@ -63,7 +63,7 @@ export default function UserSearch() {
                         <h1 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight flex items-center gap-2">
                             Find Users <Users size={24} className="text-[#48c96f]" />
                         </h1>
-                        <p className="text-sm text-slate-500 mt-1.5 font-medium">Search students and browse their marketplace listings.</p>
+                        <p className="text-sm text-slate-500 mt-1.5 font-medium">Search students by username and browse their marketplace listings.</p>
                     </div>
                 </div>
 
@@ -73,7 +73,7 @@ export default function UserSearch() {
                         type="text"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search by username or full name..."
+                        placeholder="Search by username..."
                         className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none focus:border-[#48c96f] focus:ring-4 focus:ring-emerald-500/10"
                     />
                 </div>
@@ -112,8 +112,7 @@ export default function UserSearch() {
                                     )}
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="font-black text-slate-800 truncate">{user.fullName || user.username}</p>
-                                    <p className="text-sm font-semibold text-slate-500 truncate">@{user.username}</p>
+                                    <p className="font-black text-slate-800 truncate">@{user.username}</p>
                                 </div>
                             </Link>
                         ))

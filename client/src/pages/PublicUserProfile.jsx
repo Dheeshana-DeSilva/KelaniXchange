@@ -86,9 +86,8 @@ export default function PublicUserProfile() {
                             </div>
                             <div className="min-w-0">
                                 <h1 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight truncate">
-                                    {profile.fullName || profile.username}
+                                    @{profile.username}
                                 </h1>
-                                <p className="text-sm font-bold text-slate-500 mt-1">@{profile.username}</p>
                                 <div className="mt-3 flex flex-wrap items-center gap-2">
                                     <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400">
                                         <Calendar size={13} /> Joined {new Date(profile.createdAt).toLocaleDateString()}

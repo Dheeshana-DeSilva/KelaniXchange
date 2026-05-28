@@ -36,11 +36,17 @@ const buildPrivateProfile = (user) => ({
 
 const buildPublicUserProfile = (user) => ({
     id: user._id,
-    fullName: user.fullName,
     username: user.username,
     profileImage: user.profileImage || "",
     isVerified: user.isVerified,
     createdAt: user.createdAt,
+});
+
+const buildSearchUserResult = (user) => ({
+    id: user._id,
+    username: user.username,
+    profileImage: user.profileImage || "",
+    isVerified: user.isVerified,
 });
 
 const uploadProfileImage = async (file) => {
@@ -183,18 +189,15 @@ const searchUsers = async (req, res) => {
         const users = await User.find({
             role: { $in: ["USER", "SELLER"] },
             accountStatus: { $ne: "blocked" },
-            $or: [
-                { username: { $regex: search, $options: "i" } },
-                { fullName: { $regex: search, $options: "i" } },
-            ],
+            username: { $regex: search, $options: "i" },
         })
-            .select("fullName username profileImage isVerified createdAt")
+            .select("username profileImage isVerified")
             .limit(20)
             .sort({ username: 1 });
 
         res.status(200).json({
             message: "Users fetched successfully",
-            users: users.map(buildPublicUserProfile),
+            users: users.map(buildSearchUserResult),
         });
     } catch (error) {
         res.status(500).json({
@@ -206,7 +209,7 @@ const searchUsers = async (req, res) => {
 
 const getPublicUserProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id).select("fullName username profileImage isVerified createdAt role accountStatus");
+        const user = await User.findById(req.params.id).select("username profileImage isVerified createdAt role accountStatus");
 
         if (!user || !["USER", "SELLER"].includes(user.role) || user.accountStatus === "blocked") {
             return res.status(404).json({ message: "User not found" });
@@ -218,7 +221,7 @@ const getPublicUserProfile = async (req, res) => {
         }).sort({ createdAt: -1 });
 
         const reviews = await Review.find({ seller: user._id })
-            .populate("reviewer", "username fullName profileImage")
+            .populate("reviewer", "username profileImage")
             .populate("listing", "title")
             .sort({ createdAt: -1 })
             .limit(12);

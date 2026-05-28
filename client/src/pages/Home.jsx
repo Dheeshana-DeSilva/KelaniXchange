@@ -156,8 +156,8 @@ function Home() {
                                     <BookOpen size={22} />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-black text-slate-900">Textbook listing</p>
-                                    <p className="mt-1 text-xs font-semibold text-slate-500">Condition, quantity, seller rating, and chat are available before purchase.</p>
+                                    <p className="text-sm font-black text-slate-900">Buy campus items</p>
+                                    <p className="mt-1 text-xs font-semibold text-slate-500">Check condition, quantity, seller rating, and chat before purchase.</p>
                                 </div>
                             </div>
                         </div>

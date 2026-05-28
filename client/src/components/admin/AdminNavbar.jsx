@@ -15,9 +15,9 @@ const NAV_ITEMS = [
     { to: "/admin/listings", icon: Package, label: "Listings" },
     { to: "/admin/orders", icon: ShoppingCart, label: "Orders" },
     { to: "/admin/payments", icon: CreditCard, label: "Payments" },
-    { to: "/admin/reports", icon: AlertTriangle, label: "Reports" },
-    { to: "/admin/lost-found", icon: HelpCircle, label: "Lost & Found" },
     { to: "/admin/reviews", icon: Star, label: "Reviews" },
+    { to: "/admin/lost-found", icon: HelpCircle, label: "Lost & Found" },
+    { to: "/admin/reports", icon: AlertTriangle, label: "Reports" },
 ];
 
 const AdminNavbar = () => {
