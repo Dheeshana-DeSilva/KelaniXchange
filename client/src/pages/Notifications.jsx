@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import {
     ArrowLeft, ArrowRightLeft, Bell, CheckCheck, Loader2, MessageCircle,
-    PackageCheck, ShoppingBag, Trash2, WalletCards
+    PackageCheck, ShoppingBag, Star, Trash2, WalletCards
 } from "lucide-react";
 import {
     deleteAllNotifications,
@@ -24,6 +24,13 @@ const typeMeta = {
     order_cancelled: { icon: PackageCheck, color: "text-rose-600", bg: "bg-rose-50", label: "Order" },
     payment_updated: { icon: WalletCards, color: "text-cyan-600", bg: "bg-cyan-50", label: "Payment" },
     system: { icon: Bell, color: "text-slate-600", bg: "bg-slate-50", label: "System" },
+    payment: { icon: WalletCards, color: "text-cyan-600", bg: "bg-cyan-50", label: "Payment" },
+    order: { icon: ShoppingBag, color: "text-emerald-600", bg: "bg-emerald-50", label: "Order" },
+    listing: { icon: PackageCheck, color: "text-blue-600", bg: "bg-blue-50", label: "Listing" },
+    report: { icon: Bell, color: "text-amber-600", bg: "bg-amber-50", label: "Report" },
+    lost_found: { icon: Bell, color: "text-violet-600", bg: "bg-violet-50", label: "Lost and Found" },
+    warning: { icon: Bell, color: "text-rose-600", bg: "bg-rose-50", label: "Warning" },
+    role_update: { icon: Bell, color: "text-indigo-600", bg: "bg-indigo-50", label: "Role update" },
 };
 
 const notificationTarget = (notification) => {
@@ -215,6 +222,11 @@ export default function Notifications() {
                                                 <div className="flex flex-wrap items-center gap-2">
                                                     <h3 className="font-black text-slate-900">{notification.title}</h3>
                                                     {!notification.isRead && <span className="h-2 w-2 rounded-full bg-[#48c96f]" />}
+                                                    {notification.isImportant && (
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-black uppercase tracking-wider text-amber-700">
+                                                            <Star size={11} className="fill-amber-400 text-amber-400" /> Important
+                                                        </span>
+                                                    )}
                                                     <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-black uppercase tracking-wider text-slate-500">
                                                         {meta.label}
                                                     </span>

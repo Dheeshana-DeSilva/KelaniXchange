@@ -21,6 +21,13 @@ const notificationSchema = new mongoose.Schema(
                 "order_cancelled",
                 "payment_updated",
                 "system",
+                "payment",
+                "order",
+                "listing",
+                "report",
+                "lost_found",
+                "warning",
+                "role_update",
             ],
             required: true,
         },
@@ -45,6 +52,33 @@ const notificationSchema = new mongoose.Schema(
         targetPath: {
             type: String,
             trim: true,
+        },
+
+        sentBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: null,
+        },
+
+        targetLabel: {
+            type: String,
+            trim: true,
+            default: "",
+        },
+
+        adminBatchId: {
+            type: mongoose.Schema.Types.ObjectId,
+            default: null,
+        },
+
+        isAdminCreated: {
+            type: Boolean,
+            default: false,
+        },
+
+        isImportant: {
+            type: Boolean,
+            default: false,
         },
 
         isRead: {

@@ -89,3 +89,19 @@ export const deleteLostFoundAdmin = async (id) => {
     const res = await api.delete(`/admin/lost-found/${id}`);
     return res.data;
 };
+
+/* ── Notifications ── */
+export const getAdminNotifications = async () => {
+    const res = await api.get("/admin/notifications");
+    return res.data;
+};
+
+export const createAdminNotification = async (data) => {
+    const res = await api.post("/admin/notifications", data);
+    return res.data;
+};
+
+export const deleteAdminNotification = async (id) => {
+    const res = await api.delete(`/admin/notifications/${id}`);
+    return res.data;
+};

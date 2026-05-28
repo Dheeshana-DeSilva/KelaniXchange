@@ -17,6 +17,9 @@ const {
     getAllLostFoundAdmin,
     updateLostFoundStatusAdmin,
     deleteLostFoundAdmin,
+    createAdminNotification,
+    getAdminNotifications,
+    deleteAdminNotification,
 } = require("../controllers/admin.controller");
 
 const { protect } = require("../middleware/auth.middleware");
@@ -47,5 +50,9 @@ router.put("/reports/:id/status", updateReportStatus);
 router.get("/lost-found", getAllLostFoundAdmin);
 router.put("/lost-found/:id/status", updateLostFoundStatusAdmin);
 router.delete("/lost-found/:id", deleteLostFoundAdmin);
+
+router.get("/notifications", getAdminNotifications);
+router.post("/notifications", createAdminNotification);
+router.delete("/notifications/:id", deleteAdminNotification);
 
 module.exports = router;

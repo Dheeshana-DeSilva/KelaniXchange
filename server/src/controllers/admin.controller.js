@@ -5,8 +5,10 @@ const Report = require("../models/Report");
 const ExchangeRequest = require("../models/ExchangeRequest");
 const LostFound = require("../models/LostFound");
 const Order = require("../models/Order");
+const Notification = require("../models/Notification");
 
 const VALID_ROLES = ["USER", "SELLER", "ADMIN"];
+const ADMIN_NOTIFICATION_TYPES = ["system", "payment", "order", "listing", "report", "lost_found", "warning", "role_update"];
 
 // Admin dashboard statistics
 const getDashboardStats = async (req, res) => {
@@ -532,6 +534,159 @@ const deleteLostFoundAdmin = async (req, res) => {
     }
 };
 
+// Create admin notification for all users or one selected user
+const createAdminNotification = async (req, res) => {
+    try {
+        const { title, message, type, targetType, userId, isImportant } = req.body;
+
+        if (!title?.trim() || !message?.trim()) {
+            return res.status(400).json({ message: "Title and message are required" });
+        }
+
+        if (!ADMIN_NOTIFICATION_TYPES.includes(type)) {
+            return res.status(400).json({ message: "Invalid notification type" });
+        }
+
+        if (!["all", "user"].includes(targetType)) {
+            return res.status(400).json({ message: "Target must be all users or one selected user" });
+        }
+
+        let recipients = [];
+        let targetLabel = "All users";
+
+        if (targetType === "all") {
+            recipients = await User.find({ accountStatus: { $ne: "deactivated" } }).select("_id");
+        } else {
+            if (!userId) return res.status(400).json({ message: "Please select a user" });
+            const user = await User.findById(userId).select("_id username email");
+            if (!user) return res.status(404).json({ message: "Selected user not found" });
+            recipients = [user];
+            targetLabel = `@${user.username}`;
+        }
+
+        if (recipients.length === 0) {
+            return res.status(400).json({ message: "No users found for this notification" });
+        }
+
+        const batchId = new Notification()._id;
+        const docs = recipients.map((recipient) => ({
+            user: recipient._id,
+            type,
+            title: title.trim(),
+            message: message.trim(),
+            targetPath: "/notifications",
+            sentBy: req.user._id,
+            targetLabel,
+            adminBatchId: batchId,
+            isAdminCreated: true,
+            isImportant: Boolean(isImportant),
+        }));
+
+        const notifications = await Notification.insertMany(docs);
+
+        res.status(201).json({
+            message: "Notification sent successfully",
+            batchId,
+            recipientCount: notifications.length,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to create notification",
+            error: error.message,
+        });
+    }
+};
+
+// View grouped admin-created notification history
+const getAdminNotifications = async (req, res) => {
+    try {
+        const notifications = await Notification.find({ isAdminCreated: true })
+            .populate("user", "username email")
+            .populate("sentBy", "username email")
+            .sort({ createdAt: -1 });
+
+        const groups = new Map();
+
+        notifications.forEach((notification) => {
+            const key = (notification.adminBatchId || notification._id).toString();
+            const existing = groups.get(key);
+
+            if (!existing) {
+                groups.set(key, {
+                    _id: key,
+                    title: notification.title,
+                    message: notification.message,
+                    type: notification.type,
+                    target: notification.targetLabel || notification.user?.username || "Selected user",
+                    sentBy: notification.sentBy,
+                    date: notification.createdAt,
+                    isImportant: notification.isImportant,
+                    recipientCount: 1,
+                    unreadCount: notification.isRead ? 0 : 1,
+                    status: notification.isRead ? "read" : "unread",
+                });
+                return;
+            }
+
+            existing.recipientCount += 1;
+            if (!notification.isRead) existing.unreadCount += 1;
+            existing.status = existing.unreadCount > 0 ? "unread" : "read";
+        });
+
+        const groupedNotifications = Array.from(groups.values()).sort((a, b) => {
+            if (a.isImportant !== b.isImportant) return a.isImportant ? -1 : 1;
+            return new Date(b.date) - new Date(a.date);
+        });
+
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+
+        res.status(200).json({
+            message: "Admin notifications fetched successfully",
+            stats: {
+                totalNotifications: groupedNotifications.length,
+                sentToday: groupedNotifications.filter((item) => new Date(item.date) >= todayStart).length,
+                importantNotifications: groupedNotifications.filter((item) => item.isImportant).length,
+                unreadByUsers: groupedNotifications.reduce((total, item) => total + item.unreadCount, 0),
+            },
+            notifications: groupedNotifications,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to fetch admin notifications",
+            error: error.message,
+        });
+    }
+};
+
+// Delete an admin notification campaign and its user copies
+const deleteAdminNotification = async (req, res) => {
+    try {
+        const result = await Notification.deleteMany({
+            isAdminCreated: true,
+            adminBatchId: req.params.id,
+        });
+
+        if (result.deletedCount === 0) {
+            const single = await Notification.findOneAndDelete({
+                _id: req.params.id,
+                isAdminCreated: true,
+            });
+
+            if (!single) return res.status(404).json({ message: "Notification not found" });
+        }
+
+        res.status(200).json({
+            message: "Notification deleted successfully",
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to delete notification",
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     getDashboardStats,
     getAllUsers,
@@ -550,4 +705,7 @@ module.exports = {
     getAllLostFoundAdmin,
     updateLostFoundStatusAdmin,
     deleteLostFoundAdmin,
+    createAdminNotification,
+    getAdminNotifications,
+    deleteAdminNotification,
 };

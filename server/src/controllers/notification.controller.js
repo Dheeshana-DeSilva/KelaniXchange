@@ -5,7 +5,7 @@ const getMyNotifications = async (req, res) => {
     try {
         const notifications = await Notification.find({
             user: req.user._id,
-        }).sort({ createdAt: -1 });
+        }).sort({ isImportant: -1, createdAt: -1 });
 
         const unreadCount = await Notification.countDocuments({
             user: req.user._id,
