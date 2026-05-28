@@ -3,6 +3,7 @@ import AppRoutes from "./routes/AppRoutes";
 import Navbar from "./components/layout/Navbar";
 import MarketplaceNavbar from "./components/layout/MarketplaceNavbar";
 import Footer from "./components/layout/Footer";
+import ScrollToTop from "./components/layout/ScrollToTop";
 
 const AUTH_ROUTES = ["/login", "/register"];
 const MARKETPLACE_FLOW_PREFIXES = [
@@ -31,6 +32,7 @@ function App() {
 
   return (
     <>
+      <ScrollToTop />
       {!isAuthPage && !isAdmin && (isMarketplaceFlow ? <MarketplaceNavbar /> : <Navbar />)}
       <AppRoutes />
       {!isAuthPage && !isAdmin && <Footer />}

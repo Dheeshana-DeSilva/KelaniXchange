@@ -51,16 +51,12 @@ function Footer() {
                         Follow future updates and announcements from
                         KelaniXchange.
                     </p>
-                    
-                    <div className="mt-4 flex gap-4">
-                        {/* Social icons could go here */}
-                    </div>
                 </div>
             </div>
 
             <div className="mx-auto mt-12 max-w-[1450px] border-t border-slate-100 pt-8 text-center">
                 <p className="text-xs font-medium text-slate-400">
-                    © {new Date().getFullYear()} KelaniXchange. All rights reserved.
+                    &copy; {new Date().getFullYear()} KelaniXchange. All rights reserved.
                 </p>
             </div>
         </footer>

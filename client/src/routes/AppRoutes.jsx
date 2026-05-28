@@ -23,6 +23,7 @@ import LostFound from "../pages/LostFound";
 import CreateLostFound from "../pages/CreateLostFound";
 import LostFoundDetails from "../pages/LostFoundDetails";
 import MyLostFoundPosts from "../pages/MyLostFoundPosts";
+import FooterInfo from "../pages/FooterInfo";
 
 /* ── Admin ── */
 import AdminRoute from "./AdminRoute";
@@ -63,6 +64,11 @@ function AppRoutes() {
             <Route path="/users" element={<UserSearch />} />
             <Route path="/users/:id" element={<PublicUserProfile />} />
             <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<FooterInfo />} />
+            <Route path="/help" element={<FooterInfo />} />
+            <Route path="/safety" element={<FooterInfo />} />
+            <Route path="/terms" element={<FooterInfo />} />
+            <Route path="/privacy" element={<FooterInfo />} />
 
             {/* Lost & Found */}
             <Route path="/lost-found" element={<LostFound />} />
