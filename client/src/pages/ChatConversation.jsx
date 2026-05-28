@@ -10,6 +10,7 @@ import {
 } from "../services/chatService";
 import { getSocket } from "../services/socketService";
 import { useAuth } from "../context/AuthContext";
+import { useConfirm } from "../components/ui/AlertProvider";
 
 const getUserId = (user) => user?._id || user?.id;
 
@@ -20,6 +21,7 @@ export default function ChatConversation() {
     const { chatId } = useParams();
     const navigate = useNavigate();
     const { isAuthenticated, user } = useAuth();
+    const { confirmAction } = useConfirm();
     const [chat, setChat] = useState(null);
     const [messages, setMessages] = useState([]);
     const [text, setText] = useState("");
@@ -113,7 +115,12 @@ export default function ChatConversation() {
     };
 
     const handleDeleteChat = async () => {
-        if (!confirm("Delete this chat from your inbox?")) return;
+        const confirmed = await confirmAction({
+            title: "Delete chat?",
+            message: "This chat will be removed from your inbox.",
+            confirmText: "Delete chat",
+        });
+        if (!confirmed) return;
 
         try {
             setDeleting(true);

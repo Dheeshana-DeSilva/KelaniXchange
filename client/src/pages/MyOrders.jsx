@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { cancelMyOrder, clearOrderErrors, deleteMyCancelledOrder, fetchMyOrders, retryMyOrderPayment } from "../features/orders/orderSlice";
 import { useAuth } from "../context/AuthContext";
+import { useConfirm } from "../components/ui/AlertProvider";
 
 const statusClasses = {
     pending: "bg-amber-50 text-amber-700 border-amber-200",
@@ -58,6 +59,7 @@ export default function MyOrders() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
+    const { confirmAction } = useConfirm();
     const {
         orders,
         ordersLoading: loading,
@@ -89,12 +91,22 @@ export default function MyOrders() {
     }, [actionError, dispatch]);
 
     const handleCancel = async (orderId) => {
-        if (!confirm("Cancel this order while the handover is still waiting for seller action?")) return;
+        const confirmed = await confirmAction({
+            title: "Cancel order?",
+            message: "Cancel this order while the handover is still waiting for seller action?",
+            confirmText: "Cancel order",
+        });
+        if (!confirmed) return;
         dispatch(cancelMyOrder(orderId));
     };
 
     const handleDelete = async (orderId) => {
-        if (!confirm("Delete this cancelled order from your order history?")) return;
+        const confirmed = await confirmAction({
+            title: "Delete order?",
+            message: "This cancelled order will be removed from your order history.",
+            confirmText: "Delete order",
+        });
+        if (!confirmed) return;
         dispatch(deleteMyCancelledOrder(orderId));
     };
 

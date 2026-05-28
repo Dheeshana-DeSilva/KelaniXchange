@@ -4,6 +4,7 @@ import { ArrowLeft, Loader2, MessageCircle, Search, Trash2 } from "lucide-react"
 import { deleteChat, getMyChats } from "../services/chatService";
 import { getSocket } from "../services/socketService";
 import { useAuth } from "../context/AuthContext";
+import { useConfirm } from "../components/ui/AlertProvider";
 
 const getUserId = (user) => user?._id || user?.id;
 
@@ -13,6 +14,7 @@ const otherParticipant = (chat, userId) =>
 export default function ChatList() {
     const navigate = useNavigate();
     const { isAuthenticated, user } = useAuth();
+    const { confirmAction } = useConfirm();
     const [chats, setChats] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [search, setSearch] = useState("");
@@ -77,7 +79,12 @@ export default function ChatList() {
 
     const handleDeleteChat = async (e, chatId) => {
         e.stopPropagation();
-        if (!confirm("Delete this chat from your inbox?")) return;
+        const confirmed = await confirmAction({
+            title: "Delete chat?",
+            message: "This chat will be removed from your inbox.",
+            confirmText: "Delete chat",
+        });
+        if (!confirmed) return;
 
         try {
             setActionLoadingId(chatId);

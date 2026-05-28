@@ -12,6 +12,7 @@ import { createExchangeRequest } from "../services/exchangeService";
 import { createReport } from "../services/reportService";
 import { startChat } from "../services/chatService";
 import { useAuth } from "../context/AuthContext";
+import { useConfirm } from "../components/ui/AlertProvider";
 
 import catBooksStationery from "../assets/category_books_stationery.png";
 import catElectronics from "../assets/category_electronics_v2.png";
@@ -46,6 +47,7 @@ export default function ListingDetails() {
     const navigate = useNavigate();
     const { user } = useAuth();
     const dispatch = useDispatch();
+    const { confirmAction } = useConfirm();
 
     const [cartQuantity, setCartQuantity] = useState(1);
     const [chatLoading, setChatLoading] = useState(false);
@@ -337,9 +339,12 @@ export default function ListingDetails() {
     };
 
     const handleDeleteListing = async () => {
-        if (!confirm("Are you sure you want to PERMANENTLY delete this listing? This action cannot be undone.")) {
-            return;
-        }
+        const confirmed = await confirmAction({
+            title: "Delete listing?",
+            message: "This listing will be permanently deleted. This action cannot be undone.",
+            confirmText: "Delete listing",
+        });
+        if (!confirmed) return;
         try {
             await deleteListing(id);
             alert("Listing deleted successfully.");

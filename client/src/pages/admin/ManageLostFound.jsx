@@ -8,6 +8,7 @@ import {
     updateLostFoundStatusAdmin, 
     deleteLostFoundAdmin 
 } from "../../services/adminService";
+import { useConfirm } from "../../components/ui/AlertProvider";
 
 const CATEGORIES = [
     { value: "id-card", label: "ID Card" },
@@ -22,6 +23,7 @@ const CATEGORIES = [
 ];
 
 const ManageLostFound = () => {
+    const { confirmAction } = useConfirm();
     const [posts, setPosts] = useState([]);
     const [filtered, setFiltered] = useState([]);
     const [search, setSearch] = useState("");
@@ -95,9 +97,12 @@ const ManageLostFound = () => {
     };
 
     const handleDelete = async (id) => {
-        if (!confirm("Are you sure you want to PERMANENTLY delete this Lost & Found post? This action cannot be undone.")) {
-            return;
-        }
+        const confirmed = await confirmAction({
+            title: "Delete Lost and Found post?",
+            message: "This post will be permanently deleted. This action cannot be undone.",
+            confirmText: "Delete post",
+        });
+        if (!confirmed) return;
         setActionLoading(id);
         try {
             await deleteLostFoundAdmin(id);

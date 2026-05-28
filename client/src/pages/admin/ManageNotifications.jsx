@@ -19,6 +19,7 @@ import {
     getAdminNotifications,
     getAllUsers,
 } from "../../services/adminService";
+import { useConfirm } from "../../components/ui/AlertProvider";
 
 const TYPES = [
     { value: "system", label: "System" },
@@ -64,6 +65,7 @@ const StatCard = ({ icon: Icon, label, value, tone = "emerald" }) => {
 };
 
 const ManageNotifications = () => {
+    const { confirmAction } = useConfirm();
     const [notifications, setNotifications] = useState([]);
     const [stats, setStats] = useState({});
     const [users, setUsers] = useState([]);
@@ -149,7 +151,12 @@ const ManageNotifications = () => {
     };
 
     const handleDelete = async (notification) => {
-        if (!window.confirm(`Delete "${notification.title}" for all targeted users?`)) return;
+        const confirmed = await confirmAction({
+            title: "Delete notification?",
+            message: `Delete "${notification.title}" for all targeted users?`,
+            confirmText: "Delete notification",
+        });
+        if (!confirmed) return;
 
         setActionLoading(notification._id);
         try {

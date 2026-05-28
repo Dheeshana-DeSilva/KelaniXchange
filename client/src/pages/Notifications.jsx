@@ -12,6 +12,7 @@ import {
     markNotificationAsRead,
 } from "../services/notificationService";
 import { useAuth } from "../context/AuthContext";
+import { useConfirm } from "../components/ui/AlertProvider";
 
 const typeMeta = {
     exchange_request: { icon: ArrowRightLeft, color: "text-sky-600", bg: "bg-sky-50", label: "Exchange" },
@@ -45,6 +46,7 @@ const notificationTarget = (notification) => {
 export default function Notifications() {
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
+    const { confirmAction } = useConfirm();
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -106,6 +108,13 @@ export default function Notifications() {
 
     const handleDelete = async (e, notificationId) => {
         e.stopPropagation();
+        const confirmed = await confirmAction({
+            title: "Delete notification?",
+            message: "This notification will be removed from your list.",
+            confirmText: "Delete notification",
+        });
+        if (!confirmed) return;
+
         try {
             setActionLoading(notificationId);
             await deleteNotification(notificationId);
@@ -125,7 +134,12 @@ export default function Notifications() {
     };
 
     const handleDeleteAll = async () => {
-        if (!confirm("Delete all notifications?")) return;
+        const confirmed = await confirmAction({
+            title: "Delete all notifications?",
+            message: "Every notification in this list will be removed.",
+            confirmText: "Delete all",
+        });
+        if (!confirmed) return;
         try {
             setActionLoading("delete-all");
             await deleteAllNotifications();

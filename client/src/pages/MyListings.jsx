@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { getMyListings, deleteListing, updateListing } from "../services/listingService";
 import { useAuth } from "../context/AuthContext";
+import { useConfirm } from "../components/ui/AlertProvider";
 
 import catBooksStationery from "../assets/category_books_stationery.png";
 import catElectronics from "../assets/category_electronics_v2.png";
@@ -38,6 +39,7 @@ const CATEGORIES = [
 export default function MyListings() {
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
+    const { confirmAction } = useConfirm();
     const [listings, setListings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -87,9 +89,12 @@ export default function MyListings() {
     };
 
     const handleDelete = async (id) => {
-        if (!confirm("Are you sure you want to PERMANENTLY delete this listing? This action cannot be undone.")) {
-            return;
-        }
+        const confirmed = await confirmAction({
+            title: "Delete listing?",
+            message: "This listing will be permanently deleted. This action cannot be undone.",
+            confirmText: "Delete listing",
+        });
+        if (!confirmed) return;
         setActionLoading(id);
         try {
             await deleteListing(id);

@@ -8,6 +8,7 @@ import {
 import { getLostFoundPostById, markLostFoundResolved, deleteLostFoundPost } from "../services/lostFoundService";
 import { startChat } from "../services/chatService";
 import { useAuth } from "../context/AuthContext";
+import { useConfirm } from "../components/ui/AlertProvider";
 
 const CATEGORY_MAP = {
     "id-card":    { label: "ID Card",     icon: CreditCard, color: "#6366f1", bg: "rgba(99,102,241,0.12)" },
@@ -54,6 +55,7 @@ export default function LostFoundDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { confirmAction } = useConfirm();
     const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -81,7 +83,13 @@ export default function LostFoundDetails() {
     const CatIcon = cat?.icon || HelpCircle;
 
     const handleResolve = async () => {
-        if (!confirm("Mark this post as resolved?")) return;
+        const confirmed = await confirmAction({
+            title: "Mark as resolved?",
+            message: "This will show other students that the item has been reunited with its owner.",
+            confirmText: "Mark resolved",
+            destructive: false,
+        });
+        if (!confirmed) return;
         setResolving(true);
         try {
             const data = await markLostFoundResolved(id);
@@ -94,7 +102,12 @@ export default function LostFoundDetails() {
     };
 
     const handleDelete = async () => {
-        if (!confirm("Permanently delete this post? This cannot be undone.")) return;
+        const confirmed = await confirmAction({
+            title: "Delete post?",
+            message: "This Lost and Found post will be permanently deleted. This action cannot be undone.",
+            confirmText: "Delete post",
+        });
+        if (!confirmed) return;
         setDeleting(true);
         try {
             await deleteLostFoundPost(id);

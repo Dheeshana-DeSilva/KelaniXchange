@@ -8,6 +8,7 @@ import {
     suspendUser, unsuspendUser,
     updateUserRole, updateUserStatus,
 } from "../../services/adminService";
+import { useConfirm } from "../../components/ui/AlertProvider";
 
 /* ─── helpers ─── */
 const ROLES = ["USER", "SELLER", "ADMIN"];
@@ -52,6 +53,7 @@ const inputCls = "w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5
 
 /* ════════════════════════════════════════════ */
 const ManageUsers = () => {
+    const { confirmAction } = useConfirm();
     const [users, setUsers] = useState([]);
     const [filtered, setFiltered] = useState([]);
     const [search, setSearch] = useState("");
@@ -120,7 +122,12 @@ const ManageUsers = () => {
     };
 
     const handleDeleteUser = async (user) => {
-        if (!window.confirm(`Permanently delete "${user.username}"? This cannot be undone.`)) return;
+        const confirmed = await confirmAction({
+            title: "Delete user?",
+            message: `Permanently delete "${user.username}"? This cannot be undone.`,
+            confirmText: "Delete user",
+        });
+        if (!confirmed) return;
         setActionLoading(user._id + "-delete");
         try {
             await deleteUser(user._id);

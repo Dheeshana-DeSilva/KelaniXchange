@@ -6,6 +6,7 @@ import {
     updateListingAdmin, 
     deleteListingAdmin 
 } from "../../services/adminService";
+import { useConfirm } from "../../components/ui/AlertProvider";
 
 const CATEGORIES = [
     { value: "books-and-stationery", label: "Books & Stationery" },
@@ -30,6 +31,7 @@ const STATUSES = [
 const CONDITIONS = ["New", "Like New", "Good", "Used"];
 
 const ManageProducts = () => {
+    const { confirmAction } = useConfirm();
     const [listings, setListings] = useState([]);
     const [filtered, setFiltered] = useState([]);
     const [search, setSearch] = useState("");
@@ -79,7 +81,12 @@ const ManageProducts = () => {
     };
 
     const handleDelete = async (id) => {
-        if (!confirm("Are you sure you want to PERMANENTLY delete this listing? This cannot be undone.")) return;
+        const confirmed = await confirmAction({
+            title: "Delete listing?",
+            message: "This listing will be permanently deleted. This cannot be undone.",
+            confirmText: "Delete listing",
+        });
+        if (!confirmed) return;
         setActionLoading(id);
         try {
             await deleteListingAdmin(id);

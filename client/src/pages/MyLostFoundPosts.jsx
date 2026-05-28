@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { getMyLostFoundPosts, markLostFoundResolved, deleteLostFoundPost } from "../services/lostFoundService";
 import { useAuth } from "../context/AuthContext";
+import { useConfirm } from "../components/ui/AlertProvider";
 
 const CATEGORY_MAP = {
     "id-card":    { label: "ID Card",     icon: CreditCard, color: "#6366f1", bg: "rgba(99,102,241,0.12)" },
@@ -66,6 +67,7 @@ const pageStyles = `
 export default function MyLostFoundPosts() {
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
+    const { confirmAction } = useConfirm();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("all");
@@ -93,7 +95,13 @@ export default function MyLostFoundPosts() {
     });
 
     const handleResolve = async (id) => {
-        if (!confirm("Mark this post as resolved?")) return;
+        const confirmed = await confirmAction({
+            title: "Mark as resolved?",
+            message: "This will show other students that the item has been reunited with its owner.",
+            confirmText: "Mark resolved",
+            destructive: false,
+        });
+        if (!confirmed) return;
         setActionId(id);
         try {
             const data = await markLostFoundResolved(id);
@@ -106,7 +114,12 @@ export default function MyLostFoundPosts() {
     };
 
     const handleDelete = async (id) => {
-        if (!confirm("Permanently delete this post?")) return;
+        const confirmed = await confirmAction({
+            title: "Delete post?",
+            message: "This Lost and Found post will be permanently deleted.",
+            confirmText: "Delete post",
+        });
+        if (!confirmed) return;
         setActionId(id);
         try {
             await deleteLostFoundPost(id);
