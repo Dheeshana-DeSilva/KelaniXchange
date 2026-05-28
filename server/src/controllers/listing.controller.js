@@ -1,5 +1,6 @@
 const cloudinary = require("../config/cloudinary");
 const Listing = require("../models/Listing");
+const { getSellerRatingSummary } = require("./review.controller");
 
 const parseQuantity = (value) => {
     if (value === undefined || value === null || value === "") return undefined;
@@ -203,7 +204,15 @@ const getListingById = async (req, res) => {
             });
         }
 
-        res.status(200).json(listing);
+        const listingData = listing.toObject();
+        if (listing.seller?._id) {
+            listingData.seller = {
+                ...listingData.seller,
+                ratingSummary: await getSellerRatingSummary(listing.seller._id),
+            };
+        }
+
+        res.status(200).json(listingData);
     } catch (error) {
         res.status(500).json({
             message: "Failed to fetch listing",

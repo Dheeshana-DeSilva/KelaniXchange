@@ -1,6 +1,7 @@
 const Order = require("../models/Order");
 const Listing = require("../models/Listing");
 const Notification = require("../models/Notification");
+const Review = require("../models/Review");
 const cloudinary = require("../config/cloudinary");
 const { getIO } = require("../config/socket");
 
@@ -30,6 +31,27 @@ const restoreListingQuantity = async (order) => {
     if (listing.quantity > 0) {
         listing.status = "available";
     }
+    await listing.save();
+};
+
+const reserveListingQuantity = async (order) => {
+    const listingId = order.listing?._id || order.listing;
+    const listing = await Listing.findById(listingId);
+    if (!listing) {
+        const error = new Error("Listing not found for this order");
+        error.statusCode = 404;
+        throw error;
+    }
+
+    if (listing.quantity < order.quantity) {
+        const error = new Error(`Not enough quantity available to reactivate this order. Available: ${listing.quantity}`);
+        error.statusCode = 400;
+        throw error;
+    }
+
+    listing.quantity -= order.quantity;
+    listing.status = listing.quantity <= 0 ? "sold" : "available";
+    if (listing.quantity < 0) listing.quantity = 0;
     await listing.save();
 };
 
@@ -71,6 +93,21 @@ const expireOrderIfTimedOut = async (order) => {
 
 const expireTimedOutOrders = async (orders) => {
     await Promise.all(orders.map((order) => expireOrderIfTimedOut(order)));
+};
+
+const attachMyReviews = async (orders, reviewerId) => {
+    const orderIds = orders.map((order) => order._id);
+    const reviews = await Review.find({
+        reviewer: reviewerId,
+        transactionType: "order",
+        transaction: { $in: orderIds },
+    });
+    const reviewByTransaction = new Map(reviews.map((review) => [review.transaction.toString(), review]));
+
+    return orders.map((order) => ({
+        ...order.toObject(),
+        myReview: reviewByTransaction.get(order._id.toString()) || null,
+    }));
 };
 
 const uploadPaymentProof = async (file) => {
@@ -345,15 +382,17 @@ const createOrders = async (req, res) => {
 // Get current user's purchase history (buyer)
 const getUserOrders = async (req, res) => {
     try {
-        const orders = await Order.find({ user: req.user.id })
-            .populate("listing", "title price category images condition location")
+        const orders = await Order.find({ user: req.user.id, hiddenFromBuyer: { $ne: true } })
+            .populate("listing", "title price category images condition location status quantity seller")
             .populate("seller", "username email fullName")
             .sort({ createdAt: -1 });
         await expireTimedOutOrders(orders);
 
+        const ordersWithReviews = await attachMyReviews(orders, req.user.id);
+
         res.status(200).json({
             message: "Orders fetched successfully",
-            orders,
+            orders: ordersWithReviews,
         });
     } catch (error) {
         res.status(500).json({
@@ -366,8 +405,8 @@ const getUserOrders = async (req, res) => {
 // Get current user's received sales (seller)
 const getUserSales = async (req, res) => {
     try {
-        const sales = await Order.find({ seller: req.user.id })
-            .populate("listing", "title price category images condition location")
+        const sales = await Order.find({ seller: req.user.id, hiddenFromSeller: { $ne: true } })
+            .populate("listing", "title price category images condition location status quantity")
             .populate("user", "username email fullName")
             .sort({ createdAt: -1 });
         await expireTimedOutOrders(sales);
@@ -437,7 +476,7 @@ const cancelUserOrder = async (req, res) => {
     }
 };
 
-// Delete a cancelled order from the buyer's order history
+// Hide a cancelled or completed order from the buyer's order history
 const deleteUserCancelledOrder = async (req, res) => {
     try {
         const order = await Order.findById(req.params.id);
@@ -450,19 +489,52 @@ const deleteUserCancelledOrder = async (req, res) => {
             return res.status(403).json({ message: "You are not authorized to delete this order" });
         }
 
-        if (order.orderStatus !== "cancelled") {
-            return res.status(400).json({ message: "Only cancelled orders can be deleted" });
+        if (!["cancelled", "delivered"].includes(order.orderStatus)) {
+            return res.status(400).json({ message: "Only cancelled or completed orders can be deleted" });
         }
 
-        await order.deleteOne();
+        order.hiddenFromBuyer = true;
+        await order.save();
 
         res.status(200).json({
-            message: "Cancelled order deleted successfully",
+            message: "Order deleted from your history",
             orderId: req.params.id,
         });
     } catch (error) {
         res.status(500).json({
             message: "Failed to delete order",
+            error: error.message,
+        });
+    }
+};
+
+// Hide a cancelled or completed sale from the seller's sales history
+const deleteSellerSale = async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.id);
+
+        if (!order) {
+            return res.status(404).json({ message: "Sale not found" });
+        }
+
+        if (order.seller.toString() !== req.user.id) {
+            return res.status(403).json({ message: "You are not authorized to delete this sale" });
+        }
+
+        if (!["cancelled", "delivered"].includes(order.orderStatus)) {
+            return res.status(400).json({ message: "Only cancelled or completed sales can be deleted" });
+        }
+
+        order.hiddenFromSeller = true;
+        await order.save();
+
+        res.status(200).json({
+            message: "Sale deleted from your history",
+            orderId: req.params.id,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to delete sale",
             error: error.message,
         });
     }
@@ -554,10 +626,6 @@ const updateSellerOrderStatus = async (req, res) => {
         const previousOrderStatus = order.orderStatus;
         const previousPaymentStatus = order.paymentStatus;
 
-        if (order.orderStatus === "cancelled") {
-            return res.status(400).json({ message: "Cancelled orders cannot be updated" });
-        }
-
         if (orderStatus) {
             const validOrderStatuses = ["pending", "processing", "delivered", "cancelled"];
             if (!validOrderStatuses.includes(orderStatus)) {
@@ -588,6 +656,14 @@ const updateSellerOrderStatus = async (req, res) => {
             if (paymentStatus === "pending" && order.paymentMethod === "BankTransfer") {
                 order.paymentExpiresAt = getPaymentExpiryDate();
             }
+        }
+
+        if (previousOrderStatus === "cancelled" && order.orderStatus !== "cancelled") {
+            await reserveListingQuantity(order);
+            if (order.paymentStatus === "cancelled") {
+                order.paymentStatus = "pending";
+            }
+            order.expiredAt = undefined;
         }
 
         await order.save();
@@ -621,7 +697,7 @@ const updateSellerOrderStatus = async (req, res) => {
             order,
         });
     } catch (error) {
-        res.status(500).json({
+        res.status(error.statusCode || 500).json({
             message: "Failed to update sale",
             error: error.message,
         });
@@ -637,6 +713,7 @@ module.exports = {
     getUserSales,
     cancelUserOrder,
     deleteUserCancelledOrder,
+    deleteSellerSale,
     retryOrderPayment,
     updateSellerOrderStatus,
 };

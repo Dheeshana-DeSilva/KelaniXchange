@@ -8,6 +8,7 @@ const {
     getUserSales,
     cancelUserOrder,
     deleteUserCancelledOrder,
+    deleteSellerSale,
     retryOrderPayment,
     updateSellerOrderStatus,
 } = require("../controllers/orderController");
@@ -25,6 +26,7 @@ router.get("/my-sales", protect, getUserSales);
 router.put("/:id/retry-payment", protect, upload.single("paymentProof"), retryOrderPayment);
 router.put("/:id/cancel", protect, cancelUserOrder);
 router.delete("/:id", protect, deleteUserCancelledOrder);
+router.delete("/sales/:id", protect, deleteSellerSale);
 router.put("/sales/:id/status", protect, updateSellerOrderStatus);
 
 // Admin routes

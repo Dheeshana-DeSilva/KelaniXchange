@@ -34,9 +34,16 @@ const exchangeRequestSchema = new mongoose.Schema(
 
         status: {
             type: String,
-            enum: ["pending", "accepted", "rejected", "cancelled"],
+            enum: ["pending", "accepted", "completed", "rejected", "cancelled"],
             default: "pending",
         },
+
+        hiddenFor: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            },
+        ],
     },
     {
         timestamps: true,

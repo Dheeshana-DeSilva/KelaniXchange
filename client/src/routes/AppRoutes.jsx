@@ -36,6 +36,7 @@ import OrderDetails from "../pages/admin/OrderDetails";
 import ManageReports from "../pages/admin/ManageReports";
 import ManageLostFound from "../pages/admin/ManageLostFound";
 import ManageNotifications from "../pages/admin/ManageNotifications";
+import ManageReviews from "../pages/admin/ManageReviews";
 
 function AppRoutes() {
     return (
@@ -87,6 +88,7 @@ function AppRoutes() {
                 <Route path="reports" element={<ManageReports />} />
                 <Route path="lost-found" element={<ManageLostFound />} />
                 <Route path="notifications" element={<ManageNotifications />} />
+                <Route path="reviews" element={<ManageReviews />} />
             </Route>
         </Routes>
     );

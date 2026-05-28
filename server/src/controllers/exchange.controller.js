@@ -1,6 +1,22 @@
 const ExchangeRequest = require("../models/ExchangeRequest");
 const Listing = require("../models/Listing");
 const Notification = require("../models/Notification");
+const Review = require("../models/Review");
+
+const attachMyExchangeReviews = async (requests, reviewerId) => {
+    const requestIds = requests.map((request) => request._id);
+    const reviews = await Review.find({
+        reviewer: reviewerId,
+        transactionType: "exchange",
+        transaction: { $in: requestIds },
+    });
+    const reviewByTransaction = new Map(reviews.map((review) => [review.transaction.toString(), review]));
+
+    return requests.map((request) => ({
+        ...request.toObject(),
+        myReview: reviewByTransaction.get(request._id.toString()) || null,
+    }));
+};
 
 // Send exchange request
 const createExchangeRequest = async (req, res) => {
@@ -115,6 +131,7 @@ const getSentExchangeRequests = async (req, res) => {
     try {
         const requests = await ExchangeRequest.find({
             requester: req.user._id,
+            hiddenFor: { $ne: req.user._id },
         })
             .populate("requestedListing", "title price images")
             .populate("offeredListing", "title price images")
@@ -123,7 +140,7 @@ const getSentExchangeRequests = async (req, res) => {
 
         res.status(200).json({
             message: "Sent exchange requests fetched successfully",
-            requests,
+            requests: await attachMyExchangeReviews(requests, req.user._id),
         });
     } catch (error) {
         res.status(500).json({
@@ -138,6 +155,7 @@ const getReceivedExchangeRequests = async (req, res) => {
     try {
         const requests = await ExchangeRequest.find({
             receiver: req.user._id,
+            hiddenFor: { $ne: req.user._id },
         })
             .populate("requestedListing", "title price images")
             .populate("offeredListing", "title price images")
@@ -206,6 +224,70 @@ const acceptExchangeRequest = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             message: "Failed to accept exchange request",
+            error: error.message,
+        });
+    }
+};
+
+// Mark accepted exchange as completed
+const completeExchangeRequest = async (req, res) => {
+    try {
+        const request = await ExchangeRequest.findById(req.params.id);
+
+        if (!request) {
+            return res.status(404).json({
+                message: "Exchange request not found",
+            });
+        }
+
+        const userId = req.user._id.toString();
+        const isParticipant =
+            request.requester.toString() === userId ||
+            request.receiver.toString() === userId;
+
+        if (!isParticipant) {
+            return res.status(403).json({
+                message: "You are not authorized to complete this exchange",
+            });
+        }
+
+        if (request.status !== "accepted") {
+            return res.status(400).json({
+                message: "Only accepted exchanges can be marked as completed",
+            });
+        }
+
+        request.status = "completed";
+        await request.save();
+
+        await Listing.findByIdAndUpdate(request.requestedListing, {
+            status: "sold",
+        });
+
+        await Listing.findByIdAndUpdate(request.offeredListing, {
+            status: "sold",
+        });
+
+        const notifyUser = request.requester.toString() === userId
+            ? request.receiver
+            : request.requester;
+
+        await Notification.create({
+            user: notifyUser,
+            type: "exchange_accepted",
+            title: "Exchange completed",
+            message: "An accepted exchange has been marked as completed.",
+            relatedId: request._id,
+            targetPath: "/exchanges",
+        });
+
+        res.status(200).json({
+            message: "Exchange marked as completed successfully",
+            request,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to complete exchange",
             error: error.message,
         });
     }
@@ -295,11 +377,59 @@ const cancelExchangeRequest = async (req, res) => {
     }
 };
 
+// Hide completed exchange from current user's history
+const deleteCompletedExchangeRequest = async (req, res) => {
+    try {
+        const request = await ExchangeRequest.findById(req.params.id);
+
+        if (!request) {
+            return res.status(404).json({
+                message: "Exchange request not found",
+            });
+        }
+
+        const userId = req.user._id.toString();
+        const isParticipant =
+            request.requester.toString() === userId ||
+            request.receiver.toString() === userId;
+
+        if (!isParticipant) {
+            return res.status(403).json({
+                message: "You are not authorized to delete this exchange",
+            });
+        }
+
+        if (!["completed", "cancelled", "rejected"].includes(request.status)) {
+            return res.status(400).json({
+                message: "Only completed, cancelled, or rejected exchanges can be deleted from your history",
+            });
+        }
+
+        const alreadyHidden = (request.hiddenFor || []).some((id) => id.toString() === userId);
+        if (!alreadyHidden) {
+            request.hiddenFor.push(req.user._id);
+            await request.save();
+        }
+
+        res.status(200).json({
+            message: "Exchange deleted from your history",
+            requestId: request._id,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to delete exchange",
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     createExchangeRequest,
     getSentExchangeRequests,
     getReceivedExchangeRequests,
     acceptExchangeRequest,
+    completeExchangeRequest,
     rejectExchangeRequest,
     cancelExchangeRequest,
+    deleteCompletedExchangeRequest,
 };

@@ -81,6 +81,14 @@ const orderSchema = new mongoose.Schema(
             default: 1,
             min: 1,
         },
+        hiddenFromBuyer: {
+            type: Boolean,
+            default: false,
+        },
+        hiddenFromSeller: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         timestamps: true,

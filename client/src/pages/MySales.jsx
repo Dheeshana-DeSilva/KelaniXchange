@@ -3,10 +3,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import {
     AlertCircle, ArrowLeft, Calendar, Loader2, MapPin,
-    PackageCheck, Phone, Save, Store
+    PackageCheck, Phone, Save, Store, Trash2
 } from "lucide-react";
-import { clearOrderErrors, fetchMySales, updateMySaleStatus } from "../features/orders/orderSlice";
+import { clearOrderErrors, deleteMySale, fetchMySales, updateMySaleStatus } from "../features/orders/orderSlice";
 import { useAuth } from "../context/AuthContext";
+import { useConfirm } from "../components/ui/AlertProvider";
 
 const statusClasses = {
     pending: "bg-amber-50 text-amber-700 border-amber-200",
@@ -58,6 +59,7 @@ export default function MySales() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
+    const { confirmAction } = useConfirm();
     const {
         sales,
         salesLoading: loading,
@@ -91,6 +93,16 @@ export default function MySales() {
             orderStatus: nextOrderStatus,
             paymentStatus: nextPaymentStatus,
         }));
+    };
+
+    const handleDelete = async (saleId) => {
+        const confirmed = await confirmAction({
+            title: "Delete sale?",
+            message: "This sale will be removed from your sales history.",
+            confirmText: "Delete sale",
+        });
+        if (!confirmed) return;
+        dispatch(deleteMySale(saleId));
     };
 
     if (loading) {
@@ -189,7 +201,7 @@ export default function MySales() {
                                             <select
                                                 value={sale.orderStatus}
                                                 onChange={(e) => handleUpdate(sale, e.target.value, sale.paymentStatus)}
-                                                disabled={actionLoadingId === sale._id || sale.orderStatus === "cancelled"}
+                                                disabled={actionLoadingId === sale._id}
                                                 className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 outline-none focus:border-[#48c96f]/40 disabled:opacity-50"
                                             >
                                                 <option value="pending">Waiting for seller</option>
@@ -218,6 +230,17 @@ export default function MySales() {
                                             {actionLoadingId === sale._id ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                                             Rs. {Number(sale.totalAmount).toLocaleString()}
                                         </div>
+                                        {["cancelled", "delivered"].includes(sale.orderStatus) && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDelete(sale._id)}
+                                                disabled={actionLoadingId === sale._id}
+                                                className="sm:col-span-3 inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-45 disabled:cursor-not-allowed transition-colors"
+                                            >
+                                                {actionLoadingId === sale._id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                                Delete
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                                 {sale.note && (

@@ -6,15 +6,21 @@ import {
 import {
     acceptExchangeRequest,
     cancelExchangeRequest,
+    completeExchangeRequest,
+    deleteExchangeRequest,
     getReceivedExchangeRequests,
     getSentExchangeRequests,
     rejectExchangeRequest,
 } from "../services/exchangeService";
 import { useAuth } from "../context/AuthContext";
+import FeedbackForm from "../components/reviews/FeedbackForm";
+import { createReview } from "../services/reviewService";
+import { useConfirm } from "../components/ui/AlertProvider";
 
 const statusClasses = {
     pending: "bg-amber-50 text-amber-700 border-amber-200",
     accepted: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    completed: "bg-blue-50 text-blue-700 border-blue-200",
     rejected: "bg-rose-50 text-rose-700 border-rose-200",
     cancelled: "bg-slate-50 text-slate-600 border-slate-200",
 };
@@ -49,6 +55,7 @@ function ListingPreview({ label, listing }) {
 export default function MyExchanges() {
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
+    const { confirmAction } = useConfirm();
 
     const [activeTab, setActiveTab] = useState("received");
     const [received, setReceived] = useState([]);
@@ -96,6 +103,32 @@ export default function MyExchanges() {
         } finally {
             setActionLoadingId("");
         }
+    };
+
+    const handleReviewSubmit = async (request, payload) => {
+        try {
+            await createReview({
+                transactionType: "exchange",
+                transactionId: request._id,
+                ...payload,
+            });
+            alert("Review submitted successfully");
+            await loadRequests();
+        } catch (err) {
+            alert(err.response?.data?.message || "Failed to submit review.");
+            throw err;
+        }
+    };
+
+    const handleDeleteCompleted = async (requestId) => {
+        const confirmed = await confirmAction({
+            title: "Delete exchange?",
+            message: "This exchange will be removed from your history.",
+            confirmText: "Delete exchange",
+        });
+        if (!confirmed) return;
+
+        await runAction(requestId, deleteExchangeRequest);
     };
 
     const requests = activeTab === "received" ? received : sent;
@@ -175,6 +208,7 @@ export default function MyExchanges() {
                         {requests.map((request) => {
                             const actionBusy = actionLoadingId === request._id;
                             const isPending = request.status === "pending";
+                            const isAccepted = request.status === "accepted";
 
                             return (
                                 <div key={request._id} className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-4">
@@ -229,6 +263,18 @@ export default function MyExchanges() {
                                                 Cancel
                                             </button>
                                         )}
+
+                                        {isAccepted && (
+                                            <button
+                                                type="button"
+                                                onClick={() => runAction(request._id, completeExchangeRequest)}
+                                                disabled={actionBusy}
+                                                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-black text-white hover:bg-blue-700 disabled:opacity-60"
+                                            >
+                                                {actionBusy ? <Loader2 size={13} className="animate-spin" /> : <Check size={14} />}
+                                                Mark Completed
+                                            </button>
+                                        )}
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-3 md:items-center">
@@ -249,6 +295,31 @@ export default function MyExchanges() {
                                         <p className="rounded-2xl border border-slate-100 bg-slate-50/70 p-3 text-sm text-slate-600">
                                             <span className="font-black text-slate-700">Message:</span> {request.message}
                                         </p>
+                                    )}
+
+                                    {["completed", "cancelled", "rejected"].includes(request.status) && (
+                                        <div className="space-y-3">
+                                            {activeTab === "sent" && request.status === "completed" && (
+                                                request.myReview ? (
+                                                    <div className="rounded-2xl border border-amber-100 bg-amber-50/60 p-3 text-xs text-slate-600">
+                                                        <span className="font-black text-amber-700">Your review:</span>{" "}
+                                                        {request.myReview.rating}/5 stars
+                                                        {request.myReview.comment && <span className="ml-2">{request.myReview.comment}</span>}
+                                                    </div>
+                                                ) : (
+                                                    <FeedbackForm compact onSubmit={(payload) => handleReviewSubmit(request, payload)} />
+                                                )
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDeleteCompleted(request._id)}
+                                                disabled={actionBusy}
+                                                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-black text-slate-600 hover:bg-slate-100 disabled:opacity-60"
+                                            >
+                                                {actionBusy ? <Loader2 size={13} className="animate-spin" /> : <X size={14} />}
+                                                Delete
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
                             );

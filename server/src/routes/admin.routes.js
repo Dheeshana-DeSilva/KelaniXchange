@@ -21,6 +21,7 @@ const {
     getAdminNotifications,
     deleteAdminNotification,
 } = require("../controllers/admin.controller");
+const { deleteReviewAdmin, getAllReviewsAdmin } = require("../controllers/review.controller");
 
 const { protect } = require("../middleware/auth.middleware");
 const { authorizeRoles } = require("../middleware/role.middleware");
@@ -54,5 +55,8 @@ router.delete("/lost-found/:id", deleteLostFoundAdmin);
 router.get("/notifications", getAdminNotifications);
 router.post("/notifications", createAdminNotification);
 router.delete("/notifications/:id", deleteAdminNotification);
+
+router.get("/reviews", getAllReviewsAdmin);
+router.delete("/reviews/:id", deleteReviewAdmin);
 
 module.exports = router;

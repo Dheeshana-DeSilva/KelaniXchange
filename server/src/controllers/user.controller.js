@@ -1,5 +1,7 @@
 const User = require("../models/User");
 const Listing = require("../models/Listing");
+const Review = require("../models/Review");
+const { getSellerRatingSummary } = require("./review.controller");
 const cloudinary = require("../config/cloudinary");
 
 const buildPublicPaymentProfile = (user) => ({
@@ -215,10 +217,20 @@ const getPublicUserProfile = async (req, res) => {
             status: { $in: ["available", "active"] },
         }).sort({ createdAt: -1 });
 
+        const reviews = await Review.find({ seller: user._id })
+            .populate("reviewer", "username fullName profileImage")
+            .populate("listing", "title")
+            .sort({ createdAt: -1 })
+            .limit(12);
+
         res.status(200).json({
             message: "User profile fetched successfully",
-            user: buildPublicUserProfile(user),
+            user: {
+                ...buildPublicUserProfile(user),
+                ratingSummary: await getSellerRatingSummary(user._id),
+            },
             listings,
+            reviews,
         });
     } catch (error) {
         res.status(500).json({

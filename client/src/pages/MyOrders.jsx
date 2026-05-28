@@ -8,6 +8,8 @@ import {
 import { cancelMyOrder, clearOrderErrors, deleteMyCancelledOrder, fetchMyOrders, retryMyOrderPayment } from "../features/orders/orderSlice";
 import { useAuth } from "../context/AuthContext";
 import { useConfirm } from "../components/ui/AlertProvider";
+import FeedbackForm from "../components/reviews/FeedbackForm";
+import { createReview } from "../services/reviewService";
 
 const statusClasses = {
     pending: "bg-amber-50 text-amber-700 border-amber-200",
@@ -103,7 +105,7 @@ export default function MyOrders() {
     const handleDelete = async (orderId) => {
         const confirmed = await confirmAction({
             title: "Delete order?",
-            message: "This cancelled order will be removed from your order history.",
+            message: "This order will be removed from your order history.",
             confirmText: "Delete order",
         });
         if (!confirmed) return;
@@ -139,6 +141,43 @@ export default function MyOrders() {
         if (retryMyOrderPayment.fulfilled.match(result)) {
             closeRetryModal();
             alert("Payment retry submitted. Seller/admin can verify it now.");
+        }
+    };
+
+    const handleRetryCancelledOrder = (order) => {
+        if (!order.listing?._id) {
+            alert("This item is no longer available to retry.");
+            return;
+        }
+
+        const buyNowItem = {
+            id: order.listing._id,
+            title: order.listing.title,
+            price: order.listing.price,
+            image: order.listing.images?.[0],
+            sellerId: order.seller?._id || order.seller || order.listing.seller,
+            category: order.listing.category,
+            condition: order.listing.condition,
+            availableQuantity: order.listing.quantity || order.quantity || 1,
+            quantity: Math.max(1, order.quantity || 1),
+        };
+
+        sessionStorage.setItem("kx_buy_now", JSON.stringify(buyNowItem));
+        navigate("/checkout?mode=buy-now", { state: { buyNowItem } });
+    };
+
+    const handleReviewSubmit = async (order, payload) => {
+        try {
+            await createReview({
+                transactionType: "order",
+                transactionId: order._id,
+                ...payload,
+            });
+            alert("Review submitted successfully");
+            dispatch(fetchMyOrders());
+        } catch (err) {
+            alert(err.response?.data?.message || "Failed to submit review.");
+            throw err;
         }
     };
 
@@ -245,15 +284,29 @@ export default function MyOrders() {
                                                 View Item
                                             </Link>
                                         )}
-                                        {order.orderStatus === "cancelled" ? (
-                                            <button
-                                                onClick={() => handleDelete(order._id)}
-                                                disabled={actionLoadingId === order._id}
-                                                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-45 disabled:cursor-not-allowed transition-colors"
-                                            >
-                                                {actionLoadingId === order._id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                                                Delete
-                                            </button>
+                                        {["cancelled", "delivered"].includes(order.orderStatus) ? (
+                                            <div className="flex flex-wrap justify-start gap-2 lg:justify-end">
+                                                {order.orderStatus === "cancelled" && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRetryCancelledOrder(order)}
+                                                        disabled={!order.listing?._id || Number(order.listing?.quantity || 0) < Number(order.quantity || 1)}
+                                                        className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-bold text-[#15945a] hover:bg-emerald-100 disabled:opacity-45 disabled:cursor-not-allowed transition-colors"
+                                                        title={Number(order.listing?.quantity || 0) < Number(order.quantity || 1) ? "Not enough quantity available" : "Try this order again"}
+                                                    >
+                                                        <RefreshCw size={14} />
+                                                        Retry Order
+                                                    </button>
+                                                )}
+                                                <button
+                                                    onClick={() => handleDelete(order._id)}
+                                                    disabled={actionLoadingId === order._id}
+                                                    className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-45 disabled:cursor-not-allowed transition-colors"
+                                                >
+                                                    {actionLoadingId === order._id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                                    Delete
+                                                </button>
+                                            </div>
                                         ) : (
                                             <div className="flex flex-wrap justify-start gap-2 lg:justify-end">
                                                 {order.paymentMethod === "BankTransfer" && order.paymentStatus === "failed" && (
@@ -296,6 +349,19 @@ export default function MyOrders() {
                                             <a href={order.paymentProofUrl} target="_blank" rel="noreferrer" className="inline-flex font-bold text-[#15945a] hover:underline">
                                                 View receipt screenshot
                                             </a>
+                                        )}
+                                    </div>
+                                )}
+                                {order.orderStatus === "delivered" && (
+                                    <div className="mt-4">
+                                        {order.myReview ? (
+                                            <div className="rounded-2xl border border-amber-100 bg-amber-50/60 p-3 text-xs text-slate-600">
+                                                <span className="font-black text-amber-700">Your review:</span>{" "}
+                                                {order.myReview.rating}/5 stars
+                                                {order.myReview.comment && <span className="ml-2">{order.myReview.comment}</span>}
+                                            </div>
+                                        ) : (
+                                            <FeedbackForm compact onSubmit={(payload) => handleReviewSubmit(order, payload)} />
                                         )}
                                     </div>
                                 )}

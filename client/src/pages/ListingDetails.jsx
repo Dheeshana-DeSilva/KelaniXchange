@@ -13,6 +13,7 @@ import { createReport } from "../services/reportService";
 import { startChat } from "../services/chatService";
 import { useAuth } from "../context/AuthContext";
 import { useConfirm } from "../components/ui/AlertProvider";
+import RatingSummary from "../components/reviews/RatingSummary";
 
 import catBooksStationery from "../assets/category_books_stationery.png";
 import catElectronics from "../assets/category_electronics_v2.png";
@@ -503,6 +504,9 @@ export default function ListingDetails() {
                                 <div className="flex-1 min-w-0">
                                     <p className="text-[10px] text-slate-400 font-medium">Listed by</p>
                                     <p className="text-xs font-black text-slate-700 truncate">@{listing.seller?.username || "student_seller"}</p>
+                                    <div className="mt-1">
+                                        <RatingSummary summary={listing.seller?.ratingSummary} className="px-2 py-0.5 text-[10px]" />
+                                    </div>
                                 </div>
                                 {listing.seller?.email && (
                                     <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-medium">

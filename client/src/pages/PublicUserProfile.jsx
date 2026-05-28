@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { ArrowLeft, Calendar, Loader2, ShoppingBag, User } from "lucide-react";
+import { ArrowLeft, Calendar, Loader2, ShoppingBag, Star, User } from "lucide-react";
 import { getPublicUserProfile } from "../services/userService";
 import { useAuth } from "../context/AuthContext";
+import RatingSummary from "../components/reviews/RatingSummary";
 
 export default function PublicUserProfile() {
     const { id } = useParams();
@@ -10,6 +11,7 @@ export default function PublicUserProfile() {
     const { isAuthenticated } = useAuth();
     const [profile, setProfile] = useState(null);
     const [listings, setListings] = useState([]);
+    const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
@@ -29,6 +31,7 @@ export default function PublicUserProfile() {
                 if (!isMounted) return;
                 setProfile(data.user);
                 setListings(data.listings || []);
+                setReviews(data.reviews || []);
                 setError("");
             } catch (err) {
                 if (!isMounted) return;
@@ -86,9 +89,12 @@ export default function PublicUserProfile() {
                                     {profile.fullName || profile.username}
                                 </h1>
                                 <p className="text-sm font-bold text-slate-500 mt-1">@{profile.username}</p>
-                                <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 mt-3">
-                                    <Calendar size={13} /> Joined {new Date(profile.createdAt).toLocaleDateString()}
-                                </p>
+                                <div className="mt-3 flex flex-wrap items-center gap-2">
+                                    <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400">
+                                        <Calendar size={13} /> Joined {new Date(profile.createdAt).toLocaleDateString()}
+                                    </p>
+                                    <RatingSummary summary={profile.ratingSummary} />
+                                </div>
                             </div>
                             <span className="sm:ml-auto bg-slate-100 text-slate-600 font-bold px-3.5 py-1.5 rounded-full text-xs border border-slate-200/80 w-fit">
                                 {listings.length} {listings.length === 1 ? "Listing" : "Listings"}
@@ -123,6 +129,37 @@ export default function PublicUserProfile() {
                                 ))}
                             </div>
                         )}
+
+                        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                            <div className="mb-4 flex items-center justify-between gap-3">
+                                <div>
+                                    <h2 className="text-lg font-black text-slate-800">Seller Feedback</h2>
+                                    <p className="text-xs font-semibold text-slate-500">
+                                        Average rating: {Number(profile.ratingSummary?.averageRating || 0).toFixed(1)}/5
+                                        {" "} | Total reviews: {profile.ratingSummary?.totalReviews || 0}
+                                    </p>
+                                </div>
+                                <Star size={20} className="fill-amber-400 text-amber-400" />
+                            </div>
+                            {reviews.length === 0 ? (
+                                <p className="rounded-2xl bg-slate-50 p-4 text-sm font-medium text-slate-500">No feedback yet.</p>
+                            ) : (
+                                <div className="grid gap-3 md:grid-cols-2">
+                                    {reviews.map((review) => (
+                                        <div key={review._id} className="rounded-2xl border border-slate-100 bg-slate-50/60 p-4">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <p className="text-sm font-black text-slate-800">@{review.reviewer?.username || "student"}</p>
+                                                <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-black text-amber-700">
+                                                    {review.rating}/5
+                                                </span>
+                                            </div>
+                                            {review.comment && <p className="mt-2 text-sm font-medium leading-6 text-slate-600">{review.comment}</p>}
+                                            {review.listing?.title && <p className="mt-2 text-xs font-bold text-slate-400">{review.listing.title}</p>}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </section>
                     </>
                 )}
             </div>

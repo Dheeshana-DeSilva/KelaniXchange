@@ -20,6 +20,11 @@ export const acceptExchangeRequest = async (id) => {
     return res.data;
 };
 
+export const completeExchangeRequest = async (id) => {
+    const res = await api.put(`/exchanges/${id}/complete`);
+    return res.data;
+};
+
 export const rejectExchangeRequest = async (id) => {
     const res = await api.put(`/exchanges/${id}/reject`);
     return res.data;
@@ -27,5 +32,10 @@ export const rejectExchangeRequest = async (id) => {
 
 export const cancelExchangeRequest = async (id) => {
     const res = await api.put(`/exchanges/${id}/cancel`);
+    return res.data;
+};
+
+export const deleteExchangeRequest = async (id) => {
+    const res = await api.delete(`/exchanges/${id}`);
     return res.data;
 };

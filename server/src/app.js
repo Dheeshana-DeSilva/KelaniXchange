@@ -13,6 +13,7 @@ const wishlistRoutes = require("./routes/wishlist.routes");
 const chatRoutes = require("./routes/chat.routes");
 const orderRoutes = require("./routes/orderRoutes");
 const lostFoundRoutes = require("./routes/lostFoundRoutes");
+const reviewRoutes = require("./routes/review.routes");
 
 app.use(cors());
 app.use(express.json());
@@ -33,5 +34,6 @@ app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/chats", chatRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/lost-found", lostFoundRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 module.exports = app;
