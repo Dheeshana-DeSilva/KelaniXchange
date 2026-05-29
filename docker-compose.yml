@@ -1,0 +1,41 @@
+services:
+  # ─────────────────────────────────────────
+  # Express / Node API
+  # ─────────────────────────────────────────
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: kelanixchange-server
+    restart: unless-stopped
+    env_file:
+      - ./server/.env
+    environment:
+      PORT: 5000
+      CLIENT_URL: http://localhost:3000
+    ports:
+      - "5000:5000"
+    networks:
+      - kelanixchange-net
+
+  # ─────────────────────────────────────────
+  # React / Vite frontend (Nginx)
+  # ─────────────────────────────────────────
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:5000
+    container_name: kelanixchange-client
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - server
+    networks:
+      - kelanixchange-net
+
+networks:
+  kelanixchange-net:
+    driver: bridge
