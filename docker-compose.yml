@@ -17,6 +17,9 @@ services:
       - "5000:5000"
     networks:
       - kelanixchange-net
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
 
   # ─────────────────────────────────────────
   # React / Vite frontend (Nginx)
