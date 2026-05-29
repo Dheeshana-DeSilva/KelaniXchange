@@ -820,8 +820,10 @@ export default function ListingDetails() {
                                             type="number"
                                             required
                                             min={0}
+                                            step={1}
                                             value={editForm.price}
                                             onChange={(e) => setEditForm({ ...editForm, price: Number(e.target.value) })}
+                                            onWheel={(e) => e.currentTarget.blur()}
                                             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#48c96f]/40"
                                         />
                                     </div>
@@ -832,8 +834,10 @@ export default function ListingDetails() {
                                             type="number"
                                             required
                                             min={1}
+                                            step={1}
                                             value={editForm.quantity}
                                             onChange={(e) => setEditForm({ ...editForm, quantity: Number(e.target.value) })}
+                                            onWheel={(e) => e.currentTarget.blur()}
                                             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#48c96f]/40"
                                         />
                                     </div>

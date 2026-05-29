@@ -279,9 +279,11 @@ export default function CreateListing() {
                                 type="number"
                                 name="price"
                                 min={0}
+                                step={1}
                                 value={form.price}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
+                                onWheel={(e) => e.currentTarget.blur()}
                                 placeholder="Enter price (0 if exchange only)"
                                 className={`w-full rounded-xl border px-4 py-3 text-sm bg-slate-50/50 text-slate-800 outline-none transition-all placeholder:text-slate-400 ${
                                     touched.price && errors.price
@@ -301,9 +303,11 @@ export default function CreateListing() {
                                 type="number"
                                 name="quantity"
                                 min={1}
+                                step={1}
                                 value={form.quantity}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
+                                onWheel={(e) => e.currentTarget.blur()}
                                 placeholder="How many items?"
                                 className={`w-full rounded-xl border px-4 py-3 text-sm bg-slate-50/50 text-slate-800 outline-none transition-all placeholder:text-slate-400 ${
                                     touched.quantity && errors.quantity

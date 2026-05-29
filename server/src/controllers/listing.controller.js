@@ -8,6 +8,12 @@ const parseQuantity = (value) => {
     return Number.isFinite(quantity) ? quantity : NaN;
 };
 
+const parsePrice = (value) => {
+    if (value === undefined || value === null || value === "") return 0;
+    const price = Number(value);
+    return Number.isFinite(price) ? price : NaN;
+};
+
 const parseBoolean = (value) => {
     if (value === undefined) return undefined;
     if (typeof value === "boolean") return value;
@@ -63,6 +69,13 @@ const createListing = async (req, res) => {
             });
         }
 
+        const parsedPrice = parsePrice(price);
+        if (Number.isNaN(parsedPrice) || parsedPrice < 0) {
+            return res.status(400).json({
+                message: "Price must be a valid positive number",
+            });
+        }
+
         const parsedQuantity = parseQuantity(quantity);
         if (Number.isNaN(parsedQuantity) || parsedQuantity < 1) {
             return res.status(400).json({
@@ -76,7 +89,7 @@ const createListing = async (req, res) => {
             title,
             description,
             category,
-            price,
+            price: parsedPrice,
             quantity: parsedQuantity,
             condition,
             isExchangeAvailable: parseBoolean(isExchangeAvailable) || false,
@@ -252,6 +265,13 @@ const updateListing = async (req, res) => {
             existingImages,
         } = req.body;
 
+        const parsedPrice = parsePrice(price);
+        if (Number.isNaN(parsedPrice) || parsedPrice < 0) {
+            return res.status(400).json({
+                message: "Price must be a valid positive number",
+            });
+        }
+
         const parsedQuantity = parseQuantity(quantity);
         if (Number.isNaN(parsedQuantity) || parsedQuantity < 1) {
             return res.status(400).json({
@@ -262,7 +282,7 @@ const updateListing = async (req, res) => {
         if (title !== undefined) listing.title = title;
         if (description !== undefined) listing.description = description;
         if (category !== undefined) listing.category = category;
-        if (price !== undefined) listing.price = price;
+        if (price !== undefined) listing.price = parsedPrice;
         if (parsedQuantity !== undefined) listing.quantity = parsedQuantity;
         if (condition !== undefined) listing.condition = condition;
         if (isExchangeAvailable !== undefined) {
