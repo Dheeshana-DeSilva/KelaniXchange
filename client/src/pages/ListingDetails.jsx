@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from "react-router";
 import { useDispatch } from "react-redux";
 import {
     ArrowLeft, Calendar, MapPin, Tag, ShieldCheck,
-    Mail, User, Star, ArrowUpDown, Loader2, AlertCircle, Heart, X, ShoppingCart, Plus, Minus, ShoppingBag, MessageCircle
+    User, Star, ArrowUpDown, Loader2, AlertCircle, Heart, X, ShoppingCart, Plus, Minus, ShoppingBag, MessageCircle
 } from "lucide-react";
 import { addToCart } from "../features/cart/cartSlice";
 import { getListingById, getMyListings, deleteListing, updateListing } from "../services/listingService";
@@ -508,12 +508,6 @@ export default function ListingDetails() {
                                         <RatingSummary summary={listing.seller?.ratingSummary} className="px-2 py-0.5 text-[10px]" />
                                     </div>
                                 </div>
-                                {listing.seller?.email && (
-                                    <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-medium">
-                                        <Mail size={11} />
-                                        <span className="truncate max-w-[120px]">{listing.seller.email}</span>
-                                    </div>
-                                )}
                             </div>
 
                             {/* Contact CTA or Owner Actions */}

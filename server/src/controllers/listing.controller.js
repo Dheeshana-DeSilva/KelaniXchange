@@ -195,7 +195,7 @@ const getListingById = async (req, res) => {
     try {
         const listing = await Listing.findById(req.params.id).populate(
             "seller",
-            "username email"
+            "username"
         );
 
         if (!listing) {

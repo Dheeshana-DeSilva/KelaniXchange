@@ -13,11 +13,19 @@ const generateToken = (userId, role) => {
 // REGISTER USER
 const registerUser = async (req, res) => {
     try {
-        const { fullName, username, email, password } = req.body;
+        const { fullName, username, email, phone, password } = req.body;
+        const cleanPhone = (phone || "").replace(/\s+/g, "");
+        const isValidPhone = /^(?:0\d{9}|\+94\d{9})$/.test(cleanPhone);
 
-        if (!fullName || !username || !email || !password) {
+        if (!fullName || !username || !email || !phone || !password) {
             return res.status(400).json({
                 message: "All fields are required",
+            });
+        }
+
+        if (!isValidPhone) {
+            return res.status(400).json({
+                message: "Enter a valid phone number",
             });
         }
 
@@ -43,6 +51,7 @@ const registerUser = async (req, res) => {
             fullName,
             username,
             email,
+            phone: cleanPhone,
             password: hashedPassword,
         });
 
@@ -56,6 +65,7 @@ const registerUser = async (req, res) => {
                 fullName: user.fullName,
                 username: user.username,
                 email: user.email,
+                phone: user.phone,
                 role: user.role,
                 profileImage: user.profileImage || "",
             },
@@ -111,6 +121,7 @@ const loginUser = async (req, res) => {
                 fullName: user.fullName,
                 username: user.username,
                 email: user.email,
+                phone: user.phone,
                 role: user.role,
                 profileImage: user.profileImage || "",
             },

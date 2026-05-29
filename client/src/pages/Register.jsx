@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import {
     User, AtSign, Mail, Lock, Eye, EyeOff, ArrowRight,
-    CheckCircle2, AlertCircle, Loader2, ShoppingBag,
+    CheckCircle2, AlertCircle, Loader2, ShoppingBag, Phone,
 } from "lucide-react";
 import { registerAsync, clearError } from "../features/auth/authSlice";
 import logo from "../assets/X_logo.png";
@@ -14,11 +14,12 @@ const validators = {
     fullName: (v) => (v.trim().length >= 2 ? "" : "Full name must be at least 2 characters"),
     username: (v) => /^[a-z0-9_]{3,20}$/.test(v) ? "" : "3–20 chars, lowercase letters, numbers or underscores only",
     email: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? "" : "Enter a valid email address",
+    phone: (v) => /^(?:0\d{9}|\+94\d{9})$/.test(v.replace(/\s+/g, "")) ? "" : "Enter a valid phone number",
     password: (v) => v.length >= 8 ? "" : "Password must be at least 8 characters",
     confirmPassword: (v, form) => v === form.password ? "" : "Passwords do not match",
 };
 
-const INITIAL = { fullName: "", username: "", email: "", password: "", confirmPassword: "" };
+const INITIAL = { fullName: "", username: "", email: "", phone: "", password: "", confirmPassword: "" };
 
 function InputField({ id, label, type = "text", icon: Icon, value, onChange, onBlur, error, touched, rightSlot, placeholder, autoComplete }) {
     const isValid = touched && !error && value.length > 0;
@@ -106,6 +107,7 @@ export default function Register() {
         fullName: validators.fullName(form.fullName),
         username: validators.username(form.username),
         email: validators.email(form.email),
+        phone: validators.phone(form.phone),
         password: validators.password(form.password),
         confirmPassword: validators.confirmPassword(form.confirmPassword, form),
     };
@@ -120,12 +122,13 @@ export default function Register() {
 
     const handleSubmit = async e => {
         e.preventDefault();
-        setTouched({ fullName: true, username: true, email: true, password: true, confirmPassword: true });
+        setTouched({ fullName: true, username: true, email: true, phone: true, password: true, confirmPassword: true });
         if (!isFormValid) return;
         const result = await dispatch(registerAsync({
             fullName: form.fullName,
             username: form.username,
             email: form.email,
+            phone: form.phone.replace(/\s+/g, ""),
             password: form.password,
         }));
         if (registerAsync.fulfilled.match(result)) {
@@ -292,6 +295,8 @@ export default function Register() {
                             </div>
 
                             <InputField id="email" label="Email Address" type="email" icon={Mail} value={form.email} onChange={handleChange} onBlur={handleBlur} error={errors.email} touched={touched.email} placeholder="you@example.com" autoComplete="email" />
+
+                            <InputField id="phone" label="Phone Number" type="tel" icon={Phone} value={form.phone} onChange={handleChange} onBlur={handleBlur} error={errors.phone} touched={touched.phone} placeholder="0771234567" autoComplete="tel" />
 
                             <div>
                                 <InputField

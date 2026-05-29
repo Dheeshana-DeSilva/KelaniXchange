@@ -22,6 +22,7 @@ const buildPrivateProfile = (user) => ({
     fullName: user.fullName,
     username: user.username,
     email: user.email,
+    phone: user.phone || "",
     role: user.role,
     profileImage: user.profileImage || "",
     isVerified: user.isVerified,
@@ -98,8 +99,11 @@ const updateUserProfile = async (req, res) => {
         const {
             fullName,
             username,
+            phone,
             payoutDetails: rawPayoutDetails = {},
         } = req.body;
+        const cleanPhone = typeof phone === "string" ? phone.replace(/\s+/g, "") : undefined;
+        const isValidPhone = cleanPhone === undefined || /^(?:0\d{9}|\+94\d{9})$/.test(cleanPhone);
         const payoutDetails = typeof rawPayoutDetails === "string"
             ? JSON.parse(rawPayoutDetails)
             : rawPayoutDetails;
@@ -123,6 +127,16 @@ const updateUserProfile = async (req, res) => {
             }
 
             user.username = username;
+        }
+
+        if (!isValidPhone) {
+            return res.status(400).json({
+                message: "Enter a valid phone number",
+            });
+        }
+
+        if (cleanPhone !== undefined) {
+            user.phone = cleanPhone;
         }
 
         if (fullName) {

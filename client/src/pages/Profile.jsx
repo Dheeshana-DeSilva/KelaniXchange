@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Camera, Loader2, Mail, Save, ShieldCheck, User, WalletCards } from "lucide-react";
+import { ArrowLeft, Camera, CheckCircle2, Loader2, Mail, Phone, Save, ShieldCheck, User, WalletCards, XCircle } from "lucide-react";
 import { getUserProfile, updateUserProfile } from "../services/userService";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router";
@@ -25,6 +25,7 @@ export default function Profile() {
         fullName: "",
         username: "",
         email: "",
+        phone: "",
         role: "USER",
         profileImage: "",
         payoutDetails: emptyPayoutDetails,
@@ -48,6 +49,7 @@ export default function Profile() {
                     fullName: data.user?.fullName || "",
                     username: data.user?.username || "",
                     email: data.user?.email || "",
+                    phone: data.user?.phone || "",
                     role: data.user?.role || "USER",
                     profileImage: data.user?.profileImage || "",
                     payoutDetails: {
@@ -82,6 +84,14 @@ export default function Profile() {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+        const cleanPhone = form.phone.replace(/\s+/g, "");
+
+        if (!/^(?:0\d{9}|\+94\d{9})$/.test(cleanPhone)) {
+            setError("Enter a valid phone number.");
+            setMessage("");
+            return;
+        }
+
         setSaving(true);
         setError("");
         setMessage("");
@@ -92,12 +102,14 @@ export default function Profile() {
                 payload = new FormData();
                 payload.append("fullName", form.fullName);
                 payload.append("username", form.username);
+                payload.append("phone", cleanPhone);
                 payload.append("payoutDetails", JSON.stringify(form.payoutDetails));
                 payload.append("profileImage", profileImageFile);
             } else {
                 payload = {
                     fullName: form.fullName,
                     username: form.username,
+                    phone: cleanPhone,
                     payoutDetails: form.payoutDetails,
                 };
             }
@@ -105,6 +117,7 @@ export default function Profile() {
             const data = await updateUserProfile(payload);
             setForm(prev => ({
                 ...prev,
+                phone: data.user?.phone || prev.phone,
                 profileImage: data.user?.profileImage || prev.profileImage,
             }));
             setProfilePreview(data.user?.profileImage || profilePreview);
@@ -139,6 +152,14 @@ export default function Profile() {
     return (
         <div className="min-h-screen bg-[#f8fafc] text-slate-800 p-4 pt-28 sm:p-8 sm:pt-32 font-sans pb-16">
             <form onSubmit={handleSubmit} className="max-w-[920px] mx-auto space-y-8">
+                <button
+                    type="button"
+                    onClick={() => navigate(-1)}
+                    className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors"
+                >
+                    <ArrowLeft size={14} /> Back
+                </button>
+
                 <div className="border-b border-slate-100 pb-6">
                     <h1 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight flex items-center gap-2">
                         My Profile <User size={24} className="text-[#48c96f]" />
@@ -189,6 +210,20 @@ export default function Profile() {
                             </div>
                         </label>
                         <label className="space-y-1.5">
+                            <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Phone Number</span>
+                            <div className="relative">
+                                <input
+                                    type="tel"
+                                    value={form.phone}
+                                    onChange={(e) => updateField("phone", e.target.value)}
+                                    placeholder="0771234567"
+                                    autoComplete="tel"
+                                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 pl-10 text-sm outline-none focus:bg-white focus:border-[#48c96f]"
+                                />
+                                <Phone size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                            </div>
+                        </label>
+                        <label className="space-y-1.5">
                             <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Role</span>
                             <div className="relative">
                                 <input value={form.role || user?.role || "USER"} readOnly className="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 pl-10 text-sm text-slate-500 outline-none" />
@@ -224,10 +259,20 @@ export default function Profile() {
                     </div>
                 </section>
 
-                <button type="submit" disabled={saving} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#48c96f] px-5 py-3 text-sm font-black text-white hover:bg-[#3db65e] disabled:opacity-60">
-                    {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                    Save Profile
-                </button>
+                <div className="sticky bottom-4 z-20 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-lg shadow-slate-200/70 backdrop-blur sm:flex sm:items-center sm:justify-between sm:gap-4">
+                    <div className="min-h-6">
+                        {(error || message) && (
+                            <p className={`flex items-center gap-2 text-sm font-semibold ${error ? "text-rose-700" : "text-emerald-700"}`}>
+                                {error ? <XCircle size={16} /> : <CheckCircle2 size={16} />}
+                                {error || message}
+                            </p>
+                        )}
+                    </div>
+                    <button type="submit" disabled={saving} className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#48c96f] px-5 py-3 text-sm font-black text-white hover:bg-[#3db65e] disabled:opacity-60 sm:mt-0 sm:w-auto">
+                        {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                        Save Profile
+                    </button>
+                </div>
             </form>
         </div>
     );
