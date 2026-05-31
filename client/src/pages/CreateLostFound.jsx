@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import {
     ArrowLeft, Upload, Loader2, MapPin, Calendar, FileText,
-    Tag, AlertCircle, CheckCircle2
+    Tag, AlertCircle, CheckCircle2, X
 } from "lucide-react";
 import { createLostFoundPost } from "../services/lostFoundService";
 import { useAuth } from "../context/AuthContext";
@@ -38,8 +38,9 @@ const pageStyles = `
 .clf-type-btn.lost.active { border-color:#dc2626; background:#dc2626; color:#fff; }
 .clf-type-btn.found { border-color:#bbf7d0; background:#f0fdf4; color:#15945a; }
 .clf-type-btn.found.active { border-color:#15945a; background:#15945a; color:#fff; }
-.clf-img-drop { border:2px dashed #dbe3ee; border-radius:12px; padding:28px; text-align:center; cursor:pointer; transition:border-color .2s,background .2s; background:#f8fafc; }
-.clf-img-drop:hover { border-color:#ef4444; background:#fff5f5; }
+.clf-img-drop { display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; min-height:144px; box-sizing:border-box; border:2px dashed #cbd5e1; border-radius:12px; padding:24px; text-align:center; cursor:pointer; transition:border-color .2s,background .2s,box-shadow .2s; background:#f8fafc; }
+.clf-img-drop:hover { border-color:#ef4444; background:#fff5f5; box-shadow:0 0 0 3px rgba(239,68,68,.06); }
+.clf-img-drop:focus-within { border-color:#ef4444; background:#fff; box-shadow:0 0 0 3px rgba(239,68,68,.1); }
 .clf-submit { width:100%; padding:13px; border-radius:12px; font-size:14px; font-weight:800; background:linear-gradient(135deg,#ef4444,#dc2626); color:#fff; border:none; cursor:pointer; font-family:inherit; transition:transform .2s,box-shadow .2s; display:flex; align-items:center; justify-content:center; gap:8px; }
 .clf-submit:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 8px 24px rgba(239,68,68,.35); }
 .clf-submit:disabled { opacity:.6; cursor:not-allowed; }
@@ -173,18 +174,38 @@ export default function CreateLostFound() {
                             <div className="clf-field">
                                 <label className="clf-label"><Upload size={11} style={{ display: "inline", marginRight: 4 }} />Photo (optional)</label>
                                 {imagePreview ? (
-                                    <div style={{ position: "relative", borderRadius: 12, overflow: "hidden", border: "1.5px solid #e2e8f0" }}>
-                                        <img src={imagePreview} alt="Preview" style={{ width: "100%", maxHeight: 220, objectFit: "cover" }} />
-                                        <button type="button" onClick={() => { setImageFile(null); setImagePreview(null); }} style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,.6)", border: "none", borderRadius: "50%", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff" }}>
-                                            ×
+                                    <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                                        <img
+                                            src={imagePreview}
+                                            alt="Selected lost and found item"
+                                            className="h-56 w-full object-cover"
+                                        />
+                                        <button
+                                            type="button"
+                                            aria-label="Remove selected photo"
+                                            onClick={() => { setImageFile(null); setImagePreview(null); }}
+                                            className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-slate-950/75 text-white shadow-lg transition-colors hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900"
+                                        >
+                                            <X size={15} />
                                         </button>
                                     </div>
                                 ) : (
-                                    <label className="clf-img-drop" htmlFor="lf-image-upload">
-                                        <Upload size={24} color="#94a3b8" style={{ margin: "0 auto 8px" }} />
-                                        <p style={{ fontSize: 13, fontWeight: 700, color: "#64748b", margin: "0 0 2px" }}>Click to upload a photo</p>
-                                        <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>JPG, PNG, WEBP up to 5MB</p>
-                                        <input id="lf-image-upload" type="file" accept="image/*" style={{ display: "none" }} onChange={handleImageChange} />
+                                    <label
+                                        className="group flex min-h-40 w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-center transition-all hover:border-red-400 hover:bg-red-50/60 focus-within:border-red-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-red-100"
+                                        htmlFor="lf-image-upload"
+                                    >
+                                        <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm ring-1 ring-slate-200 transition-colors group-hover:text-red-500 group-hover:ring-red-200">
+                                            <Upload size={24} />
+                                        </span>
+                                        <span className="block text-sm font-extrabold text-slate-700">Click to upload a photo</span>
+                                        <span className="mt-1 block text-xs font-medium text-slate-400">JPG, PNG, WEBP up to 5MB</span>
+                                        <input
+                                            id="lf-image-upload"
+                                            type="file"
+                                            accept="image/*"
+                                            className="sr-only"
+                                            onChange={handleImageChange}
+                                        />
                                     </label>
                                 )}
                             </div>
